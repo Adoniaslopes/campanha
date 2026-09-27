@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>CRM Jurídico</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <aside id="menu" class="menu">
+    <div class="marca">
+      <strong id="nome-escritorio">Lopes Araújo</strong>
+      <span>CRM Jurídico</span>
+    </div>
+    <nav>
+      <a href="#/" data-rota="">Painel</a>
+      <a href="#/clientes" data-rota="clientes">Clientes</a>
+      <a href="#/processos" data-rota="processos">Processos</a>
+      <a href="#/agenda" data-rota="agenda">Prazos e agenda</a>
+      <a href="#/leads" data-rota="leads">Funil de leads</a>
+      <a href="#/financeiro" data-rota="financeiro">Financeiro</a>
+      <a href="#/config" data-rota="config">Backup e ajustes</a>
+    </nav>
+    <div class="menu-rodape">Dados salvos neste navegador</div>
+  </aside>
+  <div id="fundo-menu" class="fundo-menu"></div>
+
+  <div class="principal">
+    <header class="topo">
+      <button id="btn-menu" class="btn-icone" aria-label="Abrir menu">☰</button>
+      <h1 id="titulo-pagina">Painel</h1>
+      <div id="topo-acoes" class="topo-acoes"></div>
+    </header>
+    <main id="conteudo"></main>
+  </div>
+
+  <div id="modal" class="modal" hidden>
+    <div class="modal-caixa" role="dialog" aria-modal="true" aria-labelledby="modal-titulo">
+      <div class="modal-cab">
+        <h2 id="modal-titulo"></h2>
+        <button class="btn-icone" data-acao="fecharModal" aria-label="Fechar">✕</button>
+      </div>
+      <div id="modal-corpo" class="modal-corpo"></div>
+    </div>
+  </div>
+  <div id="toasts" class="toasts"></div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
