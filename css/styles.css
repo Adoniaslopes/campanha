@@ -71,7 +71,9 @@ h1, h2, h3, h4 { margin: 0; line-height: 1.25; }
 }
 .menu nav a:hover { background: rgba(255,255,255,.07); text-decoration: none; color: #fff; }
 .menu nav a.ativo { background: rgba(176,141,87,.22); color: #fff; box-shadow: inset 3px 0 0 var(--acento); }
-.menu-rodape { padding: 14px 20px; font-size: 12px; opacity: .55; }
+.menu-rodape { padding: 14px 20px; font-size: 12px; }
+.menu-rodape div { opacity: .55; }
+.menu-rodape .btn { width: 100%; margin-bottom: 10px; background: var(--acento); border-color: var(--acento); color: #fff; }
 .fundo-menu { display: none; }
 
 .principal { margin-left: 230px; min-height: 100vh; }

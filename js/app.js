@@ -1361,3 +1361,22 @@ window.addEventListener('hashchange', () => {
 // Sincroniza se o CRM estiver aberto em outra aba
 window.addEventListener('storage', (e) => { if (e.key === CHAVE) { db = carregar(); render(); } });
 render();
+
+// ===== App instalável (PWA) =====
+if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+  navigator.serviceWorker.register('sw.js').catch((e) => console.warn('Service worker não registrado', e));
+}
+let pedidoInstalacao = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  pedidoInstalacao = e;
+  $('#btn-instalar').hidden = false;
+});
+$('#btn-instalar').addEventListener('click', async () => {
+  if (!pedidoInstalacao) return;
+  pedidoInstalacao.prompt();
+  await pedidoInstalacao.userChoice;
+  pedidoInstalacao = null;
+  $('#btn-instalar').hidden = true;
+});
+window.addEventListener('appinstalled', () => { $('#btn-instalar').hidden = true; toast('App instalado'); });

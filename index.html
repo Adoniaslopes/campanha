@@ -5,6 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
   <title>CRM Jurídico</title>
+  <meta name="theme-color" content="#1f2a44">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="CRM Jurídico">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -22,7 +28,10 @@
       <a href="#/financeiro" data-rota="financeiro">Financeiro</a>
       <a href="#/config" data-rota="config">Backup e ajustes</a>
     </nav>
-    <div class="menu-rodape">Dados salvos neste navegador</div>
+    <div class="menu-rodape">
+      <button id="btn-instalar" class="btn peq" hidden>⬇ Instalar app</button>
+      <div>Dados salvos neste aparelho</div>
+    </div>
   </aside>
   <div id="fundo-menu" class="fundo-menu"></div>
 

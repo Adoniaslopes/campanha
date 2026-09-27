@@ -1,0 +1,4 @@
+# Nunca versionar backups com dados de clientes
+*backup*.json
+clientes-*.csv
+agenda-*.ics
