@@ -113,6 +113,7 @@ document.querySelector('.abas').addEventListener('click', (e) => { const b = e.t
 // ===== Sala =====
 const ativoHoje = (id) => { const s = estado.status[id]; return s?.atualizadoEm && Date.now() - new Date(s.atualizadoEm) < 864e5; };
 // Lugares em volta da mesa (graus; 90 = embaixo, onde fica o Dr. Adonias; 270 = cabeceira).
+const RECONHECEDOR = window.SpeechRecognition || window.webkitSpeechRecognition || null;
 const LUGARES = { claude: 270, lara: 300, gretchen: 330, rui: 0, kyle: 30, benjamin: 60, aureo: 90, faye: 120, tessa: 150, guido: 180, plinio: 210, iris: 240 };
 function renderPresenca() {
   const lugar = (graus) => { const r = (graus * Math.PI) / 180; return `left:${(50 + 41 * Math.cos(r)).toFixed(2)}%;top:${(50 + 40 * Math.sin(r)).toFixed(2)}%`; };
@@ -533,9 +534,12 @@ async function iniciarVoz() {
     $('#form-sala').hidden = false;
     $('#btn-escrever').hidden = true;
     const celular = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+    if (RECONHECEDOR) { $('#btn-falar-cel').hidden = false; }
     $('#texto-sala').placeholder = celular ? 'Toque aqui e use o 🎤 do teclado…' : 'Escreva para a equipe…';
-    $('#aviso-voz').textContent = celular
-      ? 'No celular, fale pelo microfone do teclado (🎤) e toque em ➤. A equipe responde em voz.'
+    $('#aviso-voz').textContent = RECONHECEDOR
+      ? 'Toque em “Falar”, fale e pare: a mensagem vai sozinha. Se preferir, escreva abaixo.'
+      : celular
+      ? 'Este navegador não libera o microfone para a página. Escreva abaixo ou use o 🎤 do teclado, se aparecer.'
       : 'Para conversar por voz, abra o escritório no Chrome ou no aplicativo do Claude para computador.';
   }
   atualizarStatus();
@@ -680,6 +684,36 @@ $('#texto-sala').addEventListener('input', ajustarCaixa);
 $('#texto-sala').addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); enviarNaSala(e.target.value); } });
 $('#form-sala').addEventListener('submit', (e) => { e.preventDefault(); enviarNaSala($('#texto-sala').value); });
 $('#btn-entrar').addEventListener('click', entrarNaReuniao);
+// Microfone alternativo (reconhecimento de fala do próprio navegador), usado quando o ditado do claude.ai não está disponível, como no celular.
+let rec = null;
+$('#btn-falar-cel').addEventListener('click', () => {
+  const b = $('#btn-falar-cel');
+  if (rec) { rec.stop(); return; }
+  if (falando) pararVoz();
+  try {
+    rec = new RECONHECEDOR();
+  } catch (e) { $('#aviso-voz').textContent = 'Microfone indisponível: ' + (e.message || e); return; }
+  rec.lang = 'pt-BR'; rec.interimResults = true; rec.continuous = false;
+  let final = '';
+  rec.onstart = () => { b.textContent = '■ Parar'; legenda('Você', 'Ouvindo…', 'voce'); };
+  rec.onresult = (ev) => {
+    let parcial = '';
+    for (let i = ev.resultIndex; i < ev.results.length; i++) {
+      if (ev.results[i].isFinal) final += ev.results[i][0].transcript; else parcial += ev.results[i][0].transcript;
+    }
+    legenda('Você', (final + ' ' + parcial).trim(), 'voce');
+  };
+  rec.onerror = (ev) => {
+    const m = { 'not-allowed': 'o navegador bloqueou o microfone para esta página (permissão negada ou o app não libera microfone para páginas).', 'service-not-allowed': 'o serviço de voz do navegador não está liberado aqui.', 'no-speech': 'não ouvi nada. Tente de novo.', 'audio-capture': 'nenhum microfone encontrado.', network: 'sem conexão com o serviço de voz.' };
+    $('#aviso-voz').textContent = 'Microfone: ' + (m[ev.error] || ev.error);
+  };
+  rec.onend = () => {
+    rec = null; b.textContent = '🎙 Falar';
+    const t = final.trim();
+    if (t) { $('#aviso-voz').textContent = ''; enviarNaSala(t); } else legendaPadrao();
+  };
+  try { rec.start(); } catch (e) { rec = null; $('#aviso-voz').textContent = 'Microfone: ' + (e.message || e); }
+});
 document.addEventListener('change', (e) => {
   const sel = e.target.closest('select[data-voz]');
   if (!sel) return;
