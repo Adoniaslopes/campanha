@@ -50,7 +50,7 @@ function toast(msg) {
 }
 
 // ===== Estado e banco =====
-const estado = { sala: [], tarefas: [], atividades: [], status: {}, carregado: false };
+const estado = { sala: [], tarefas: [], atividades: [], status: {}, vozes: {}, carregado: false };
 let banco = null;
 const EM_CLAUDE = typeof window.claude?.use === 'function';
 const colecao = (c) => banco.doc('escritorio/dados').collection(c);
@@ -79,6 +79,7 @@ async function iniciarBanco() {
   colecao('sala').orderBy('criadoEm', 'desc').limit(200).onSnapshot((r) => { estado.sala = r.docs.map((d) => d.data()).reverse(); ok(); renderSala(); }, (e) => console.warn(e));
   colecao('tarefas').onSnapshot((r) => { estado.tarefas = r.docs.map((d) => d.data()); ok(); renderTarefas(); renderEquipe(); }, (e) => console.warn(e));
   colecao('atividades').orderBy('criadoEm', 'desc').limit(150).onSnapshot((r) => { estado.atividades = r.docs.map((d) => d.data()); ok(); renderMural(); }, (e) => console.warn(e));
+  colecao('config').onSnapshot((r) => { const d = r.docs.find((x) => x.id === 'vozes'); estado.vozes = d ? d.data() : {}; renderEquipe(); }, (e) => console.warn(e));
   colecao('equipe').onSnapshot((r) => { estado.status = Object.fromEntries(r.docs.map((d) => [d.id, d.data()])); ok(); renderEquipe(); renderPresenca(); }, (e) => console.warn(e));
 }
 function mostrarAvisoGeral(msg) {
@@ -308,6 +309,7 @@ function carregarVozes() {
   const melhor = (a) => a.sort((x, y) => Number(/natural|online|neural/i.test(y.name)) - Number(/natural|online|neural/i.test(x.name)));
   vozesNav = { m: melhor(base.filter((v) => MASC.test(v.name))), f: melhor(base.filter((v) => FEM.test(v.name) && !MASC.test(v.name))), todas: base };
   vozDisponivel = true;
+  if (typeof renderEquipe === 'function' && document.querySelector('#aba-equipe')) renderEquipe();
 }
 function vozPara(quem) {
   const g = VOZES[quem]?.g || 'm';
@@ -323,45 +325,81 @@ let falando = false;
 let fimDaFala = 0;
 const idParaQuem = {};
 const filaNav = [];
-function falarNav(falas) {
-  speechSynthesis.cancel();
-  filaNav.length = 0;
+// Vozes escolhidas na aba Equipe (banco: escritorio/dados/config/vozes). Valor: "claude:<voz>" ou "nav:<nome da voz do navegador>".
+const VOZES_CLAUDE = [['buttery', 'Voz Claude 1'], ['glassy', 'Voz Claude 2'], ['rounded', 'Voz Claude 3'], ['airy', 'Voz Claude 4']];
+const ehNatural = (v) => /natural|online|neural/i.test(v.name);
+function escolhaDe(quem) {
+  const salva = estado.vozes?.[quem];
+  if (typeof salva === 'string' && salva) return salva;
+  const g = VOZES[quem]?.g || 'm';
+  const naturais = (vozesNav?.[g] || []).filter(ehNatural);
+  if (naturais.length) { const mesmos = ORDEM.filter((id) => VOZES[id].g === g); return `nav:${naturais[mesmos.indexOf(quem) % naturais.length].name}`; }
+  if (tts) return `claude:${g === 'm' ? (['claude', 'rui', 'plinio'].includes(quem) ? 'buttery' : 'glassy') : (quem === 'lara' ? 'airy' : 'rounded')}`;
+  return 'nav:';
+}
+function falarUmNav(f, nome) {
   return new Promise((resolve) => {
-    const itens = falas.flatMap((f) => partes(f.texto).map((t, i) => ({ f, t, primeiro: i === 0 })));
+    const todas = 'speechSynthesis' in window ? speechSynthesis.getVoices() : [];
+    let voz = nome ? todas.find((v) => v.name === nome) : null;
+    let tom = 1;
+    if (!voz) { const r = vozPara(f.quem); voz = r.voz; tom = (VOZES[f.quem]?.tom || 1) * r.ajuste; }
+    const itens = partes(f.texto);
     let i = 0;
     const prox = () => {
-      if (i >= itens.length) { falando = false; fimDaFala = Date.now(); marcarFalando(null); atualizarStatus(); resolve(); return; }
-      const { f, t, primeiro } = itens[i++];
-      const u = new SpeechSynthesisUtterance(t);
-      const { voz, ajuste } = vozPara(f.quem);
+      if (pararPedido || i >= itens.length) { resolve(); return; }
+      const u = new SpeechSynthesisUtterance(itens[i++]);
       if (voz) { u.voice = voz; u.lang = voz.lang; } else u.lang = 'pt-BR';
-      u.pitch = Math.max(0.1, Math.min(2, (VOZES[f.quem]?.tom || 1) * ajuste));
-      u.rate = VOZES[f.quem]?.ritmo || 1;
-      u.onstart = () => { if (primeiro) { idParaQuem[f.id] = f.quem; marcarFalando(f.id); } };
-      u.onend = prox;
-      u.onerror = prox;
+      u.pitch = Math.max(0.1, Math.min(2, tom));
+      u.rate = ehNatural(voz || { name: '' }) ? 1 : (VOZES[f.quem]?.ritmo || 1);
+      u.onend = prox; u.onerror = prox;
       filaNav.push(u);
       speechSynthesis.speak(u);
     };
-    falando = true;
-    atualizarStatus();
     prox();
   });
 }
+async function falarUmClaude(f, voz) {
+  if (!tts) return;
+  if (dictacao?.active()) { await dictacao.stop().catch(() => {}); pedirRetomada = true; }
+  await tts.speak([{ text: f.texto.slice(0, 1990), voice: voz, language: 'pt-BR', id: f.id }]).catch((e) => {
+    if (e?.code === 'rate_limited') $('#aviso-voz').textContent = 'Limite de voz atingido por agora.';
+    if (e?.code === 'no_gesture') $('#aviso-voz').textContent = 'Toque em qualquer lugar da página para liberar a voz.';
+  });
+}
+let pararPedido = false;
 async function falar(falas) {
   if (!falas.length) return;
-  if (vozesNav) return falarNav(falas);
-  if (!tts) return;
-  // Voz do claude.ai: o microfone precisa parar enquanto a equipe fala.
-  if (dictacao?.active()) { await dictacao.stop().catch(() => {}); pedirRetomada = true; }
+  pararVoz();
+  pararPedido = false;
   falando = true; atualizarStatus();
-  const linhas = falas.map((f) => { idParaQuem[f.id] = f.quem; return { text: f.texto.slice(0, 1990), voice: VOZES[f.quem]?.g === 'f' ? 'airy' : 'buttery', language: 'pt-BR', id: f.id }; });
-  await tts.speak(linhas).catch((e) => { if (e?.code === 'rate_limited') $('#aviso-voz').textContent = 'Limite de voz atingido por agora.'; });
+  for (const f of falas) {
+    if (pararPedido) break;
+    idParaQuem[f.id] = f.quem;
+    marcarFalando(f.id);
+    const [tipo, ...resto] = escolhaDe(f.quem).split(':');
+    const valor = resto.join(':');
+    if (tipo === 'claude' && tts) await falarUmClaude(f, valor);
+    else await falarUmNav(f, valor);
+  }
   falando = false; fimDaFala = Date.now(); marcarFalando(null); atualizarStatus();
 }
 function pararVoz() {
-  if (vozesNav) { speechSynthesis.cancel(); filaNav.length = 0; falando = false; fimDaFala = Date.now(); marcarFalando(null); atualizarStatus(); }
+  pararPedido = true;
+  if ('speechSynthesis' in window) speechSynthesis.cancel();
+  filaNav.length = 0;
   tts?.stop().catch(() => {});
+  if (falando) { falando = false; fimDaFala = Date.now(); marcarFalando(null); atualizarStatus(); }
+}
+function opcoesDeVoz(atual) {
+  const opt = (v, rot) => `<option value="${esc(v)}"${v === atual ? ' selected' : ''}>${esc(rot)}</option>`;
+  let h = '';
+  if (tts) h += `<optgroup label="Vozes do Claude (naturais)">${VOZES_CLAUDE.map(([v, r]) => opt(`claude:${v}`, r)).join('')}</optgroup>`;
+  const nav = vozesNav?.todas || [];
+  if (nav.length) {
+    const ord = [...nav].sort((a, b) => Number(ehNatural(b)) - Number(ehNatural(a)));
+    h += `<optgroup label="Vozes deste navegador">${ord.map((v) => opt(`nav:${v.name}`, `${v.name.replace(/ - Portuguese \(Brazil\)| \(Portuguese \(Brazil\)\)/i, '')}${ehNatural(v) ? ' ★ natural' : ''}`)).join('')}</optgroup>`;
+  }
+  return h || '<option value="">Sem vozes disponíveis aqui</option>';
 }
 function marcarFalando(idMsg) {
   const quem = idMsg ? idParaQuem[idMsg] : null;
@@ -458,7 +496,7 @@ function renderEquipe() {
   const abertas = (id) => estado.tarefas.filter((t) => t.para === id && t.status !== 'concluida').length;
   $('#aba-equipe').innerHTML = `
     <h2 class="titulo">Equipe</h2>
-    <p class="lead">Sete funcionários digitais e o gerente. Cada um trabalha no seu turno e registra o que fez.</p>
+    <p class="lead">Sete funcionários digitais e o gerente. Cada um trabalha no seu turno e registra o que fez. Escolha a voz de cada um e toque em “Ouvir” para testar.</p>
     <div class="grade-equipe">${ORDEM.map((id) => {
       const s = estado.status[id];
       const n = abertas(id);
@@ -467,7 +505,8 @@ function renderEquipe() {
         <div class="cargo">${esc(TIME[id].cargo)} · ${esc(EQUIPE[id].area)}</div>
         <p class="missao">${esc(EQUIPE[id].missao)}</p>
         <div class="status">${s?.status ? `${esc(s.status)} <span class="muted">· ${esc(quando(s.atualizadoEm))}</span>` : '<span class="muted">Aguardando o primeiro turno de trabalho.</span>'}</div>
-        <div class="acoes">${n ? `<span class="etq info">${n} tarefa(s) em aberto</span>` : ''}<button class="btn-link" data-chamar="${id}">Falar na sala</button></div>
+        <div class="voz-membro"><label>Voz <select data-voz="${id}">${opcoesDeVoz(escolhaDe(id))}</select></label><button class="btn-link" data-provar="${id}">▶ Ouvir</button></div>
+        <div class="acoes">${n ? `<span class="etq info">${n} tarefa(s) em aberto</span>` : ''}</div>
       </div></article>`;
     }).join('')}</div>`;
 }
@@ -570,6 +609,13 @@ $('#texto-sala').addEventListener('input', ajustarCaixa);
 $('#texto-sala').addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); enviarNaSala(e.target.value); } });
 $('#form-sala').addEventListener('submit', (e) => { e.preventDefault(); enviarNaSala($('#texto-sala').value); });
 $('#btn-entrar').addEventListener('click', entrarNaReuniao);
+document.addEventListener('change', (e) => {
+  const sel = e.target.closest('select[data-voz]');
+  if (!sel) return;
+  estado.vozes = { ...estado.vozes, [sel.dataset.voz]: sel.value };
+  salvar('config', { ...estado.vozes, id: 'vozes' }).catch(() => {});
+  sel.closest('.voz-membro')?.querySelector('[data-provar]')?.click();
+});
 $('#btn-escrever').addEventListener('click', () => {
   const f = $('#form-sala');
   f.hidden = !f.hidden;
@@ -578,8 +624,13 @@ $('#btn-escrever').addEventListener('click', () => {
 });
 $('#btn-parar-voz').addEventListener('click', pararVoz);
 document.addEventListener('click', (e) => {
-  const el = e.target.closest('[data-chamar],[data-sugestao],[data-ouvir],[data-tarefa],[data-fechar],[data-decidir],#btn-nova-tarefa');
+  const el = e.target.closest('[data-chamar],[data-provar],[data-sugestao],[data-ouvir],[data-tarefa],[data-fechar],[data-decidir],#btn-nova-tarefa');
   if (!el) return;
+  if (el.dataset.provar) {
+    const id = el.dataset.provar;
+    falar([{ id: uid('msg'), quem: id, texto: `Olá, Dr. Adonias. Eu sou ${id === 'claude' ? 'o Harvy, seu gerente geral' : `${VOZES[id].g === 'f' ? 'a' : 'o'} ${TIME[id].nome[0] + TIME[id].nome.slice(1).toLowerCase()}, ${TIME[id].cargo.toLowerCase()}`}. Estou pronto para trabalhar.`.replace('pronto', VOZES[id].g === 'f' ? 'pronta' : 'pronto') }]);
+    return;
+  }
   if (el.dataset.chamar) {
     abrirAba('sala');
     const quem = el.dataset.chamar;
