@@ -98,9 +98,9 @@ document.querySelector('.abas').addEventListener('click', (e) => { const b = e.t
 // ===== Sala =====
 const ativoHoje = (id) => { const s = estado.status[id]; return s?.atualizadoEm && Date.now() - new Date(s.atualizadoEm) < 864e5; };
 // Lugares em volta da mesa (graus; 90 = embaixo, onde fica o Dr. Adonias; 270 = cabeceira).
-const LUGARES = { claude: 270, lara: 318, rui: 0, aureo: 42, iris: 222, plinio: 190, guido: 158, tessa: 126 };
+const LUGARES = { claude: 270, lara: 312, rui: 0, aureo: 48, iris: 234, plinio: 200, guido: 160, tessa: 126 };
 function renderPresenca() {
-  const lugar = (graus) => { const r = (graus * Math.PI) / 180; return `left:${(50 + 44 * Math.cos(r)).toFixed(2)}%;top:${(50 + 41 * Math.sin(r)).toFixed(2)}%`; };
+  const lugar = (graus) => { const r = (graus * Math.PI) / 180; return `left:${(50 + 41 * Math.cos(r)).toFixed(2)}%;top:${(50 + 40 * Math.sin(r)).toFixed(2)}%`; };
   $('#assentos').innerHTML = ORDEM.map((id) => `
     <button class="assento" data-chamar="${id}" style="${lugar(LUGARES[id])}" title="${esc(TIME[id].nome)} — ${esc(TIME[id].cargo)}">
       <span class="foto">${avatarSVG(id, 64)}<span class="ponto ${ativoHoje(id) ? 'ativo' : ''}"></span></span>
@@ -117,7 +117,7 @@ function legenda(quem, texto, modo = '') {
 function legendaPadrao() {
   const ult = [...estado.sala].reverse().find((m) => m.quem !== 'dr');
   if (ult) legenda(nomeDe(ult.quem), ult.texto);
-  else legenda('', dictacao ? 'Toque em “Falar”, diga o que precisa e toque de novo para enviar.' : 'Escreva para a equipe ao lado. O Harvy conduz a reunião.');
+  else legenda('', dictacao ? 'Toque em “Falar”, diga o que precisa e toque de novo para enviar.' : 'Escreva para a equipe aqui embaixo. O Harvy conduz a reunião.');
 }
 const SUGESTOES = [
   'Bom dia, equipe! Como estamos hoje?',
@@ -321,6 +321,7 @@ async function iniciarVoz() {
     });
   } else {
     $('#dica-voz').textContent = 'Para falar pelo microfone, abra o escritório no Chrome ou no aplicativo do Claude para computador.';
+    $('#form-sala').hidden = false; $('#btn-escrever').hidden = true;
   }
   renderSala();
 }
@@ -472,6 +473,12 @@ $('#btn-falar').addEventListener('click', () => {
   });
   tts?.stop().catch(() => {});
 });
+$('#btn-escrever').addEventListener('click', () => {
+  const f = $('#form-sala');
+  f.hidden = !f.hidden;
+  $('#btn-escrever').textContent = f.hidden ? '⌨ Escrever em vez de falar' : 'Fechar a escrita';
+  if (!f.hidden) $('#texto-sala').focus();
+});
 $('#btn-parar-voz').addEventListener('click', () => tts?.stop().catch(() => {}));
 $('#chk-voz').addEventListener('change', (e) => {
   try { localStorage.setItem('escritorio-voz', e.target.checked ? 'sim' : 'nao'); } catch { /* ignora */ }
@@ -482,10 +489,12 @@ document.addEventListener('click', (e) => {
   if (!el) return;
   if (el.dataset.chamar) {
     abrirAba('sala');
-    const caixa = $('#texto-sala');
-    caixa.value = `${TIME[el.dataset.chamar].nome}, ${caixa.value}`;
-    caixa.focus();
-    ajustarCaixa();
+    const quem = el.dataset.chamar;
+    const m = [...estado.sala].reverse().find((x) => x.quem === quem);
+    if (m) {
+      legenda(nomeDe(quem), m.texto);
+      if (tts && vozDisponivel) { idParaQuem[m.id] = m.quem; tts.speak([{ text: m.texto.slice(0, 1990), voice: EQUIPE[quem]?.voz, rate: EQUIPE[quem]?.ritmo, language: 'pt-BR', id: m.id }]).catch(() => {}); }
+    } else legenda(nomeDe(quem), `${TIME[quem].cargo}. ${EQUIPE[quem].missao}`);
   } else if (el.dataset.sugestao) {
     enviarNaSala(el.dataset.sugestao);
   } else if (el.dataset.ouvir) {
