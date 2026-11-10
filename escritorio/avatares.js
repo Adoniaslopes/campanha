@@ -1,30 +1,33 @@
 'use strict';
 
 /* Avatares do time do Escritório Digital Lopes Araújo.
- * Todos no mesmo estilo (ilustração plana em círculo); cada um com um traço da função.
+ * Estilo ilustração plana, equipe jovem; cada um com um traço da função.
  * avatarSVG(id, tamanho) devolve o SVG como texto. */
 
-const PELE = { clara: '#F2CBA8', media: '#DDA77F', morena: '#B97E57', escura: '#87563A' };
+const PELE = { clara: '#F5D0B0', media: '#E0AC85', morena: '#C08660', escura: '#8C5A3C' };
 
 const TIME = {
-  adonias: { nome: 'Dr. Adonias', cargo: 'Diretor', fundo: '#DCE3F0', roupa: '#1F2A44', pele: PELE.media, cabelo: 'curto', corCabelo: '#2B2018', extra: ['terno'], selo: null },
-  claude: { nome: 'HARVY', cargo: 'Gerente geral', fundo: '#E4E7EE', roupa: '#2B2F3A', pele: PELE.clara, cabelo: 'lateral', corCabelo: '#3A2A1E', extra: ['terno'], selo: null },
-  tessa: { nome: 'TESSA', cargo: 'Teses e nichos', fundo: '#DDF0EC', roupa: '#1E7F74', pele: PELE.clara, cabelo: 'coque', corCabelo: '#5A3A22', extra: ['oculos'], selo: 'lupa', corSelo: '#1E7F74' },
-  guido: { nome: 'GUIDO', cargo: 'Campanhas', fundo: '#E3E8F8', roupa: '#3A55B4', pele: PELE.morena, cabelo: 'curto', corCabelo: '#1C1410', extra: ['barba'], selo: 'grafico', corSelo: '#3A55B4' },
-  plinio: { nome: 'PLÍNIO', cargo: 'Copywriter', fundo: '#F4E9D6', roupa: '#A8692A', pele: PELE.escura, cabelo: 'cacheado', corCabelo: '#1A120D', extra: [], selo: 'pena', corSelo: '#A8692A' },
-  iris: { nome: 'ÍRIS', cargo: 'Criativos', fundo: '#EFE3F6', roupa: '#8A3FB0', pele: PELE.media, cabelo: 'longoMecha', corCabelo: '#2A1A24', extra: [], selo: 'paleta', corSelo: '#8A3FB0' },
-  lara: { nome: 'LARA', cargo: 'Secretária', fundo: '#FBE4E6', roupa: '#C2475A', pele: PELE.morena, cabelo: 'longo', corCabelo: '#2A1B14', extra: ['headset'], selo: null },
-  rui: { nome: 'RUI', cargo: 'Advogado', fundo: '#E6E2DA', roupa: '#1A1A1A', pele: PELE.clara, cabelo: 'grisalho', corCabelo: '#BDBDBD', extra: ['bigode', 'oculos', 'beca'], selo: 'balanca', corSelo: '#1A1A1A' },
-  aureo: { nome: 'ÁUREO', cargo: 'Financeiro', fundo: '#F7EFD2', roupa: '#2F6B4F', pele: PELE.clara, cabelo: 'lateral', corCabelo: '#6B4A2B', extra: ['colete'], selo: 'moeda', corSelo: '#B8860B' },
+  adonias: { nome: 'Dr. Adonias', cargo: 'Diretor', fundo: '#DCE5F2', roupa: '#1F2A44', pele: PELE.media, cabelo: 'lateral', corCabelo: '#2B2018', extra: ['gravata'], selo: null },
+  claude: { nome: 'HARVY', cargo: 'Gerente geral', fundo: '#DDE7F7', roupa: '#24324F', pele: PELE.clara, cabelo: 'topete', corCabelo: '#3B2A1E', extra: ['blazer', 'barbaRala'], selo: null },
+  lara: { nome: 'LARA', cargo: 'Secretária', fundo: '#FCE3E8', roupa: '#D9546E', pele: PELE.morena, cabelo: 'ondulado', corCabelo: '#2E1C14', extra: ['headset', 'brincos'], selo: null },
+  rui: { nome: 'RUI', cargo: 'Advogado', fundo: '#E7E3F3', roupa: '#22252E', pele: PELE.clara, cabelo: 'lateral', corCabelo: '#1E1712', extra: ['gravata', 'oculos'], selo: 'balanca', corSelo: '#22252E' },
+  aureo: { nome: 'ÁUREO', cargo: 'Financeiro', fundo: '#FBF0CF', roupa: '#2F7A57', pele: PELE.media, cabelo: 'fade', corCabelo: '#241A12', extra: ['camisa'], selo: 'moeda', corSelo: '#C9961A' },
+  tessa: { nome: 'TESSA', cargo: 'Teses e nichos', fundo: '#D9F2EC', roupa: '#1E8A7C', pele: PELE.clara, cabelo: 'rabo', corCabelo: '#9A4A22', extra: ['oculosRedondo'], selo: 'lupa', corSelo: '#1E8A7C' },
+  guido: { nome: 'GUIDO', cargo: 'Campanhas', fundo: '#E0E8FB', roupa: '#3C5CC8', pele: PELE.morena, cabelo: 'curto', corCabelo: '#1A120D', extra: ['moletom', 'barba'], selo: 'grafico', corSelo: '#3C5CC8' },
+  plinio: { nome: 'PLÍNIO', cargo: 'Copywriter', fundo: '#F8E7D3', roupa: '#C0682F', pele: PELE.escura, cabelo: 'blackPower', corCabelo: '#17100B', extra: ['camisa'], selo: 'pena', corSelo: '#C0682F' },
+  iris: { nome: 'ÍRIS', cargo: 'Criativos', fundo: '#F0E2FA', roupa: '#8E44C0', pele: PELE.media, cabelo: 'chanel', corCabelo: '#22161E', extra: ['brincos'], selo: 'paleta', corSelo: '#8E44C0' },
 };
 
 function cabeloAtras(estilo, cor) {
   switch (estilo) {
-    case 'longo':
-    case 'longoMecha':
-      return `<path d="M35 54 C32 27 47 19 60 19 C74 19 89 27 85 56 L88 92 C79 97 70 95 66 90 L54 90 C50 95 40 97 32 92 Z" fill="${cor}"/>`;
-    case 'coque':
-      return `<circle cx="60" cy="21" r="10" fill="${cor}"/><path d="M38 52 C37 33 48 26 60 26 C73 26 84 33 82 52 Z" fill="${cor}"/>`;
+    case 'ondulado':
+      return `<path d="M36 52 C33 26 48 18 60 18 C73 18 88 26 85 52 C88 66 86 82 90 94 C80 99 72 96 68 90 L52 90 C48 96 40 99 30 94 C34 82 32 66 36 52 Z" fill="${cor}"/>`;
+    case 'chanel':
+      return `<path d="M36 50 C34 28 47 19 60 19 C73 19 86 28 84 50 L86 74 C80 78 74 77 72 72 L48 72 C46 77 40 78 34 74 Z" fill="${cor}"/>`;
+    case 'rabo':
+      return `<path d="M76 30 C92 30 96 50 90 70 C88 60 84 50 78 44 Z" fill="${cor}"/>`;
+    case 'blackPower':
+      return `<circle cx="60" cy="38" r="27" fill="${cor}"/>`;
     default:
       return '';
   }
@@ -32,22 +35,22 @@ function cabeloAtras(estilo, cor) {
 
 function cabeloFrente(estilo, cor) {
   switch (estilo) {
+    case 'topete':
+      return `<path d="M39 48 C37 30 47 20 62 20 C72 20 80 24 82 34 C83 40 82 45 81 48 C78 40 72 35 63 35 C56 35 50 34 46 31 C43 36 41 42 39 48 Z" fill="${cor}"/><path d="M50 24 C58 15 74 16 80 26 C72 22 62 22 50 24 Z" fill="${cor}"/>`;
     case 'curto':
-      return `<path d="M38 50 C37 31 47 24 60 24 C74 24 84 31 82 50 C79 41 72 36 60 36 C49 36 42 41 38 50 Z" fill="${cor}"/>`;
+      return `<path d="M39 48 C38 31 48 24 60 24 C73 24 83 31 81 48 C78 40 71 35 60 35 C50 35 42 40 39 48 Z" fill="${cor}"/>`;
+    case 'fade':
+      return `<path d="M40 44 C40 30 49 24 60 24 C71 24 80 30 80 44 C76 38 69 34 60 34 C51 34 44 38 40 44 Z" fill="${cor}"/><path d="M39 46 C39 42 40 40 41 39 L41 50 Z M81 46 C81 42 80 40 79 39 L79 50 Z" fill="${cor}" opacity="0.45"/>`;
     case 'lateral':
-      return `<path d="M38 50 C37 31 48 24 61 24 C74 24 84 31 82 50 C78 40 70 35 58 37 C52 38 47 36 44 33 C41 38 39 44 38 50 Z" fill="${cor}"/>`;
-    case 'cacheado': {
-      const bolas = [[41, 37], [46, 29], [54, 24], [63, 23], [71, 26], [77, 32], [80, 40], [38, 45]];
-      return bolas.map(([x, y]) => `<circle cx="${x}" cy="${y}" r="7.5" fill="${cor}"/>`).join('');
-    }
-    case 'grisalho':
-      return `<path d="M38 52 C37 40 41 33 46 31 C44 38 43 44 42 52 Z M82 52 C83 40 79 33 74 31 C76 38 77 44 78 52 Z" fill="${cor}"/><path d="M47 30 C53 27 67 27 73 30 C68 29 52 29 47 30 Z" fill="${cor}"/>`;
-    case 'coque':
-      return `<path d="M39 47 C42 33 52 29 61 29 C71 29 79 35 81 47 C73 39 64 37 55 39 C48 41 43 43 39 47 Z" fill="${cor}"/>`;
-    case 'longo':
-      return `<path d="M39 49 C41 32 51 27 62 28 C72 29 80 36 81 49 C74 40 64 37 54 40 C47 42 42 45 39 49 Z" fill="${cor}"/>`;
-    case 'longoMecha':
-      return `<path d="M39 49 C41 32 51 27 62 28 C72 29 80 36 81 49 C74 40 64 37 54 40 C47 42 42 45 39 49 Z" fill="${cor}"/><path d="M66 29 C74 31 79 37 81 47 C77 41 72 37 66 35 Z" fill="#C06BD8"/>`;
+      return `<path d="M39 48 C37 31 48 23 61 23 C74 23 84 31 81 48 C78 39 70 34 57 36 C51 37 46 35 44 32 C41 37 40 43 39 48 Z" fill="${cor}"/>`;
+    case 'blackPower':
+      return `<path d="M38 46 C38 32 48 26 60 26 C72 26 82 32 82 46 C77 40 70 37 60 37 C50 37 43 40 38 46 Z" fill="${cor}"/>`;
+    case 'ondulado':
+      return `<path d="M39 50 C40 31 51 25 62 26 C73 27 81 35 81 50 C77 41 70 36 61 37 C55 38 50 42 47 46 C45 41 42 44 39 50 Z" fill="${cor}"/>`;
+    case 'chanel':
+      return `<path d="M38 50 C39 30 50 24 61 24 C73 24 82 32 82 50 C79 40 71 34 60 34 C52 34 45 40 42 47 C40 46 39 48 38 50 Z" fill="${cor}"/><path d="M68 26 C76 29 81 36 82 46 C78 40 73 36 68 34 Z" fill="#B266E0"/>`;
+    case 'rabo':
+      return `<path d="M39 48 C40 31 50 24 61 24 C73 24 82 32 81 48 C77 39 70 34 60 34 C51 34 44 39 39 48 Z" fill="${cor}"/><circle cx="78" cy="32" r="3.6" fill="#1E8A7C"/>`;
     default:
       return '';
   }
@@ -55,38 +58,43 @@ function cabeloFrente(estilo, cor) {
 
 function rosto(p) {
   return `
-    <rect x="52" y="66" width="16" height="18" rx="6" fill="${p.pele}"/>
-    <rect x="52" y="66" width="16" height="7" fill="#000" opacity="0.08"/>
-    <circle cx="39" cy="55" r="4.5" fill="${p.pele}"/><circle cx="81" cy="55" r="4.5" fill="${p.pele}"/>
-    <ellipse cx="60" cy="52" rx="21" ry="24" fill="${p.pele}"/>
-    <circle cx="52" cy="54" r="2.6" fill="#2A211C"/><circle cx="68" cy="54" r="2.6" fill="#2A211C"/>
-    <circle cx="52.8" cy="53.2" r="0.8" fill="#fff"/><circle cx="68.8" cy="53.2" r="0.8" fill="#fff"/>
-    <path d="M47.5 48 Q52 45.5 56 47.5 M64 47.5 Q68 45.5 72.5 48" stroke="#3A2A20" stroke-width="1.8" fill="none" stroke-linecap="round"/>
-    <circle cx="47" cy="61" r="3.5" fill="#E8836B" opacity="0.25"/><circle cx="73" cy="61" r="3.5" fill="#E8836B" opacity="0.25"/>
-    <path d="M54 64 Q60 69 66 64" stroke="#7A3B2E" stroke-width="2" fill="none" stroke-linecap="round"/>`;
+    <rect x="53" y="66" width="14" height="16" rx="6" fill="${p.pele}"/>
+    <rect x="53" y="66" width="14" height="6" fill="#000" opacity="0.08"/>
+    <circle cx="39.5" cy="54" r="4.2" fill="${p.pele}"/><circle cx="80.5" cy="54" r="4.2" fill="${p.pele}"/>
+    <ellipse cx="60" cy="51" rx="20.5" ry="22.5" fill="${p.pele}"/>
+    <ellipse cx="52" cy="54" rx="3.1" ry="3.6" fill="#241B16"/><ellipse cx="68" cy="54" rx="3.1" ry="3.6" fill="#241B16"/>
+    <circle cx="53.1" cy="52.6" r="1.1" fill="#fff"/><circle cx="69.1" cy="52.6" r="1.1" fill="#fff"/>
+    <path d="M47.5 46.5 Q52 44.5 56 46 M64 46 Q68 44.5 72.5 46.5" stroke="#3A2A20" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    <circle cx="46.5" cy="61" r="3.4" fill="#F08A75" opacity="0.28"/><circle cx="73.5" cy="61" r="3.4" fill="#F08A75" opacity="0.28"/>
+    <path d="M53.5 62.5 Q60 69.5 66.5 62.5 Q60 65 53.5 62.5 Z" fill="#8A3A2C"/><path d="M55.5 63.4 Q60 64.8 64.5 63.4" stroke="#fff" stroke-width="1.2" fill="none"/>`;
 }
 
 function roupa(p) {
-  let base = `<path d="M16 122 C16 94 36 83 60 83 C84 83 104 94 104 122 Z" fill="${p.roupa}"/>`;
-  if (p.extra.includes('terno')) {
-    base += `<path d="M52 83 L60 98 L68 83 Z" fill="#FFFFFF"/><path d="M58 86 L62 86 L63 99 L60 103 L57 99 Z" fill="#B08D57"/>
-      <path d="M52 83 L60 104 L45 92 Z M68 83 L60 104 L75 92 Z" fill="#162036"/>`;
-  } else if (p.extra.includes('beca')) {
-    base += `<path d="M54 83 L60 92 L66 83 Z" fill="#FFFFFF"/><rect x="57" y="90" width="2.6" height="10" rx="1" fill="#FFFFFF"/><rect x="60.4" y="90" width="2.6" height="10" rx="1" fill="#FFFFFF"/>`;
-  } else if (p.extra.includes('colete')) {
-    base += `<path d="M53 83 L60 95 L67 83 Z" fill="#F4F1EA"/><path d="M44 89 L57 96 L57 122 L40 122 Z M76 89 L63 96 L63 122 L80 122 Z" fill="#B8860B" opacity="0.9"/>`;
+  let base = `<path d="M18 122 C18 95 37 84 60 84 C83 84 102 95 102 122 Z" fill="${p.roupa}"/>`;
+  const x = p.extra;
+  if (x.includes('blazer')) {
+    base += `<path d="M50 84 L60 122 L70 84 Z" fill="#F3F5F8"/><path d="M50 84 L58 104 L44 94 Z M70 84 L62 104 L76 94 Z" fill="#17213A"/>`;
+  } else if (x.includes('gravata')) {
+    base += `<path d="M51 84 L60 99 L69 84 Z" fill="#FFFFFF"/><path d="M58 87 L62 87 L63.5 101 L60 106 L56.5 101 Z" fill="#B08D57"/><path d="M51 84 L60 106 L45 93 Z M69 84 L60 106 L75 93 Z" fill="#151B2B" opacity="0.85"/>`;
+  } else if (x.includes('moletom')) {
+    base += `<path d="M46 86 C50 95 70 95 74 86" stroke="#000" stroke-opacity="0.18" stroke-width="5" fill="none"/><path d="M55 94 L54 106 M65 94 L66 106" stroke="#FFFFFF" stroke-width="1.8" stroke-linecap="round"/>`;
+  } else if (x.includes('camisa')) {
+    base += `<path d="M50 84 L57 94 L60 88 L63 94 L70 84 Z" fill="#FFFFFF" opacity="0.9"/><path d="M60 92 L60 122" stroke="#000" stroke-opacity="0.15" stroke-width="1.4"/>`;
   } else {
-    base += `<path d="M53 83 Q60 91 67 83" stroke="#FFFFFF" stroke-opacity="0.55" stroke-width="2.4" fill="none"/>`;
+    base += `<path d="M52 84 Q60 92 68 84" stroke="#FFFFFF" stroke-opacity="0.6" stroke-width="2.4" fill="none"/>`;
   }
   return base;
 }
 
 function acessorios(p) {
+  const x = p.extra;
   let s = '';
-  if (p.extra.includes('barba')) s += `<path d="M41 58 C42 72 51 78 60 78 C69 78 78 72 79 58 C76 66 70 70 60 70 C50 70 44 66 41 58 Z" fill="${p.corCabelo}"/><path d="M54 65 Q60 68 66 65" stroke="#F2D9C6" stroke-width="1.6" fill="none" stroke-linecap="round"/>`;
-  if (p.extra.includes('bigode')) s += `<path d="M50 63 C54 59 58 60 60 62 C62 60 66 59 70 63 C66 63 63 64 60 64 C57 64 54 63 50 63 Z" fill="#9E9E9E"/>`;
-  if (p.extra.includes('oculos')) s += `<rect x="45" y="49" width="13" height="10" rx="4" fill="none" stroke="#2A211C" stroke-width="1.8"/><rect x="62" y="49" width="13" height="10" rx="4" fill="none" stroke="#2A211C" stroke-width="1.8"/><path d="M58 53 L62 53" stroke="#2A211C" stroke-width="1.8"/>`;
-  if (p.extra.includes('headset')) s += `<path d="M37 54 C37 30 49 23 60 23 C71 23 83 30 83 54" stroke="#3A3A3A" stroke-width="3.2" fill="none"/><rect x="33" y="49" width="7" height="12" rx="3" fill="#3A3A3A"/><rect x="80" y="49" width="7" height="12" rx="3" fill="#3A3A3A"/><path d="M36 60 C38 70 46 72 52 70" stroke="#3A3A3A" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="53" cy="70" r="2.6" fill="#3A3A3A"/>`;
+  if (x.includes('barba')) s += `<path d="M41 57 C42 71 51 76 60 76 C69 76 78 71 79 57 C76 64 70 68 60 68 C50 68 44 64 41 57 Z" fill="${p.corCabelo}"/><path d="M53.5 62.5 Q60 69.5 66.5 62.5 Q60 65 53.5 62.5 Z" fill="#8A3A2C"/>`;
+  if (x.includes('barbaRala')) s += `<path d="M42 58 C44 70 52 74 60 74 C68 74 76 70 78 58 C75 65 69 69 60 69 C51 69 45 65 42 58 Z" fill="${p.corCabelo}" opacity="0.35"/>`;
+  if (x.includes('oculos')) s += `<rect x="45" y="49" width="13.5" height="10" rx="3" fill="none" stroke="#1E1E1E" stroke-width="2"/><rect x="61.5" y="49" width="13.5" height="10" rx="3" fill="none" stroke="#1E1E1E" stroke-width="2"/><path d="M58.5 53 L61.5 53" stroke="#1E1E1E" stroke-width="2"/>`;
+  if (x.includes('oculosRedondo')) s += `<circle cx="52" cy="54" r="6.6" fill="none" stroke="#7A4A2A" stroke-width="1.8"/><circle cx="68" cy="54" r="6.6" fill="none" stroke="#7A4A2A" stroke-width="1.8"/><path d="M58.6 53 L61.4 53" stroke="#7A4A2A" stroke-width="1.8"/>`;
+  if (x.includes('brincos')) s += `<circle cx="39.5" cy="60" r="1.9" fill="#E8C35A"/><circle cx="80.5" cy="60" r="1.9" fill="#E8C35A"/>`;
+  if (x.includes('headset')) s += `<path d="M37 53 C37 30 49 22 60 22 C71 22 83 30 83 53" stroke="#2F2F38" stroke-width="3" fill="none"/><rect x="33.5" y="48" width="7" height="11" rx="3" fill="#2F2F38"/><rect x="79.5" y="48" width="7" height="11" rx="3" fill="#2F2F38"/><path d="M37 58 C39 67 46 70 52 68" stroke="#2F2F38" stroke-width="2" fill="none" stroke-linecap="round"/><circle cx="53" cy="68" r="2.4" fill="#2F2F38"/>`;
   return s;
 }
 
@@ -103,24 +111,12 @@ function selo(tipo, cor) {
   return `<g transform="translate(95 95)"><circle r="13" fill="#FFFFFF"/><circle r="13" fill="none" stroke="${cor}" stroke-opacity="0.25" stroke-width="2"/>${icones[tipo]}</g>`;
 }
 
-function avatarClaude(p, uid) {
-  const raios = Array.from({ length: 8 }, (_, i) => {
-    const a = (i * Math.PI) / 4;
-    const x = 60 + Math.cos(a) * 30;
-    const y = 60 + Math.sin(a) * 30;
-    return `<path d="M60 60 L${x.toFixed(1)} ${y.toFixed(1)}" stroke="#D97757" stroke-width="10" stroke-linecap="round"/>`;
-  }).join('');
-  return `<clipPath id="c${uid}"><circle cx="60" cy="60" r="60"/></clipPath><g clip-path="url(#c${uid})"><rect width="120" height="120" fill="${p.fundo}"/>${raios}<circle cx="60" cy="60" r="9" fill="#D97757"/></g>`;
-}
-
 let contadorAvatar = 0;
 function avatarSVG(id, tamanho = 96) {
   const p = TIME[id];
   if (!p) return '';
   const uid = `${id}${++contadorAvatar}`;
-  const corpo = p.especial === 'claude'
-    ? avatarClaude(p, uid)
-    : `<clipPath id="c${uid}"><circle cx="60" cy="60" r="60"/></clipPath>
+  const corpo = `<clipPath id="c${uid}"><circle cx="60" cy="60" r="60"/></clipPath>
        <g clip-path="url(#c${uid})"><rect width="120" height="120" fill="${p.fundo}"/>
        ${cabeloAtras(p.cabelo, p.corCabelo)}${roupa(p)}${rosto(p)}${cabeloFrente(p.cabelo, p.corCabelo)}${acessorios(p)}</g>
        ${selo(p.selo, p.corSelo)}`;

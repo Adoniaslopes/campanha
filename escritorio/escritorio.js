@@ -117,7 +117,7 @@ function legenda(quem, texto, modo = '') {
 function legendaPadrao() {
   const ult = [...estado.sala].reverse().find((m) => m.quem !== 'dr');
   if (ult) legenda(nomeDe(ult.quem), ult.texto);
-  else legenda('', dictacao ? 'Toque em “Falar”, diga o que precisa e toque de novo para enviar.' : 'Escreva para a equipe aqui embaixo. O Harvy conduz a reunião.');
+  else legenda('', dictacao ? 'Entre na reunião e fale normalmente. A equipe responde quando o senhor fizer uma pausa.' : 'Escreva para a equipe aqui embaixo. O Harvy conduz a reunião.');
 }
 const SUGESTOES = [
   'Bom dia, equipe! Como estamos hoje?',
@@ -230,6 +230,8 @@ async function enviarNaSala(texto) {
   if (!texto || ocupado) return;
   const sample = EM_CLAUDE ? await window.claude.use('sample') : null;
   ocupado = true;
+  clearTimeout(timerPausa); falado = '';
+  atualizarStatus();
   $('#btn-enviar').disabled = true;
   $('#texto-sala').value = '';
   ajustarCaixa();
@@ -273,77 +275,182 @@ async function enviarNaSala(texto) {
   } finally {
     ocupado = false;
     $('#btn-enviar').disabled = false;
+    atualizarStatus();
   }
 }
 
-// ===== Voz (falar e ouvir) =====
+// ===== Voz (reunião falada) =====
+// Ouvir: ditado do claude.ai, ligado uma vez ao entrar na reunião; a fala é enviada sozinha após uma pausa.
+// Falar: vozes do próprio navegador (masculinas e femininas em português); se não houver, a voz do claude.ai.
+const VOZES = {
+  claude: { g: 'm', tom: 0.78, ritmo: 0.96 },
+  rui: { g: 'm', tom: 0.9, ritmo: 0.93 },
+  aureo: { g: 'm', tom: 1.0, ritmo: 0.98 },
+  guido: { g: 'm', tom: 1.12, ritmo: 1.1 },
+  plinio: { g: 'm', tom: 0.96, ritmo: 1.03 },
+  lara: { g: 'f', tom: 1.05, ritmo: 1.02 },
+  tessa: { g: 'f', tom: 1.14, ritmo: 1.05 },
+  iris: { g: 'f', tom: 1.24, ritmo: 1.1 },
+};
+const MASC = /daniel|ant[oô]nio|donato|f[aá]bio|humberto|j[uú]lio|nicolau|val[eé]rio|ricardo|paulo|male\b|masculin/i;
+const FEM = /maria|francisca|thalita|leila|let[ií]cia|manuela|yara|brenda|elza|giovanna|luciana|raquel|vit[oó]ria|female|feminin|google portugu/i;
+const PAUSA_MS = 1700;
 let tts = null;
 let dictacao = null;
 let vozDisponivel = false;
-async function iniciarVoz() {
-  if (!EM_CLAUDE) return;
-  tts = await window.claude.use('tts');
-  vozDisponivel = Boolean(tts);
-  $('#opcao-voz').hidden = !vozDisponivel;
-  try { $('#chk-voz').checked = localStorage.getItem('escritorio-voz') !== 'nao'; } catch { /* padrão: ligado */ }
-  if (tts) {
-    tts.onState(({ state, reason }) => {
-      $('#btn-parar-voz').hidden = state === 'idle';
-      if (state === 'idle') marcarFalando(null);
-      if (state === 'idle' && ['not_granted', 'unavailable'].includes(reason)) { vozDisponivel = false; $('#opcao-voz').hidden = true; }
-    });
-    tts.onLine(({ id }) => marcarFalando(id));
-  } else {
-    $('#aviso-voz').textContent = 'A voz funciona no Chrome e no aplicativo do Claude para computador.';
-  }
-  dictacao = await window.claude.use('dictation');
-  if (dictacao) {
-    $('#btn-falar').hidden = false;
-    let falado = '';
-    dictacao.onFinal(({ text }) => { falado = falado ? falado + text : text.trimStart(); legenda('Você', falado, 'voce'); });
-    dictacao.onPartial(({ text }) => { if (text) legenda('Você', `${falado}${falado ? ' ' : ''}${text}`, 'voce'); });
-    dictacao.onState(({ state, reason }) => {
-      const btn = $('#btn-falar');
-      const ouvindo = state !== 'idle';
-      btn.classList.toggle('ouvindo', ouvindo);
-      btn.querySelector('.ic').textContent = ouvindo ? '■' : '🎙';
-      btn.querySelector('.rot').textContent = state === 'starting' ? 'Abrindo o microfone…' : ouvindo ? 'Toque para enviar' : 'Toque para falar';
-      $('#dica-voz').textContent = ouvindo ? 'Pode falar. Quando terminar, toque no botão para enviar.' : '';
-      if (state === 'listening' && !falado) legenda('Você', 'Ouvindo…', 'voce');
-      if (state === 'idle') {
-        const texto = falado.trim();
-        falado = '';
-        if (['stopped', 'viewer_stopped'].includes(reason) && texto) enviarNaSala(texto);
-        else legendaPadrao();
-        if (reason === 'unavailable') { btn.hidden = true; $('#dica-voz').textContent = 'O microfone não está disponível aqui. Escreva para a equipe.'; }
-        if (reason === 'not_granted') $('#dica-voz').textContent = 'O microfone foi bloqueado para o escritório. Libere em Permissões, no menu da página.';
-      }
-    });
-  } else {
-    $('#dica-voz').textContent = 'Para falar pelo microfone, abra o escritório no Chrome ou no aplicativo do Claude para computador.';
-    $('#form-sala').hidden = false; $('#btn-escrever').hidden = true;
-  }
-  renderSala();
+let vozesNav = null; // { m: [], f: [], todas: [] }
+function carregarVozes() {
+  if (!('speechSynthesis' in window)) return;
+  const pt = speechSynthesis.getVoices().filter((v) => /^pt/i.test(v.lang));
+  if (!pt.length) return;
+  const br = pt.filter((v) => /br/i.test(v.lang));
+  const base = br.length ? br : pt;
+  const melhor = (a) => a.sort((x, y) => Number(/natural|online|neural/i.test(y.name)) - Number(/natural|online|neural/i.test(x.name)));
+  vozesNav = { m: melhor(base.filter((v) => MASC.test(v.name))), f: melhor(base.filter((v) => FEM.test(v.name) && !MASC.test(v.name))), todas: base };
+  vozDisponivel = true;
 }
-const idParaQuem = {};
+function vozPara(quem) {
+  const g = VOZES[quem]?.g || 'm';
+  const lista = vozesNav?.[g]?.length ? vozesNav[g] : null;
+  if (!lista) return { voz: vozesNav?.todas[0] || null, ajuste: g === 'm' ? 0.8 : 1.15 };
+  const mesmos = ORDEM.filter((id) => VOZES[id].g === g);
+  return { voz: lista[mesmos.indexOf(quem) % lista.length], ajuste: 1 };
+}
+function partes(texto) { return String(texto).split(/(?<=[!?…]|(?<!\b(?:Dr|Dra|Sr|Sra|art|arts|nº|n|p|ex))\.)\s+(?=[A-ZÀ-Ú0-9“"])/).map((t) => t.trim()).filter(Boolean); }
+
 let falandoAgora = null;
+let falando = false;
+let fimDaFala = 0;
+const idParaQuem = {};
+const filaNav = [];
+function falarNav(falas) {
+  speechSynthesis.cancel();
+  filaNav.length = 0;
+  return new Promise((resolve) => {
+    const itens = falas.flatMap((f) => partes(f.texto).map((t, i) => ({ f, t, primeiro: i === 0 })));
+    let i = 0;
+    const prox = () => {
+      if (i >= itens.length) { falando = false; fimDaFala = Date.now(); marcarFalando(null); atualizarStatus(); resolve(); return; }
+      const { f, t, primeiro } = itens[i++];
+      const u = new SpeechSynthesisUtterance(t);
+      const { voz, ajuste } = vozPara(f.quem);
+      if (voz) { u.voice = voz; u.lang = voz.lang; } else u.lang = 'pt-BR';
+      u.pitch = Math.max(0.1, Math.min(2, (VOZES[f.quem]?.tom || 1) * ajuste));
+      u.rate = VOZES[f.quem]?.ritmo || 1;
+      u.onstart = () => { if (primeiro) { idParaQuem[f.id] = f.quem; marcarFalando(f.id); } };
+      u.onend = prox;
+      u.onerror = prox;
+      filaNav.push(u);
+      speechSynthesis.speak(u);
+    };
+    falando = true;
+    atualizarStatus();
+    prox();
+  });
+}
+async function falar(falas) {
+  if (!falas.length) return;
+  if (vozesNav) return falarNav(falas);
+  if (!tts) return;
+  // Voz do claude.ai: o microfone precisa parar enquanto a equipe fala.
+  if (dictacao?.active()) { await dictacao.stop().catch(() => {}); pedirRetomada = true; }
+  falando = true; atualizarStatus();
+  const linhas = falas.map((f) => { idParaQuem[f.id] = f.quem; return { text: f.texto.slice(0, 1990), voice: VOZES[f.quem]?.g === 'f' ? 'airy' : 'buttery', language: 'pt-BR', id: f.id }; });
+  await tts.speak(linhas).catch((e) => { if (e?.code === 'rate_limited') $('#aviso-voz').textContent = 'Limite de voz atingido por agora.'; });
+  falando = false; fimDaFala = Date.now(); marcarFalando(null); atualizarStatus();
+}
+function pararVoz() {
+  if (vozesNav) { speechSynthesis.cancel(); filaNav.length = 0; falando = false; fimDaFala = Date.now(); marcarFalando(null); atualizarStatus(); }
+  tts?.stop().catch(() => {});
+}
 function marcarFalando(idMsg) {
   const quem = idMsg ? idParaQuem[idMsg] : null;
   falandoAgora = quem;
   document.querySelectorAll('.assento').forEach((b) => b.classList.toggle('falando', Boolean(quem) && b.dataset.chamar === quem));
   if (quem) { const m = estado.sala.find((x) => x.id === idMsg); if (m) legenda(nomeDe(quem), m.texto, 'falando'); }
   else legendaPadrao();
+  atualizarStatus();
 }
-function falar(falas) {
-  if (!tts || !vozDisponivel || !$('#chk-voz').checked) return;
-  const linhas = falas.map((f) => {
-    idParaQuem[f.id] = f.quem;
-    return { text: f.texto.slice(0, 1990), voice: EQUIPE[f.quem].voz, rate: EQUIPE[f.quem].ritmo, language: 'pt-BR', id: f.id };
+
+// Reunião: o microfone abre uma vez (o claude.ai exige um toque para isso) e fica ouvindo.
+let ouvindo = false;
+let pedirRetomada = false;
+let falado = '';
+let timerPausa = null;
+function ignorandoMicrofone() { return falando || ocupado || Date.now() - fimDaFala < 600; }
+function atualizarStatus() {
+  const st = $('#status-reuniao');
+  const btn = $('#btn-entrar');
+  if (!st || !btn) return;
+  $('#btn-parar-voz').hidden = !falando;
+  if (!dictacao) { st.hidden = true; btn.hidden = true; return; }
+  const precisaTocar = !ouvindo && !falando && !ocupado;
+  btn.hidden = !precisaTocar;
+  btn.textContent = pedirRetomada ? '🎙 Continuar a reunião' : '🎙 Entrar na reunião';
+  st.hidden = precisaTocar;
+  let cls = '', txt = '';
+  if (ocupado) { cls = 'pensando'; txt = 'A equipe está pensando…'; }
+  else if (falando) { cls = 'falando'; txt = falandoAgora ? `${nomeDe(falandoAgora)} está falando…` : 'A equipe está falando…'; }
+  else if (ouvindo) { cls = 'ouvindo'; txt = 'Ouvindo — pode falar, Dr. Adonias'; }
+  st.className = `status-reuniao ${cls}`;
+  st.querySelector('.txt').textContent = txt;
+}
+function enviarFalado() {
+  clearTimeout(timerPausa);
+  const texto = falado.trim();
+  falado = '';
+  if (texto && !ocupado) enviarNaSala(texto);
+}
+function entrarNaReuniao() {
+  if (!dictacao) return;
+  dictacao.start({ language: 'pt-BR' }).catch((e) => {
+    if (e?.code === 'not_granted') $('#aviso-voz').textContent = 'O microfone está bloqueado para o escritório. Libere em Permissões, no menu da página.';
+    else if (e?.code === 'unavailable') { $('#aviso-voz').textContent = 'O microfone não está disponível neste aparelho.'; $('#form-sala').hidden = false; }
+    else if (e?.code !== 'dismissed' && e?.code !== 'stopped') $('#aviso-voz').textContent = 'Não foi possível abrir o microfone agora.';
   });
-  tts.speak(linhas).catch((e) => {
-    if (e?.code === 'no_gesture') $('#aviso-voz').textContent = 'Toque em "ouvir" numa fala para ouvir.';
-    else if (e?.code === 'rate_limited') $('#aviso-voz').textContent = 'Limite de voz atingido por agora.';
-  });
+  if (vozesNav && !estado.sala.length && !pedirRetomada) {
+    const ola = { id: uid('msg'), quem: 'claude', texto: 'Olá, Dr. Adonias. A equipe está reunida. Pode falar.' };
+    estado.sala.push(ola);
+    falar([ola]);
+  }
+  pedirRetomada = false;
+}
+async function iniciarVoz() {
+  if ('speechSynthesis' in window) { carregarVozes(); speechSynthesis.addEventListener?.('voiceschanged', carregarVozes); }
+  if (!EM_CLAUDE) { atualizarStatus(); return; }
+  tts = await window.claude.use('tts');
+  if (tts) { vozDisponivel = true; tts.onLine(({ id }) => marcarFalando(id)); }
+  dictacao = await window.claude.use('dictation');
+  if (dictacao) {
+    dictacao.onFinal(({ text }) => {
+      if (ignorandoMicrofone()) return;
+      falado = falado ? falado + text : text.trimStart();
+      legenda('Você', falado, 'voce');
+      clearTimeout(timerPausa);
+      timerPausa = setTimeout(enviarFalado, PAUSA_MS);
+    });
+    dictacao.onPartial(({ text }) => {
+      if (!text || ignorandoMicrofone()) return;
+      clearTimeout(timerPausa);
+      legenda('Você', `${falado}${falado ? ' ' : ''}${text}`, 'voce');
+    });
+    dictacao.onState(({ state, reason }) => {
+      ouvindo = state === 'listening' || state === 'starting';
+      if (state === 'idle') {
+        if (falado.trim()) enviarFalado();
+        if (['viewer_stopped', 'hidden', 'time_limit', 'upstream_error', 'rate_limited'].includes(reason)) pedirRetomada = true;
+        if (reason === 'unavailable') { dictacao = null; $('#form-sala').hidden = false; $('#aviso-voz').textContent = 'O microfone não está disponível aqui. Escreva para a equipe.'; }
+        if (reason === 'not_granted') $('#aviso-voz').textContent = 'O microfone está bloqueado para o escritório. Libere em Permissões, no menu da página.';
+      }
+      atualizarStatus();
+    });
+  } else {
+    $('#form-sala').hidden = false;
+    $('#btn-escrever').hidden = true;
+    $('#aviso-voz').textContent = 'Para conversar por voz, abra o escritório no Chrome ou no aplicativo do Claude para computador.';
+  }
+  atualizarStatus();
+  renderSala();
 }
 
 // ===== Equipe =====
@@ -462,28 +569,14 @@ function ajustarCaixa() { const c = $('#texto-sala'); c.style.height = 'auto'; c
 $('#texto-sala').addEventListener('input', ajustarCaixa);
 $('#texto-sala').addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); enviarNaSala(e.target.value); } });
 $('#form-sala').addEventListener('submit', (e) => { e.preventDefault(); enviarNaSala($('#texto-sala').value); });
-$('#btn-falar').addEventListener('click', () => {
-  if (!dictacao) return;
-  if (dictacao.active()) { dictacao.stop().catch(() => {}); return; }
-  if (ocupado) { toast('A equipe ainda está respondendo. Um instante.'); return; }
-  dictacao.start({ language: 'pt-BR' }).catch((e) => {
-    if (e?.code === 'not_granted') toast('Microfone não permitido para o escritório.');
-    else if (e?.code === 'unavailable') toast('O microfone não está disponível neste aparelho.');
-    else if (e?.code !== 'dismissed' && e?.code !== 'stopped') toast('Não foi possível usar o microfone agora.');
-  });
-  tts?.stop().catch(() => {});
-});
+$('#btn-entrar').addEventListener('click', entrarNaReuniao);
 $('#btn-escrever').addEventListener('click', () => {
   const f = $('#form-sala');
   f.hidden = !f.hidden;
-  $('#btn-escrever').textContent = f.hidden ? '⌨ Escrever em vez de falar' : 'Fechar a escrita';
+  $('#btn-escrever').textContent = f.hidden ? '⌨ Escrever' : 'Fechar a escrita';
   if (!f.hidden) $('#texto-sala').focus();
 });
-$('#btn-parar-voz').addEventListener('click', () => tts?.stop().catch(() => {}));
-$('#chk-voz').addEventListener('change', (e) => {
-  try { localStorage.setItem('escritorio-voz', e.target.checked ? 'sim' : 'nao'); } catch { /* ignora */ }
-  if (!e.target.checked) tts?.stop().catch(() => {});
-});
+$('#btn-parar-voz').addEventListener('click', pararVoz);
 document.addEventListener('click', (e) => {
   const el = e.target.closest('[data-chamar],[data-sugestao],[data-ouvir],[data-tarefa],[data-fechar],[data-decidir],#btn-nova-tarefa');
   if (!el) return;
@@ -493,13 +586,13 @@ document.addEventListener('click', (e) => {
     const m = [...estado.sala].reverse().find((x) => x.quem === quem);
     if (m) {
       legenda(nomeDe(quem), m.texto);
-      if (tts && vozDisponivel) { idParaQuem[m.id] = m.quem; tts.speak([{ text: m.texto.slice(0, 1990), voice: EQUIPE[quem]?.voz, rate: EQUIPE[quem]?.ritmo, language: 'pt-BR', id: m.id }]).catch(() => {}); }
+      if (!ocupado) falar([m]);
     } else legenda(nomeDe(quem), `${TIME[quem].cargo}. ${EQUIPE[quem].missao}`);
   } else if (el.dataset.sugestao) {
     enviarNaSala(el.dataset.sugestao);
   } else if (el.dataset.ouvir) {
     const m = estado.sala.find((x) => x.id === el.dataset.ouvir);
-    if (m && tts) { idParaQuem[m.id] = m.quem; tts.speak([{ text: m.texto.slice(0, 1990), voice: EQUIPE[m.quem]?.voz, rate: EQUIPE[m.quem]?.ritmo, language: 'pt-BR', id: m.id }]).catch(() => {}); }
+    if (m) falar([m]);
   } else if (el.dataset.tarefa) {
     abrirTarefa(el.dataset.tarefa);
   } else if (el.hasAttribute('data-fechar')) {

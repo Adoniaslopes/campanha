@@ -7,20 +7,6 @@
   <link rel="stylesheet" href="escritorio.css">
 </head>
 <body>
-  <header class="topo">
-    <div class="marca">
-      <strong>Lopes Araújo Advocacia</strong>
-      <span>Escritório Digital</span>
-    </div>
-    <nav class="abas" role="tablist">
-      <button role="tab" data-aba="sala" aria-selected="true">Sala</button>
-      <button role="tab" data-aba="equipe">Equipe</button>
-      <button role="tab" data-aba="tarefas">Tarefas</button>
-      <button role="tab" data-aba="mural">Mural</button>
-    </nav>
-    <a class="link-crm" href="https://claude.ai/artifact/3HNhXEqp4WWjLtJ7dYUJtX" target="_blank" rel="noopener">CRM ↗</a>
-  </header>
-
   <main>
     <section id="aba-sala" class="aba ativa" aria-label="Sala de reunião">
       <div class="sala">
@@ -33,16 +19,15 @@
           <div id="assentos"></div>
         </div>
         <div class="controle-voz">
-          <button type="button" class="btn-falar" id="btn-falar" hidden><span class="ic">🎙</span><span class="rot">Toque para falar</span></button>
-          <p class="dica-voz muted" id="dica-voz"></p>
+          <button type="button" class="btn-entrar" id="btn-entrar" hidden>🎙 Entrar na reunião</button>
+          <div class="status-reuniao" id="status-reuniao" hidden><span class="luz"></span><span class="txt"></span></div>
           <form class="entrada" id="form-sala" hidden>
             <textarea id="texto-sala" rows="1" placeholder="Escreva para a equipe…"></textarea>
             <button type="submit" class="btn-redondo primario" id="btn-enviar" aria-label="Enviar">➤</button>
           </form>
           <div class="barra-voz">
-            <button type="button" class="btn-link" id="btn-escrever">⌨ Escrever em vez de falar</button>
-            <label id="opcao-voz" hidden><input type="checkbox" id="chk-voz" checked> Ouvir em voz alta</label>
-            <button type="button" class="btn-link" id="btn-parar-voz" hidden>Parar voz</button>
+            <button type="button" class="btn-link" id="btn-escrever">⌨ Escrever</button>
+            <button type="button" class="btn-link" id="btn-parar-voz" hidden>Interromper</button>
             <span id="aviso-voz" class="muted"></span>
           </div>
         </div>
@@ -54,6 +39,14 @@
     <section id="aba-tarefas" class="aba" aria-label="Quadro de tarefas"></section>
     <section id="aba-mural" class="aba" aria-label="Mural de atividades"></section>
   </main>
+
+  <nav class="abas" role="tablist" aria-label="Seções do escritório">
+    <button role="tab" data-aba="sala" aria-selected="true"><span>🏛</span>Sala</button>
+    <button role="tab" data-aba="equipe"><span>👥</span>Equipe</button>
+    <button role="tab" data-aba="tarefas"><span>🗂</span>Tarefas</button>
+    <button role="tab" data-aba="mural"><span>📌</span>Mural</button>
+    <a class="link-crm" href="https://claude.ai/artifact/3HNhXEqp4WWjLtJ7dYUJtX" target="_blank" rel="noopener"><span>📇</span>CRM ↗</a>
+  </nav>
 
   <div id="modal" class="modal" hidden></div>
   <div id="toast" class="toast" hidden></div>
