@@ -14,8 +14,8 @@ const TIME = {
   aureo: { nome: 'MIKE', cargo: 'Financeiro', fundo: '#F3EEDD', roupa: '#34465F', pele: PELE.clara, cabelo: 'lateral', corCabelo: '#2A1F18', extra: ['gravata', 'barbaRala'], selo: 'moeda', corSelo: '#C9961A' },
   tessa: { nome: 'JESSICA', cargo: 'Teses e nichos', fundo: '#EFE7DC', roupa: '#C9AE8E', pele: PELE.morena, cabelo: 'ondulado', corCabelo: '#3B2418', extra: ['brincos'], selo: 'lupa', corSelo: '#8A6A45' },
   guido: { nome: 'ALEX', cargo: 'Campanhas', fundo: '#E6E8EC', roupa: '#5B6170', pele: PELE.escura, cabelo: 'fade', corCabelo: '#15100C', extra: ['gravata', 'barba'], selo: 'grafico', corSelo: '#3C5CC8' },
-  plinio: { nome: 'PLÍNIO', cargo: 'Copywriter', fundo: '#F8E7D3', roupa: '#C0682F', pele: PELE.escura, cabelo: 'blackPower', corCabelo: '#17100B', extra: ['camisa'], selo: 'pena', corSelo: '#C0682F' },
-  iris: { nome: 'ÍRIS', cargo: 'Criativos', fundo: '#F0E2FA', roupa: '#8E44C0', pele: PELE.media, cabelo: 'chanel', corCabelo: '#22161E', extra: ['brincos'], selo: 'paleta', corSelo: '#8E44C0' },
+  plinio: { nome: 'RACHEL', cargo: 'Copywriter', fundo: '#F3EDE3', roupa: '#EFE6D6', pele: PELE.media, cabelo: 'ondulado', corCabelo: '#5A3420', extra: ['brincos'], selo: 'pena', corSelo: '#C0682F' },
+  iris: { nome: 'SAMANTHA', cargo: 'Criativos', fundo: '#ECE6F3', roupa: '#1E1E24', pele: PELE.clara, cabelo: 'chanel', corCabelo: '#E0C07A', extra: ['brincos'], selo: 'paleta', corSelo: '#8E44C0' },
 };
 
 function cabeloAtras(estilo, cor) {

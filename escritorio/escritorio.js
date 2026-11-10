@@ -297,7 +297,7 @@ const VOZES = {
   rui: { g: 'm', tom: 0.9, ritmo: 0.93 },
   aureo: { g: 'm', tom: 1.0, ritmo: 0.98 },
   guido: { g: 'm', tom: 1.12, ritmo: 1.1 },
-  plinio: { g: 'm', tom: 0.96, ritmo: 1.03 },
+  plinio: { g: 'f', tom: 1.1, ritmo: 1.03 },
   lara: { g: 'f', tom: 1.05, ritmo: 1.02 },
   tessa: { g: 'f', tom: 1.14, ritmo: 1.05 },
   iris: { g: 'f', tom: 1.24, ritmo: 1.1 },
