@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Escritório Digital</title>
+  <link rel="stylesheet" href="escritorio.css">
+</head>
+<body>
+  <header class="topo">
+    <div class="marca">
+      <strong>Escritório Digital</strong>
+      <span>Lopes Araújo Advocacia</span>
+    </div>
+    <nav class="abas" role="tablist">
+      <button role="tab" data-aba="sala" aria-selected="true">Sala</button>
+      <button role="tab" data-aba="equipe">Equipe</button>
+      <button role="tab" data-aba="tarefas">Tarefas</button>
+      <button role="tab" data-aba="mural">Mural</button>
+    </nav>
+    <a class="link-crm" href="https://claude.ai/artifact/3HNhXEqp4WWjLtJ7dYUJtX" target="_blank" rel="noopener">CRM ↗</a>
+  </header>
+
+  <main>
+    <section id="aba-sala" class="aba ativa" aria-label="Sala de reunião">
+      <div class="presenca" id="presenca"></div>
+      <div class="conversa" id="conversa" aria-live="polite"></div>
+      <form class="entrada" id="form-sala">
+        <button type="button" class="btn-redondo" id="btn-mic" hidden aria-label="Falar pelo microfone" title="Falar">🎙</button>
+        <textarea id="texto-sala" rows="1" placeholder="Fale com a equipe…"></textarea>
+        <button type="submit" class="btn-redondo primario" id="btn-enviar" aria-label="Enviar">➤</button>
+      </form>
+      <div class="barra-voz">
+        <label id="opcao-voz" hidden><input type="checkbox" id="chk-voz" checked> Ouvir as respostas em voz alta</label>
+        <button type="button" class="btn-link" id="btn-parar-voz" hidden>Parar voz</button>
+        <span id="aviso-voz" class="muted"></span>
+      </div>
+    </section>
+
+    <section id="aba-equipe" class="aba" aria-label="Equipe"></section>
+    <section id="aba-tarefas" class="aba" aria-label="Quadro de tarefas"></section>
+    <section id="aba-mural" class="aba" aria-label="Mural de atividades"></section>
+  </main>
+
+  <div id="modal" class="modal" hidden></div>
+  <div id="toast" class="toast" hidden></div>
+
+  <script src="avatares.js"></script>
+  <script src="escritorio.js"></script>
+</body>
+</html>
