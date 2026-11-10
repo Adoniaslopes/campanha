@@ -532,7 +532,11 @@ async function iniciarVoz() {
   } else {
     $('#form-sala').hidden = false;
     $('#btn-escrever').hidden = true;
-    $('#aviso-voz').textContent = 'Para conversar por voz, abra o escritório no Chrome ou no aplicativo do Claude para computador.';
+    const celular = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+    $('#texto-sala').placeholder = celular ? 'Toque aqui e use o 🎤 do teclado…' : 'Escreva para a equipe…';
+    $('#aviso-voz').textContent = celular
+      ? 'No celular, fale pelo microfone do teclado (🎤) e toque em ➤. A equipe responde em voz.'
+      : 'Para conversar por voz, abra o escritório no Chrome ou no aplicativo do Claude para computador.';
   }
   atualizarStatus();
   renderSala();
