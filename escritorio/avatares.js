@@ -11,7 +11,7 @@ const TIME = {
   claude: { nome: 'HARVY', cargo: 'Gerente geral', fundo: '#DDE7F7', roupa: '#24324F', pele: PELE.clara, cabelo: 'topete', corCabelo: '#3B2A1E', extra: ['blazer', 'barbaRala'], selo: null },
   lara: { nome: 'DONNA', cargo: 'Secretária', fundo: '#E3EAF3', roupa: '#9DB0C4', pele: PELE.clara, cabelo: 'ondulado', corCabelo: '#B4501F', extra: ['brincos'], selo: null },
   rui: { nome: 'LOUIS', cargo: 'Advogado', fundo: '#E4E8EF', roupa: '#1F2A44', pele: PELE.clara, cabelo: 'fade', corCabelo: '#2A2320', extra: ['gravata', 'barbaRala'], selo: 'balanca', corSelo: '#1F2A44' },
-  aureo: { nome: 'ÁUREO', cargo: 'Financeiro', fundo: '#FBF0CF', roupa: '#2F7A57', pele: PELE.media, cabelo: 'fade', corCabelo: '#241A12', extra: ['camisa'], selo: 'moeda', corSelo: '#C9961A' },
+  aureo: { nome: 'MIKE', cargo: 'Financeiro', fundo: '#F3EEDD', roupa: '#34465F', pele: PELE.clara, cabelo: 'lateral', corCabelo: '#2A1F18', extra: ['gravata', 'barbaRala'], selo: 'moeda', corSelo: '#C9961A' },
   tessa: { nome: 'TESSA', cargo: 'Teses e nichos', fundo: '#D9F2EC', roupa: '#1E8A7C', pele: PELE.clara, cabelo: 'rabo', corCabelo: '#9A4A22', extra: ['oculosRedondo'], selo: 'lupa', corSelo: '#1E8A7C' },
   guido: { nome: 'GUIDO', cargo: 'Campanhas', fundo: '#E0E8FB', roupa: '#3C5CC8', pele: PELE.morena, cabelo: 'curto', corCabelo: '#1A120D', extra: ['moletom', 'barba'], selo: 'grafico', corSelo: '#3C5CC8' },
   plinio: { nome: 'PLÍNIO', cargo: 'Copywriter', fundo: '#F8E7D3', roupa: '#C0682F', pele: PELE.escura, cabelo: 'blackPower', corCabelo: '#17100B', extra: ['camisa'], selo: 'pena', corSelo: '#C0682F' },
