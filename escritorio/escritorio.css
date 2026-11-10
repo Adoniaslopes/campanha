@@ -183,3 +183,8 @@ p.lead { margin: 0 0 14px; color: var(--texto-2); }
 .foto-membro { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px; font-size: 13px; }
 .iniciais { display: inline-flex; align-items: center; justify-content: center; background: var(--marca); color: #fff; font-size: 13px; font-weight: 700; }
 .depto { font-size: 15px; margin: 22px 0 10px; color: var(--texto-2); text-transform: uppercase; letter-spacing: .05em; } .depto:first-of-type { margin-top: 8px; }
+.bloco-depto { margin-bottom: 18px; padding-bottom: 6px; border-bottom: 1px solid var(--borda); }
+.lead-depto { margin: -4px 0 8px; font-size: 13.5px; color: var(--texto-2); }
+.skills { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 10px; font-size: 12.5px; }
+.skill { background: var(--superficie); border: 1px solid var(--borda); border-radius: 999px; padding: 3px 10px; }
+.skill b { color: var(--marca); }

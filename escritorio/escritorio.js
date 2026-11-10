@@ -10,23 +10,19 @@
 const EQUIPE = {
   claude: { area: 'Gerência', missao: 'Coordena o time, acompanha cada funcionário e se reporta ao Dr. Adonias.', jeito: 'objetivo e organizado; conduz a reunião, resume e fecha com o próximo passo', voz: 'rounded', ritmo: 1.0 },
   lara: { area: 'Atendimento', missao: 'Acolhe quem procura o escritório, faz a triagem, reúne os documentos e marca a reunião com o Dr. Adonias.', jeito: 'acolhedora, cordial e organizada; fala do atendimento e dos clientes que chegaram', voz: 'airy', ritmo: 1.05 },
-  rui: { area: 'Jurídico — coordenador (Trabalhista e Cível)', missao: 'Analisa os casos, elabora contrato, procuração e petições, protocola sob supervisão e acompanha os prazos.', jeito: 'formal, preciso e sereno; cita a lei quando ajuda e é cuidadoso com prazos', voz: 'buttery', ritmo: 0.92 },
-  kyle: { area: 'Jurídico — Cível (3ª Vara de Atibaia)', missao: 'Advogado júnior da área cível, sob a coordenação do Louis. Cuida da execução 0015372-93.2010.8.26.0048 (3ª Vara Cível de Atibaia) e de todos os recursos e incidentes dela no TJSP e no STJ.', jeito: 'objetivo e cuidadoso; só afirma o que está no dossiê ou nos autos, diz de onde tirou e avisa quando algo precisa ser conferido no e-SAJ ou no STJ', voz: 'buttery', ritmo: 1.0 },
+  rui: { area: 'JURIS — Contencioso Jurídico (diretor)', missao: 'Analisa os casos, elabora contrato, procuração e petições, protocola sob supervisão e acompanha os prazos.', jeito: 'formal, preciso e sereno; cita a lei quando ajuda e é cuidadoso com prazos', voz: 'buttery', ritmo: 0.92 },
+  kyle: { area: 'JURIS — área cível (3ª Vara de Atibaia)', missao: 'Advogado júnior da área cível, sob a coordenação do Louis. Cuida da execução 0015372-93.2010.8.26.0048 (3ª Vara Cível de Atibaia) e de todos os recursos e incidentes dela no TJSP e no STJ.', jeito: 'objetivo e cuidadoso; só afirma o que está no dossiê ou nos autos, diz de onde tirou e avisa quando algo precisa ser conferido no e-SAJ ou no STJ', voz: 'buttery', ritmo: 1.0 },
+  gretchen: { area: 'ONBOARDING — Reuniões, Contratos e Entrada do Cliente', missao: 'Transforma a proposta aprovada pelo Dr. em contratação: cadastro, documentos, contrato e procuração no papel timbrado, assinatura e pasta do cliente.', jeito: 'experiente, organizada e direta; não deixa documento pendente', voz: 'airy', ritmo: 1.0 },
+  benjamin: { area: 'DOCKET — Protocolo e Gestão Processual', missao: 'Acompanha processos, intimações e prazos com conferência dupla; prepara protocolos só com autorização do Dr.', jeito: 'técnico e meticuloso; fala de sistemas, prazos e conferências', voz: 'glassy', ritmo: 1.05 },
+  faye: { area: 'SENTINEL — Gestão, Qualidade e Compliance', missao: 'Audita os agentes e as entregas, cuida da conformidade com a OAB e a LGPD e aponta riscos e retrabalho.', jeito: 'rigorosa e independente; aponta falhas com objetividade', voz: 'rounded', ritmo: 0.98 },
   aureo: { area: 'Financeiro', missao: 'Cuida das cobranças, dos recebimentos, da inadimplência e do fechamento do mês.', jeito: 'prudente e direto com números; nunca promete dinheiro que não entrou', voz: 'glassy', ritmo: 0.95 },
   tessa: { area: 'Marketing', missao: 'Pesquisa o mundo jurídico e descobre teses e nichos trabalhistas com demanda.', jeito: 'curiosa e analítica; gosta de fundamentos e fontes', voz: 'glassy', ritmo: 1.05 },
   guido: { area: 'Marketing', missao: 'Transforma teses em campanhas, testa com o mínimo e mede o que traz cliente.', jeito: 'direto, fala de testes, números e próximos passos', voz: 'rounded', ritmo: 1.12 },
   plinio: { area: 'Marketing', missao: 'Escreve os textos dos anúncios e dos posts, dentro das regras da OAB.', jeito: 'eloquente, gosta das palavras certas, mas fala simples', voz: 'buttery', ritmo: 1.05 },
   iris: { area: 'Marketing', missao: 'Cria a identidade visual do escritório, as artes e os vídeos das campanhas.', jeito: 'entusiasmada e visual; pensa em cores, formas e imagens', voz: 'airy', ritmo: 1.15 },
 };
-const ORDEM = ['claude', 'lara', 'rui', 'kyle', 'aureo', 'tessa', 'guido', 'plinio', 'iris'];
-// Departamentos (ordem de exibição na aba Equipe).
-const DEPARTAMENTOS = [
-  ['Gerência', ['claude']],
-  ['Atendimento', ['lara']],
-  ['Departamento Jurídico — coordenação: Louis', ['rui', 'kyle']],
-  ['Financeiro', ['aureo']],
-  ['Marketing', ['tessa', 'guido', 'plinio', 'iris']],
-];
+const ORDEM = ['claude', 'lara', 'gretchen', 'rui', 'kyle', 'benjamin', 'aureo', 'faye', 'tessa', 'guido', 'plinio', 'iris'];
+
 const STATUS_TAREFA = {
   a_fazer: ['A fazer', 'info'],
   fazendo: ['Fazendo', 'alerta'],
@@ -117,7 +113,7 @@ document.querySelector('.abas').addEventListener('click', (e) => { const b = e.t
 // ===== Sala =====
 const ativoHoje = (id) => { const s = estado.status[id]; return s?.atualizadoEm && Date.now() - new Date(s.atualizadoEm) < 864e5; };
 // Lugares em volta da mesa (graus; 90 = embaixo, onde fica o Dr. Adonias; 270 = cabeceira).
-const LUGARES = { claude: 270, lara: 310, rui: 350, kyle: 30, aureo: 70, iris: 110, tessa: 150, guido: 190, plinio: 230 };
+const LUGARES = { claude: 270, lara: 300, gretchen: 330, rui: 0, kyle: 30, benjamin: 60, aureo: 90, faye: 120, tessa: 150, guido: 180, plinio: 210, iris: 240 };
 function renderPresenca() {
   const lugar = (graus) => { const r = (graus * Math.PI) / 180; return `left:${(50 + 41 * Math.cos(r)).toFixed(2)}%;top:${(50 + 40 * Math.sin(r)).toFixed(2)}%`; };
   $('#assentos').innerHTML = ORDEM.map((id) => `
@@ -181,6 +177,9 @@ function montarPrompt(fala) {
   const conversa = estado.sala.slice(-24).map((m) => `${nomeDe(m.quem)}: ${m.texto}`).join('\n') || '(início da reunião)';
   return `Você dá voz ao time do Escritório Digital Lopes Araújo, um escritório de advocacia trabalhista 100% digital do Dr. Adonias Lopes de Araújo (OAB/GO 50.607). Vocês estão numa reunião na sala virtual da empresa. Hoje é ${hoje.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}, ${hoje.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}.
 
+ESTRUTURA DO ESCRITÓRIO
+${window.ESTRUTURA ? window.ESTRUTURA.departamentos.map((d) => `- ${d.n} ${d.sigla} (${d.nome}): diretor ${TIME[d.diretor].nome}${d.agentes.length ? `; agentes: ${d.agentes.map((a) => TIME[a].nome).join(', ')}` : ''}; skills: ${d.skills.map((x) => x[0]).join(', ')}`).join('\n') : ''}
+
 QUEM ESTÁ NA SALA
 - Dr. Adonias: diretor. É ele quem está falando com vocês.
 ${time}
@@ -191,6 +190,7 @@ COMO RESPONDER
 - Use só as informações do ESTADO DA EMPRESA abaixo. Nunca invente cliente, número, prazo, campanha, resultado ou trabalho já feito. Se a informação não está lá, diga com naturalidade que ainda não há registro.
 - Os funcionários fazem o trabalho nos seus turnos, sozinhos, e registram tudo; na sala eles conversam e combinam. Quando o Dr. Adonias pedir um trabalho, o Harvey usa a ferramenta criar_tarefa para o funcionário certo e diz quem vai fazer. Use decidir_tarefa só quando o Dr. Adonias disser claramente que aprova ou recusa uma tarefa que está aguardando por ele.
 - Respeite a ética da advocacia: Código de Ética da OAB e Provimento 205/2021.
+- O Dr. fala por voz e o reconhecimento pode errar nomes: Kylie/Kaile = KYLE; Luís/Luiz = LOUIS; Harvy/Rárvi = HARVEY; Dona = DONNA; Raquel = RACHEL; Samanta = SAMANTHA. Se a fala não for dirigida à equipe (conversa paralela), só o Harvey responde, em uma frase curta.
 - Processos: o KYLE responde sobre os casos da área cível usando SOMENTE os CASOS DA ÁREA CÍVEL abaixo; nunca invente número, data, valor, decisão ou prazo; quando o dado não estiver lá ou puder estar desatualizado, ele diz que precisa conferir no e-SAJ, no eproc ou no STJ. O LOUIS coordena o Departamento Jurídico e revisa o trabalho do Kyle.
 ${estado.casosKyle ? `\nCASOS DA ÁREA CÍVEL (KYLE — resumo do dossiê de transferência)\n${estado.casosKyle}\n` : ''}
 ESTADO DA EMPRESA
@@ -244,6 +244,10 @@ function ferramentasDaSala() {
 
 let ocupado = false;
 let controleFala = null;
+// Guarda o último erro da sala no banco, para diagnóstico.
+function registrarErro(onde, e) {
+  salvar('config', { id: 'ultimoErro', onde, code: String(e?.code || ''), message: String(e?.message || e || '').slice(0, 500), em: agoraISO() }).catch(() => {});
+}
 async function enviarNaSala(texto) {
   texto = String(texto || '').trim();
   if (!texto || ocupado) return;
@@ -266,10 +270,18 @@ async function enviarNaSala(texto) {
   controleFala = new AbortController();
   try {
     const limites = await sample.limits().catch(() => null);
-    const resposta = await sample.json(montarPrompt(texto), {
-      signal: controleFala.signal,
-      tools: limites?.tools ? ferramentasDaSala() : undefined,
-    });
+    const prompt = montarPrompt(texto);
+    let resposta;
+    try {
+      resposta = await sample.json(prompt, { signal: controleFala.signal, tools: limites?.tools ? ferramentasDaSala() : undefined, cache: false });
+    } catch (e1) {
+      if (['not_granted', 'rate_limited', 'cancelled', 'aborted'].includes(e1?.code)) throw e1;
+      registrarErro('sample.json', e1);
+      // Segunda tentativa: texto simples, sem ferramentas, e o JSON é extraído da resposta.
+      const r = await sample(prompt, { signal: controleFala.signal, cache: false });
+      const m = String(r?.text || '').match(/\{[\s\S]*\}/);
+      resposta = m ? JSON.parse(m[0]) : null;
+    }
     const falas = (Array.isArray(resposta?.falas) ? resposta.falas : [])
       .filter((f) => EQUIPE[f?.quem] && typeof f.texto === 'string' && f.texto.trim())
       .slice(0, 6)
@@ -281,6 +293,7 @@ async function enviarNaSala(texto) {
     renderSala();
     const ultima = falas[falas.length - 1];
     legenda(nomeDe(ultima.quem), ultima.texto);
+    ultimaResposta = Date.now();
     falar(falas);
   } catch (e) {
     const avisos = {
@@ -289,7 +302,9 @@ async function enviarNaSala(texto) {
       cancelled: 'Resposta interrompida.',
     };
     pensandoMsg = { id: 'erro', quem: 'claude', texto: avisos[e?.code] || `Não consegui responder agora (${e?.code || e?.message || 'erro'}). Tente de novo.`, erro: true };
+    registrarErro('sala', e);
     renderSala();
+    legenda('Aviso', pensandoMsg.texto, 'pensando');
     setTimeout(() => { pensandoMsg = null; renderSala(); }, 8000);
   } finally {
     ocupado = false;
@@ -311,6 +326,9 @@ const VOZES = {
   tessa: { g: 'f', tom: 1.14, ritmo: 1.05 },
   iris: { g: 'f', tom: 1.24, ritmo: 1.1 },
   kyle: { g: 'm', tom: 1.05, ritmo: 1.0 },
+  gretchen: { g: 'f', tom: 0.95, ritmo: 0.98 },
+  benjamin: { g: 'm', tom: 1.1, ritmo: 1.05 },
+  faye: { g: 'f', tom: 0.9, ritmo: 0.95 },
 };
 const MASC = /daniel|ant[oô]nio|donato|f[aá]bio|humberto|j[uú]lio|nicolau|val[eé]rio|ricardo|paulo|male\b|masculin/i;
 const FEM = /maria|francisca|thalita|leila|let[ií]cia|manuela|yara|brenda|elza|giovanna|luciana|raquel|vit[oó]ria|female|feminin|google portugu/i;
@@ -400,7 +418,7 @@ async function falar(falas) {
     if (tipo === 'claude' && tts) await falarUmClaude(f, valor);
     else await falarUmNav(f, valor);
   }
-  falando = false; fimDaFala = Date.now(); marcarFalando(null); atualizarStatus();
+  falando = false; fimDaFala = Date.now(); ultimaResposta = Date.now(); marcarFalando(null); atualizarStatus();
 }
 function pararVoz() {
   pararPedido = true;
@@ -452,11 +470,21 @@ function atualizarStatus() {
   st.className = `status-reuniao ${cls}`;
   st.querySelector('.txt').textContent = txt;
 }
+// Para não enviar conversas de fundo: fora de uma conversa em andamento, só envia quando a fala chama a equipe pelo nome.
+const CHAMADOS = /\b(harvey|harvy|harve|rárvi|rarvi|donna|dona|louis|luís|luis|luiz|lui|kyle|kylie|kaile|kaili|cail|mike|maique|maik|jessica|jéssica|alex|aléx|rachel|raquel|reitchel|samantha|samanta|equipe|pessoal|time|galera|escritório)\b/i;
+let ultimaResposta = 0;
 function enviarFalado() {
   clearTimeout(timerPausa);
   const texto = falado.trim();
   falado = '';
-  if (texto && !ocupado) enviarNaSala(texto);
+  if (!texto || ocupado) return;
+  const emConversa = Date.now() - ultimaResposta < 90000;
+  if (!emConversa && !CHAMADOS.test(texto)) {
+    legenda('', 'Ouvi uma conversa, mas ninguém da equipe foi chamado. Para falar com eles, comece pelo nome: “Harvey…”, “Kyle…”, “equipe…”.', 'pensando');
+    setTimeout(() => { if (!ocupado && !falando) legendaPadrao(); }, 6000);
+    return;
+  }
+  enviarNaSala(texto);
 }
 function entrarNaReuniao() {
   if (!dictacao) return;
@@ -511,12 +539,24 @@ async function iniciarVoz() {
 }
 
 // ===== Equipe =====
+function blocosEquipe() {
+  const E = window.ESTRUTURA;
+  if (!E) return [['Equipe', ORDEM, '']];
+  const blocos = [[`HARVEY · Controller Jurídico`, [E.controller.id], `<p class="lead-depto">${esc(E.controller.missao)}</p>`]];
+  for (const d of E.departamentos) {
+    const skills = d.skills.map(([n, t]) => `<span class="skill" title="${esc(t)}"><b>${esc(n)}</b> · ${esc(t)}</span>`).join('');
+    const extra = `<p class="lead-depto">${esc(d.missao)} <span class="etq ${d.fase <= 2 ? 'ok' : 'info'}">implantação: fase ${d.fase}</span></p>
+      <div class="skills"><span class="muted">Auxiliares (skills do diretor):</span> ${skills}</div>`;
+    blocos.push([`${d.n} | ${esc(d.sigla)} — ${esc(d.nome)}`, [d.diretor, ...d.agentes], extra]);
+  }
+  return blocos;
+}
 function renderEquipe() {
   const abertas = (id) => estado.tarefas.filter((t) => t.para === id && t.status !== 'concluida').length;
   $('#aba-equipe').innerHTML = `
     <h2 class="titulo">Equipe</h2>
-    <p class="lead">A equipe por departamento. Cada um trabalha no seu turno e registra o que fez. Escolha a voz de cada um e toque em “Ouvir” para testar.</p>
-    ${DEPARTAMENTOS.map(([dep, ids]) => `<h3 class="depto">${esc(dep)}</h3><div class="grade-equipe">${ids.map((id) => {
+    <p class="lead">Controller e oito departamentos, cada um com seu diretor, agentes auxiliares e skills. Cada um trabalha no seu turno e registra o que fez. Escolha a voz de cada um e toque em “Ouvir” para testar.</p>
+    ${blocosEquipe().map(([dep, ids, extra]) => `<section class="bloco-depto"><h3 class="depto">${dep}</h3>${extra}<div class="grade-equipe">${ids.map((id) => {
       const s = estado.status[id];
       const n = abertas(id);
       return `<article class="cartao membro">${avatar(id, 72)}<div>
@@ -528,7 +568,7 @@ function renderEquipe() {
         <div class="voz-membro"><label>Voz <select data-voz="${id}">${opcoesDeVoz(escolhaDe(id))}</select></label><button class="btn-link" data-provar="${id}">▶ Ouvir</button></div>
         <div class="acoes">${n ? `<span class="etq info">${n} tarefa(s) em aberto</span>` : ''}</div>
       </div></article>`;
-    }).join('')}</div>`).join('')}`;
+    }).join('')}</div></section>`).join('')}`;
 }
 
 // ===== Tarefas =====
