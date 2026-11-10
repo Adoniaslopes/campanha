@@ -127,11 +127,11 @@ function legenda(quem, texto, modo = '') {
 function legendaPadrao() {
   const ult = [...estado.sala].reverse().find((m) => m.quem !== 'dr');
   if (ult) legenda(nomeDe(ult.quem), ult.texto);
-  else legenda('', dictacao ? 'Entre na reunião e fale normalmente. A equipe responde quando o senhor fizer uma pausa.' : 'Escreva para a equipe aqui embaixo. O Harvy conduz a reunião.');
+  else legenda('', dictacao ? 'Entre na reunião e fale normalmente. A equipe responde quando o senhor fizer uma pausa.' : 'Escreva para a equipe aqui embaixo. O Harvey conduz a reunião.');
 }
 const SUGESTOES = [
   'Bom dia, equipe! Como estamos hoje?',
-  'Harvy, me dê o resumo da empresa.',
+  'Harvey, me dê o resumo da empresa.',
   'Donna, como está o atendimento?',
   'Jessica, que teses você vai pesquisar primeiro?',
 ];
@@ -178,10 +178,10 @@ QUEM ESTÁ NA SALA
 ${time}
 
 COMO RESPONDER
-- Responda à última fala do Dr. Adonias. O Harvy (código claude) sempre fala: conduz, responde pelo time e fecha com o próximo passo. Chame só os funcionários de quem é o assunto ou que foram chamados pelo nome. Normalmente de 1 a 3 falas; no máximo 5.
+- Responda à última fala do Dr. Adonias. O Harvey (código claude) sempre fala: conduz, responde pelo time e fecha com o próximo passo. Chame só os funcionários de quem é o assunto ou que foram chamados pelo nome. Normalmente de 1 a 3 falas; no máximo 5.
 - Cada fala na primeira pessoa, no jeito daquele funcionário, com 1 a 3 frases curtas. As falas são ouvidas em voz alta: linguagem falada, sem listas, sem markdown, sem emojis, sem siglas difíceis.
 - Use só as informações do ESTADO DA EMPRESA abaixo. Nunca invente cliente, número, prazo, campanha, resultado ou trabalho já feito. Se a informação não está lá, diga com naturalidade que ainda não há registro.
-- Os funcionários fazem o trabalho nos seus turnos, sozinhos, e registram tudo; na sala eles conversam e combinam. Quando o Dr. Adonias pedir um trabalho, o Harvy usa a ferramenta criar_tarefa para o funcionário certo e diz quem vai fazer. Use decidir_tarefa só quando o Dr. Adonias disser claramente que aprova ou recusa uma tarefa que está aguardando por ele.
+- Os funcionários fazem o trabalho nos seus turnos, sozinhos, e registram tudo; na sala eles conversam e combinam. Quando o Dr. Adonias pedir um trabalho, o Harvey usa a ferramenta criar_tarefa para o funcionário certo e diz quem vai fazer. Use decidir_tarefa só quando o Dr. Adonias disser claramente que aprova ou recusa uma tarefa que está aguardando por ele.
 - Respeite a ética da advocacia: Código de Ética da OAB e Provimento 205/2021.
 
 ESTADO DA EMPRESA
@@ -644,7 +644,7 @@ document.addEventListener('click', (e) => {
   }
   if (el.dataset.provar) {
     const id = el.dataset.provar;
-    falar([{ id: uid('msg'), quem: id, texto: `Olá, Dr. Adonias. Eu sou ${id === 'claude' ? 'o Harvy, seu gerente geral' : `${VOZES[id].g === 'f' ? 'a' : 'o'} ${TIME[id].nome[0] + TIME[id].nome.slice(1).toLowerCase()}, ${TIME[id].cargo.toLowerCase()}`}. Estou pronto para trabalhar.`.replace('pronto', VOZES[id].g === 'f' ? 'pronta' : 'pronto') }]);
+    falar([{ id: uid('msg'), quem: id, texto: `Olá, Dr. Adonias. Eu sou ${id === 'claude' ? 'o Harvey, seu gerente geral' : `${VOZES[id].g === 'f' ? 'a' : 'o'} ${TIME[id].nome[0] + TIME[id].nome.slice(1).toLowerCase()}, ${TIME[id].cargo.toLowerCase()}`}. Estou pronto para trabalhar.`.replace('pronto', VOZES[id].g === 'f' ? 'pronta' : 'pronto') }]);
     return;
   }
   if (el.dataset.chamar) {
