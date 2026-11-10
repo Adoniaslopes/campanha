@@ -10,14 +10,23 @@
 const EQUIPE = {
   claude: { area: 'Gerência', missao: 'Coordena o time, acompanha cada funcionário e se reporta ao Dr. Adonias.', jeito: 'objetivo e organizado; conduz a reunião, resume e fecha com o próximo passo', voz: 'rounded', ritmo: 1.0 },
   lara: { area: 'Atendimento', missao: 'Acolhe quem procura o escritório, faz a triagem, reúne os documentos e marca a reunião com o Dr. Adonias.', jeito: 'acolhedora, cordial e organizada; fala do atendimento e dos clientes que chegaram', voz: 'airy', ritmo: 1.05 },
-  rui: { area: 'Contencioso', missao: 'Analisa os casos, elabora contrato, procuração e petições, protocola sob supervisão e acompanha os prazos.', jeito: 'formal, preciso e sereno; cita a lei quando ajuda e é cuidadoso com prazos', voz: 'buttery', ritmo: 0.92 },
+  rui: { area: 'Jurídico — coordenador (Trabalhista e Cível)', missao: 'Analisa os casos, elabora contrato, procuração e petições, protocola sob supervisão e acompanha os prazos.', jeito: 'formal, preciso e sereno; cita a lei quando ajuda e é cuidadoso com prazos', voz: 'buttery', ritmo: 0.92 },
+  kyle: { area: 'Jurídico — Cível (3ª Vara de Atibaia)', missao: 'Advogado júnior da área cível, sob a coordenação do Louis. Cuida da execução 0015372-93.2010.8.26.0048 (3ª Vara Cível de Atibaia) e de todos os recursos e incidentes dela no TJSP e no STJ.', jeito: 'objetivo e cuidadoso; só afirma o que está no dossiê ou nos autos, diz de onde tirou e avisa quando algo precisa ser conferido no e-SAJ ou no STJ', voz: 'buttery', ritmo: 1.0 },
   aureo: { area: 'Financeiro', missao: 'Cuida das cobranças, dos recebimentos, da inadimplência e do fechamento do mês.', jeito: 'prudente e direto com números; nunca promete dinheiro que não entrou', voz: 'glassy', ritmo: 0.95 },
   tessa: { area: 'Marketing', missao: 'Pesquisa o mundo jurídico e descobre teses e nichos trabalhistas com demanda.', jeito: 'curiosa e analítica; gosta de fundamentos e fontes', voz: 'glassy', ritmo: 1.05 },
   guido: { area: 'Marketing', missao: 'Transforma teses em campanhas, testa com o mínimo e mede o que traz cliente.', jeito: 'direto, fala de testes, números e próximos passos', voz: 'rounded', ritmo: 1.12 },
   plinio: { area: 'Marketing', missao: 'Escreve os textos dos anúncios e dos posts, dentro das regras da OAB.', jeito: 'eloquente, gosta das palavras certas, mas fala simples', voz: 'buttery', ritmo: 1.05 },
   iris: { area: 'Marketing', missao: 'Cria a identidade visual do escritório, as artes e os vídeos das campanhas.', jeito: 'entusiasmada e visual; pensa em cores, formas e imagens', voz: 'airy', ritmo: 1.15 },
 };
-const ORDEM = ['claude', 'lara', 'rui', 'aureo', 'tessa', 'guido', 'plinio', 'iris'];
+const ORDEM = ['claude', 'lara', 'rui', 'kyle', 'aureo', 'tessa', 'guido', 'plinio', 'iris'];
+// Departamentos (ordem de exibição na aba Equipe).
+const DEPARTAMENTOS = [
+  ['Gerência', ['claude']],
+  ['Atendimento', ['lara']],
+  ['Departamento Jurídico — coordenação: Louis', ['rui', 'kyle']],
+  ['Financeiro', ['aureo']],
+  ['Marketing', ['tessa', 'guido', 'plinio', 'iris']],
+];
 const STATUS_TAREFA = {
   a_fazer: ['A fazer', 'info'],
   fazendo: ['Fazendo', 'alerta'],
@@ -88,7 +97,7 @@ async function iniciarBanco() {
   colecao('sala').orderBy('criadoEm', 'desc').limit(200).onSnapshot((r) => { estado.sala = r.docs.map((d) => d.data()).reverse(); ok(); renderSala(); }, (e) => console.warn(e));
   colecao('tarefas').onSnapshot((r) => { estado.tarefas = r.docs.map((d) => d.data()); ok(); renderTarefas(); renderEquipe(); }, (e) => console.warn(e));
   colecao('atividades').orderBy('criadoEm', 'desc').limit(150).onSnapshot((r) => { estado.atividades = r.docs.map((d) => d.data()); ok(); renderMural(); }, (e) => console.warn(e));
-  colecao('config').onSnapshot((r) => { const d = r.docs.find((x) => x.id === 'vozes'); estado.vozes = d ? d.data() : {}; const f = r.docs.find((x) => x.id === 'fotos'); estado.fotos = f ? f.data() : {}; renderTudo(); }, (e) => console.warn(e));
+  colecao('config').onSnapshot((r) => { const d = r.docs.find((x) => x.id === 'vozes'); estado.vozes = d ? d.data() : {}; const f = r.docs.find((x) => x.id === 'fotos'); estado.fotos = f ? f.data() : {}; const k = r.docs.find((x) => x.id === 'kyle'); estado.casosKyle = k ? String(k.data().resumo || '') : ''; renderTudo(); }, (e) => console.warn(e));
   colecao('equipe').onSnapshot((r) => { estado.status = Object.fromEntries(r.docs.map((d) => [d.id, d.data()])); ok(); renderEquipe(); renderPresenca(); }, (e) => console.warn(e));
 }
 function mostrarAvisoGeral(msg) {
@@ -108,7 +117,7 @@ document.querySelector('.abas').addEventListener('click', (e) => { const b = e.t
 // ===== Sala =====
 const ativoHoje = (id) => { const s = estado.status[id]; return s?.atualizadoEm && Date.now() - new Date(s.atualizadoEm) < 864e5; };
 // Lugares em volta da mesa (graus; 90 = embaixo, onde fica o Dr. Adonias; 270 = cabeceira).
-const LUGARES = { claude: 270, lara: 315, rui: 0, aureo: 45, iris: 90, tessa: 135, guido: 180, plinio: 225 };
+const LUGARES = { claude: 270, lara: 310, rui: 350, kyle: 30, aureo: 70, iris: 110, tessa: 150, guido: 190, plinio: 230 };
 function renderPresenca() {
   const lugar = (graus) => { const r = (graus * Math.PI) / 180; return `left:${(50 + 41 * Math.cos(r)).toFixed(2)}%;top:${(50 + 40 * Math.sin(r)).toFixed(2)}%`; };
   $('#assentos').innerHTML = ORDEM.map((id) => `
@@ -182,7 +191,8 @@ COMO RESPONDER
 - Use só as informações do ESTADO DA EMPRESA abaixo. Nunca invente cliente, número, prazo, campanha, resultado ou trabalho já feito. Se a informação não está lá, diga com naturalidade que ainda não há registro.
 - Os funcionários fazem o trabalho nos seus turnos, sozinhos, e registram tudo; na sala eles conversam e combinam. Quando o Dr. Adonias pedir um trabalho, o Harvey usa a ferramenta criar_tarefa para o funcionário certo e diz quem vai fazer. Use decidir_tarefa só quando o Dr. Adonias disser claramente que aprova ou recusa uma tarefa que está aguardando por ele.
 - Respeite a ética da advocacia: Código de Ética da OAB e Provimento 205/2021.
-
+- Processos: o KYLE responde sobre os casos da área cível usando SOMENTE os CASOS DA ÁREA CÍVEL abaixo; nunca invente número, data, valor, decisão ou prazo; quando o dado não estiver lá ou puder estar desatualizado, ele diz que precisa conferir no e-SAJ, no eproc ou no STJ. O LOUIS coordena o Departamento Jurídico e revisa o trabalho do Kyle.
+${estado.casosKyle ? `\nCASOS DA ÁREA CÍVEL (KYLE — resumo do dossiê de transferência)\n${estado.casosKyle}\n` : ''}
 ESTADO DA EMPRESA
 ${estadoDaEmpresa()}
 
@@ -300,6 +310,7 @@ const VOZES = {
   lara: { g: 'f', tom: 1.05, ritmo: 1.02 },
   tessa: { g: 'f', tom: 1.14, ritmo: 1.05 },
   iris: { g: 'f', tom: 1.24, ritmo: 1.1 },
+  kyle: { g: 'm', tom: 1.05, ritmo: 1.0 },
 };
 const MASC = /daniel|ant[oô]nio|donato|f[aá]bio|humberto|j[uú]lio|nicolau|val[eé]rio|ricardo|paulo|male\b|masculin/i;
 const FEM = /maria|francisca|thalita|leila|let[ií]cia|manuela|yara|brenda|elza|giovanna|luciana|raquel|vit[oó]ria|female|feminin|google portugu/i;
@@ -504,8 +515,8 @@ function renderEquipe() {
   const abertas = (id) => estado.tarefas.filter((t) => t.para === id && t.status !== 'concluida').length;
   $('#aba-equipe').innerHTML = `
     <h2 class="titulo">Equipe</h2>
-    <p class="lead">Sete funcionários digitais e o gerente. Cada um trabalha no seu turno e registra o que fez. Escolha a voz de cada um e toque em “Ouvir” para testar.</p>
-    <div class="grade-equipe">${ORDEM.map((id) => {
+    <p class="lead">A equipe por departamento. Cada um trabalha no seu turno e registra o que fez. Escolha a voz de cada um e toque em “Ouvir” para testar.</p>
+    ${DEPARTAMENTOS.map(([dep, ids]) => `<h3 class="depto">${esc(dep)}</h3><div class="grade-equipe">${ids.map((id) => {
       const s = estado.status[id];
       const n = abertas(id);
       return `<article class="cartao membro">${avatar(id, 72)}<div>
@@ -517,7 +528,7 @@ function renderEquipe() {
         <div class="voz-membro"><label>Voz <select data-voz="${id}">${opcoesDeVoz(escolhaDe(id))}</select></label><button class="btn-link" data-provar="${id}">▶ Ouvir</button></div>
         <div class="acoes">${n ? `<span class="etq info">${n} tarefa(s) em aberto</span>` : ''}</div>
       </div></article>`;
-    }).join('')}</div>`;
+    }).join('')}</div>`).join('')}`;
 }
 
 // ===== Tarefas =====

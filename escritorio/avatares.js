@@ -10,11 +10,12 @@ const TIME = {
   adonias: { nome: 'Dr. Adonias', cargo: 'Diretor', fundo: '#DCE5F2', roupa: '#1F2A44', pele: PELE.media, cabelo: 'lateral', corCabelo: '#2B2018', extra: ['gravata'], selo: null },
   claude: { nome: 'HARVEY', cargo: 'Gerente geral', fundo: '#DDE7F7', roupa: '#24324F', pele: PELE.clara, cabelo: 'topete', corCabelo: '#3B2A1E', extra: ['blazer', 'barbaRala'], selo: null },
   lara: { nome: 'DONNA', cargo: 'Secretária', fundo: '#E3EAF3', roupa: '#9DB0C4', pele: PELE.clara, cabelo: 'ondulado', corCabelo: '#B4501F', extra: ['brincos'], selo: null },
-  rui: { nome: 'LOUIS', cargo: 'Advogado', fundo: '#E4E8EF', roupa: '#1F2A44', pele: PELE.clara, cabelo: 'fade', corCabelo: '#2A2320', extra: ['gravata', 'barbaRala'], selo: 'balanca', corSelo: '#1F2A44' },
+  rui: { nome: 'LOUIS', cargo: 'Advogado Sênior', fundo: '#E4E8EF', roupa: '#1F2A44', pele: PELE.clara, cabelo: 'fade', corCabelo: '#2A2320', extra: ['gravata', 'barbaRala'], selo: 'balanca', corSelo: '#1F2A44' },
   aureo: { nome: 'MIKE', cargo: 'Financeiro', fundo: '#F3EEDD', roupa: '#34465F', pele: PELE.clara, cabelo: 'lateral', corCabelo: '#2A1F18', extra: ['gravata', 'barbaRala'], selo: 'moeda', corSelo: '#C9961A' },
   tessa: { nome: 'JESSICA', cargo: 'Teses e nichos', fundo: '#EFE7DC', roupa: '#C9AE8E', pele: PELE.morena, cabelo: 'ondulado', corCabelo: '#3B2418', extra: ['brincos'], selo: 'lupa', corSelo: '#8A6A45' },
   guido: { nome: 'ALEX', cargo: 'Campanhas', fundo: '#E6E8EC', roupa: '#5B6170', pele: PELE.escura, cabelo: 'fade', corCabelo: '#15100C', extra: ['gravata', 'barba'], selo: 'grafico', corSelo: '#3C5CC8' },
   plinio: { nome: 'RACHEL', cargo: 'Copywriter', fundo: '#F3EDE3', roupa: '#EFE6D6', pele: PELE.media, cabelo: 'ondulado', corCabelo: '#5A3420', extra: ['brincos'], selo: 'pena', corSelo: '#C0682F' },
+  kyle: { nome: 'KYLE', cargo: 'Advogado Júnior', fundo: '#E3E9F1', roupa: '#2C3A52', pele: PELE.clara, cabelo: 'lateral', corCabelo: '#6B4A2B', extra: ['gravata'], selo: 'balanca', corSelo: '#2C3A52' },
   iris: { nome: 'SAMANTHA', cargo: 'Criativos', fundo: '#ECE6F3', roupa: '#1E1E24', pele: PELE.clara, cabelo: 'chanel', corCabelo: '#E0C07A', extra: ['brincos'], selo: 'paleta', corSelo: '#8E44C0' },
 };
 
