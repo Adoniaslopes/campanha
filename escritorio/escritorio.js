@@ -564,7 +564,7 @@ function abrirTarefa(id) {
       <div class="muted">${esc(nomeDe(t.de))} → ${esc(nomeDe(t.para))} · criada ${esc(quando(t.criadoEm))}</div></div></div>
     <span class="etq ${cls}">${esc(rotulo)}</span>${t.prioridade === 'alta' ? ' <span class="etq alerta">Prioridade alta</span>' : ''}
     ${t.descricao ? `<pre>${esc(t.descricao)}</pre>` : ''}
-    ${t.resultado ? `<strong>Resultado</strong><pre>${esc(t.resultado)}</pre>` : ''}
+    ${t.resultado ? `<strong>Resultado</strong><pre>${linkar(esc(t.resultado))}</pre>` : ''}
     ${t.decisao ? `<strong>Decisão do Dr. Adonias</strong><pre>${esc(t.decisao)}${t.decisaoNota ? ` — ${esc(t.decisaoNota)}` : ''}</pre>` : ''}
     ${t.status === 'aguardando_dr' ? `<label><strong>Sua orientação</strong> (opcional)<textarea id="nota-decisao" rows="3"></textarea></label>` : ''}
     <div class="botoes">
@@ -605,6 +605,13 @@ function renderMural() {
       <li>${a.quem === 'dr' ? '<span class="avatar iniciais" style="width:38px;height:38px">DA</span>' : avatar(a.quem, 38)}<div>
         <span class="q">${esc(nomeDe(a.quem))}</span> <span class="w">${esc(quando(a.criadoEm))}</span>
         <p>${esc(a.texto)}</p></div></li>`).join('')}</ul>` : '<div class="cartao vazio">Ainda não há atividades. Elas aparecem quando a equipe começa a trabalhar.</div>'}`;
+}
+
+// Links de documentos guardados no escritório (/_blob/<id>) e links externos ficam clicáveis.
+function linkar(html) {
+  return html
+    .replace(/(^|[\s(])(\/_blob\/[0-9a-f]{32})/g, '$1<a href="$2" target="_blank" rel="noopener">📄 abrir documento</a>')
+    .replace(/(^|[\s(])(https:\/\/[^\s<)]+)/g, '$1<a href="$2" target="_blank" rel="noopener">$2</a>');
 }
 
 // ===== Modal =====
