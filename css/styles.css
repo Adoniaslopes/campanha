@@ -72,7 +72,25 @@ h1, h2, h3, h4 { margin: 0; line-height: 1.25; }
 .menu nav a:hover { background: rgba(255,255,255,.07); text-decoration: none; color: #fff; }
 .menu nav a.ativo { background: rgba(176,141,87,.22); color: #fff; box-shadow: inset 3px 0 0 var(--acento); }
 .menu-rodape { padding: 14px 20px; font-size: 12px; }
-.menu-rodape div { opacity: .55; }
+.menu-rodape div { opacity: .7; }
+.menu-rodape #estado-nuvem[data-estado="erro"], .menu-rodape #estado-nuvem[data-estado="offline"] { color: #f5b041; opacity: 1; }
+.menu-rodape .conta { margin-top: 6px; overflow-wrap: anywhere; }
+.menu-rodape .conta .btn-link { color: var(--acento); font-size: 12px; }
+
+/* Tela de login */
+.tela-login { position: fixed; inset: 0; z-index: 70; background: var(--marca); display: flex; align-items: center; justify-content: center; padding: 16px; overflow-y: auto; }
+.tela-login[hidden] { display: none; }
+body.sem-sessao { overflow: hidden; }
+.login-caixa { width: 100%; max-width: 380px; background: var(--superficie); border-radius: 14px; padding: 28px 24px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 20px 50px rgba(0,0,0,.3); }
+.login-marca { display: flex; align-items: center; gap: 12px; }
+.login-marca img { border-radius: 12px; }
+.login-marca strong { display: block; font-size: 18px; }
+.login-marca span { color: var(--texto-2); font-size: 14px; }
+.login-caixa h2 { font-size: 20px; margin-top: 4px; }
+.login-caixa .btn.primario { padding: 11px 14px; }
+.login-links { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; font-size: 14px; }
+.login-msg { margin: 0; font-size: 14px; color: var(--texto-2); min-height: 1.2em; }
+.login-msg.erro { color: var(--perigo); }
 .menu-rodape .btn { width: 100%; margin-bottom: 10px; background: var(--acento); border-color: var(--acento); color: #fff; }
 .fundo-menu { display: none; }
 

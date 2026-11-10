@@ -1,7 +1,7 @@
 // Service worker: permite abrir o CRM sem internet.
 // Estratégia "rede primeiro": online sempre pega a versão mais nova; offline usa a cópia salva.
-const CACHE = 'crm-juridico-v1';
-const ARQUIVOS = ['./', 'index.html', 'css/styles.css', 'js/app.js', 'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png'];
+const CACHE = 'crm-juridico-v2';
+const ARQUIVOS = ['./', 'index.html', 'css/styles.css', 'js/app.js', 'js/nuvem.js', 'js/vendor/supabase-2.119.0.js', 'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ARQUIVOS)).then(() => self.skipWaiting()));

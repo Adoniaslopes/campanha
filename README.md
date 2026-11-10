@@ -22,12 +22,32 @@ Roda direto no navegador, sem servidor, sem mensalidade e sem instalar nada.
 
 Depois de instalado, o CRM abre em janela própria, com ícone, e **funciona mesmo sem internet**.
 
-> **Importante:** só o programa fica na internet. Os dados que você cadastra ficam salvos **somente no aparelho
-> e navegador onde você usa o CRM** — quem abrir o link em outro aparelho vê um CRM vazio. Por isso:
-> - o celular e o computador **não compartilham** os dados automaticamente; use *Backup e ajustes → Exportar backup*
->   em um e *Importar backup* no outro para levar os dados;
-> - faça **backup** com frequência e guarde o arquivo em local seguro (Google Drive, pendrive).
->   O painel avisa quando o último backup tem mais de 7 dias.
+### Login e banco online
+
+O CRM guarda os dados no **banco online do escritório** (Supabase, servidor em São Paulo), com login por e-mail e senha.
+Os dados aparecem iguais no celular e no computador e ficam prontos para os agentes do escritório usarem.
+Sem internet, o app continua funcionando e envia as alterações quando a conexão volta.
+
+- Primeiro acesso: na tela de login, clique em **Primeiro acesso? Criar conta**, confirme o e-mail e entre.
+- Os dados que já estavam salvos só no aparelho são oferecidos para envio ao banco no primeiro login.
+- **Sair** (no menu) apaga a cópia local do aparelho, útil em computador compartilhado.
+
+#### Configuração do Supabase (uma vez, no painel do Supabase, projeto `escritorio-lopes-araujo`)
+
+1. **Authentication → URL Configuration → Site URL:** `https://adoniaslopes.github.io/campanha/`
+   (e o mesmo endereço em *Redirect URLs*). Assim os links de confirmação e de "Esqueci a senha" abrem o CRM.
+2. Depois de criar a sua conta: **Authentication → Sign In / Providers → desligar "Allow new users to sign up"**,
+   para ninguém mais criar conta. Mesmo sem isso, cada conta só enxerga os próprios dados (regras de segurança RLS).
+
+#### Modelo de dados
+
+| Tabela | Conteúdo |
+|---|---|
+| `leads` | Funil de captação (etapa, origem, empresa, data de saída do emprego) |
+| `clientes` | Cadastro e histórico de atendimentos |
+| `casos` | Processos, com dados do contrato de trabalho (função, admissão, saída, salário, como saiu) e andamentos |
+| `prazos` | Prazos, audiências, perícias, reuniões e tarefas |
+| `contratos` | Honorários e parcelas; a visão `parcelas` lista cada parcela em uma linha |
 
 Também dá para usar sem internet nenhuma: baixe o repositório (Code → Download ZIP) e abra o `index.html`.
 
@@ -36,8 +56,8 @@ Também dá para usar sem internet nenhuma: baixe o repositório (Code → Downl
 | Módulo | O que faz |
 |---|---|
 | **Painel** | Prazos atrasados e da semana, honorários a cobrar, leads para retornar, recebido no mês |
-| **Clientes** | Cadastro PF/PJ, CPF/CNPJ, WhatsApp com 1 clique, nº de benefício INSS, histórico de atendimentos |
-| **Processos** | Número CNJ, tribunal, vara, situação, fase, andamentos, prazos e honorários vinculados |
+| **Clientes** | Cadastro PF/PJ, CPF/CNPJ, WhatsApp com 1 clique, histórico de atendimentos |
+| **Processos** | Número CNJ, TRT e vara, dados do contrato de trabalho, **alerta do prazo de 2 anos para ajuizar**, andamentos, prazos e honorários |
 | **Prazos e agenda** | Prazos, audiências, perícias e reuniões com alerta de atraso; **calculadora de prazo em dias úteis** (CPC, com feriados nacionais e recesso de 20/12 a 20/01); exportação `.ics` para o Google Agenda |
 | **Funil de leads** | Kanban: novo contato → conversa → consulta → proposta → fechado/perdido; taxa de conversão; “Virar cliente” com 1 clique |
 | **Financeiro** | Contratos de honorários (fixo, parcelado, êxito, mensal), parcelas geradas automaticamente, baixa de recebimento, inadimplência |
@@ -45,9 +65,9 @@ Também dá para usar sem internet nenhuma: baixe o repositório (Code → Downl
 
 ## Privacidade (LGPD)
 
-Nenhum dado de cliente sai do seu aparelho: o link publicado contém apenas o programa, sem servidor nem banco de dados.
-Por isso mesmo, proteja o computador e o celular com senha/bloqueio de tela e guarde os backups em local seguro —
-eles contêm dados pessoais dos clientes. **Nunca** envie arquivos de backup para este repositório (ele é público).
+Os dados ficam no banco do escritório no Supabase, em servidor no Brasil (São Paulo), acessíveis só com o seu login.
+A chave que aparece no código é a chave pública do projeto; quem protege os dados são o login e as regras de segurança do banco.
+Proteja o computador e o celular com senha/bloqueio de tela e guarde os backups em local seguro — eles contêm dados pessoais dos clientes. **Nunca** envie arquivos de backup para este repositório (ele é público).
 
 ## Estrutura
 
@@ -55,5 +75,7 @@ eles contêm dados pessoais dos clientes. **Nunca** envie arquivos de backup par
 index.html       página principal
 manifest.webmanifest, sw.js, icons/   app instalável e uso offline
 css/styles.css   visual (tema claro/escuro automático, responsivo para celular)
-js/app.js        toda a lógica
+js/app.js        telas e regras do CRM
+js/nuvem.js      login e sincronização com o banco online
+js/vendor/       biblioteca oficial do Supabase (cópia local, funciona offline)
 ```

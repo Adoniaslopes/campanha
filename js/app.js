@@ -111,10 +111,11 @@ function calcularPrazo(inicio, dias, uteis) {
 }
 
 // ===== Constantes de domínio =====
-const AREAS = ['Previdenciário', 'Cível', 'Consumidor', 'Trabalhista', 'Família e Sucessões', 'Criminal', 'Tributário', 'Empresarial', 'Administrativo', 'Imobiliário', 'Outro'];
+const AREAS = ['Trabalhista', 'Cível', 'Consumidor', 'Previdenciário', 'Família e Sucessões', 'Empresarial', 'Tributário', 'Criminal', 'Administrativo', 'Imobiliário', 'Outro'];
+const MOTIVOS_SAIDA = ['Dispensa sem justa causa', 'Dispensa por justa causa', 'Pedido de demissão', 'Rescisão indireta', 'Acordo (art. 484-A CLT)', 'Término de contrato', 'Ainda trabalha na empresa'];
 const STATUS_PROC = ['Ativo', 'Aguardando julgamento', 'Em recurso', 'Em execução', 'Suspenso', 'Acordo', 'Encerrado - procedente', 'Encerrado - improcedente', 'Arquivado'];
 const ENCERRADOS = new Set(['Acordo', 'Encerrado - procedente', 'Encerrado - improcedente', 'Arquivado']);
-const FASES = ['Administrativo', 'Conhecimento', 'Recursal', 'Cumprimento de sentença / Execução'];
+const FASES = ['Pré-processual', 'Conhecimento', 'Recursal', 'Execução'];
 const TIPOS_EVENTO = ['Prazo', 'Audiência', 'Perícia', 'Reunião', 'Tarefa'];
 const ORIGENS = ['Site', 'Indicação', 'Instagram', 'Facebook', 'Google', 'WhatsApp', 'Campanha', 'Outro'];
 const TIPOS_HON = ['Fixo (à vista)', 'Parcelado', 'Êxito', 'Mensal (partido)', 'Consulta'];
@@ -129,6 +130,29 @@ const ETAPAS = [
 ];
 const nomeEtapa = (id) => ETAPAS.find((e) => e.id === id)?.nome || id;
 const processoAtivo = (p) => !ENCERRADOS.has(p.status);
+
+// ===== Prescrição trabalhista (art. 7º, XXIX, CF): 2 anos após a saída para ajuizar =====
+const limiteAjuizamento = (saida) => (saida ? addMeses(saida, 24) : '');
+const casoAjuizado = (p) => Boolean(p.numero || p.distribuicao);
+function etiquetaPrescricao(saida) {
+  const lim = limiteAjuizamento(saida);
+  if (!lim) return '';
+  const d = diasAte(lim);
+  const cls = d < 0 ? 'perigo' : d <= 60 ? 'perigo' : d <= 180 ? 'alerta' : 'info';
+  const txt = d < 0 ? `prescreveu em ${fmtData(lim)}` : `ajuizar até ${fmtData(lim)}`;
+  return `<span class="etiqueta ${cls}" title="2 anos após a saída. Confira a projeção do aviso prévio.">${txt}</span>`;
+}
+/** Leads em aberto e casos ainda não ajuizados cujo prazo de 2 anos vence em até 180 dias. */
+function alertasPrescricao() {
+  const itens = [
+    ...db.leads.filter((l) => !['fechado', 'perdido'].includes(l.etapa) && l.dataSaida)
+      .map((l) => ({ nome: l.nome, sub: `Lead · ${l.empresa || nomeEtapa(l.etapa)}`, saida: l.dataSaida, acao: `data-acao="editarLead" data-id="${l.id}"` })),
+    ...db.processos.filter((p) => processoAtivo(p) && !casoAjuizado(p) && p.saida)
+      .map((p) => ({ nome: nomeCliente(p.clienteId), sub: `Caso · ${p.parteContraria || p.tipoAcao || 'não ajuizado'}`, saida: p.saida, href: `#/processo/${p.id}` })),
+  ];
+  return itens.filter((i) => diasAte(limiteAjuizamento(i.saida)) <= 180)
+    .sort((a, b) => a.saida.localeCompare(b.saida));
+}
 
 // ===== Armazenamento =====
 const CHAVE = 'crm-juridico-v1';
@@ -153,6 +177,8 @@ function salvar() {
   } catch (e) {
     toast('Erro ao salvar: ' + e.message, 'erro');
   }
+  // Envia ao banco online (js/nuvem.js), quando houver login.
+  if (typeof aoSalvar === 'function') aoSalvar();
 }
 // Pede ao navegador para não apagar os dados automaticamente.
 if (navigator.storage?.persist) navigator.storage.persist().catch(() => {});
@@ -335,7 +361,6 @@ const CAMPOS_CLIENTE = [
   { nome: 'email', rotulo: 'E-mail', tipo: 'email' },
   { nome: 'nascimento', rotulo: 'Data de nascimento', tipo: 'date' },
   { nome: 'profissao', rotulo: 'Profissão' },
-  { nome: 'beneficioINSS', rotulo: 'Nº do benefício (INSS)', dica: 'Opcional — útil em causas previdenciárias' },
   { nome: 'origem', rotulo: 'Como chegou ao escritório', tipo: 'select', opcoes: ORIGENS, vazio: '—' },
   { nome: 'endereco', rotulo: 'Endereço', full: true },
   { nome: 'observacoes', rotulo: 'Observações', tipo: 'textarea' },
@@ -377,18 +402,25 @@ function excluirCliente(id) {
 const CAMPOS_PROCESSO = [
   { nome: 'clienteId', rotulo: 'Cliente', tipo: 'select', opcoes: opcoesClientes, obrig: true, vazio: 'Selecione…', full: true },
   { nome: 'numero', rotulo: 'Número do processo (CNJ)', mascara: 'cnj', placeholder: '0000000-00.0000.0.00.0000', dica: 'Deixe em branco se ainda não foi distribuído' },
-  { nome: 'area', rotulo: 'Área', tipo: 'select', opcoes: AREAS, padrao: 'Previdenciário' },
-  { nome: 'tipoAcao', rotulo: 'Tipo de ação / assunto', placeholder: 'Ex.: Restituição de descontos indevidos' },
-  { nome: 'polo', rotulo: 'Cliente é', tipo: 'select', opcoes: ['Autor', 'Réu', 'Requerente', 'Requerido', 'Terceiro'] },
-  { nome: 'parteContraria', rotulo: 'Parte contrária' },
-  { nome: 'tribunal', rotulo: 'Tribunal / órgão', placeholder: 'Ex.: TRF1, TJMT, INSS' },
-  { nome: 'vara', rotulo: 'Vara / juízo' },
-  { nome: 'comarca', rotulo: 'Comarca / subseção' },
+  { nome: 'area', rotulo: 'Área', tipo: 'select', opcoes: AREAS, padrao: 'Trabalhista' },
+  { nome: 'tipoAcao', rotulo: 'Tipo de ação / pedidos principais', placeholder: 'Ex.: Reclamação trabalhista — horas extras e verbas rescisórias' },
+  { nome: 'polo', rotulo: 'Cliente é', tipo: 'select', opcoes: ['Reclamante', 'Reclamado', 'Autor', 'Réu', 'Terceiro'] },
+  { nome: 'parteContraria', rotulo: 'Parte contrária / empregador' },
+  { tipo: 'secao', rotulo: 'Contrato de trabalho (causas trabalhistas)' },
+  { nome: 'funcao', rotulo: 'Função / cargo' },
+  { nome: 'motivoSaida', rotulo: 'Como saiu', tipo: 'select', opcoes: MOTIVOS_SAIDA, vazio: '—' },
+  { nome: 'admissao', rotulo: 'Admissão', tipo: 'date' },
+  { nome: 'saida', rotulo: 'Saída (último dia)', tipo: 'date', dica: 'Base do prazo de 2 anos para ajuizar' },
+  { nome: 'ultimoSalario', rotulo: 'Último salário (R$)', tipo: 'money' },
+  { tipo: 'secao', rotulo: 'Processo' },
+  { nome: 'tribunal', rotulo: 'Tribunal / órgão', placeholder: 'Ex.: TRT18, TST' },
+  { nome: 'vara', rotulo: 'Vara / juízo', placeholder: 'Ex.: 5ª Vara do Trabalho' },
+  { nome: 'comarca', rotulo: 'Cidade / comarca' },
   { nome: 'status', rotulo: 'Situação', tipo: 'select', opcoes: STATUS_PROC, padrao: 'Ativo' },
-  { nome: 'fase', rotulo: 'Fase', tipo: 'select', opcoes: FASES, padrao: 'Conhecimento' },
+  { nome: 'fase', rotulo: 'Fase', tipo: 'select', opcoes: FASES, padrao: 'Pré-processual' },
   { nome: 'valorCausa', rotulo: 'Valor da causa (R$)', tipo: 'money' },
   { nome: 'distribuicao', rotulo: 'Data de distribuição', tipo: 'date' },
-  { nome: 'link', rotulo: 'Link de consulta (PJe, e-SAJ…)', tipo: 'url', full: true },
+  { nome: 'link', rotulo: 'Link de consulta (PJe)', tipo: 'url', full: true },
   { nome: 'observacoes', rotulo: 'Observações', tipo: 'textarea' },
 ];
 
@@ -454,7 +486,9 @@ const CAMPOS_LEAD = [
   { nome: 'telefone', rotulo: 'Telefone / WhatsApp', tipo: 'tel', mascara: 'tel' },
   { nome: 'email', rotulo: 'E-mail', tipo: 'email' },
   { nome: 'origem', rotulo: 'Origem', tipo: 'select', opcoes: ORIGENS, padrao: 'Site' },
-  { nome: 'area', rotulo: 'Área de interesse', tipo: 'select', opcoes: AREAS, padrao: 'Previdenciário' },
+  { nome: 'area', rotulo: 'Área de interesse', tipo: 'select', opcoes: AREAS, padrao: 'Trabalhista' },
+  { nome: 'empresa', rotulo: 'Empresa (empregador)' },
+  { nome: 'dataSaida', rotulo: 'Saída do emprego', tipo: 'date', dica: 'Para controlar o prazo de 2 anos' },
   { nome: 'etapa', rotulo: 'Etapa', tipo: 'select', opcoes: ETAPAS.map((e) => ({ v: e.id, l: e.nome })), padrao: 'novo' },
   { nome: 'valorEstimado', rotulo: 'Honorários estimados (R$)', tipo: 'money' },
   { nome: 'proximoContato', rotulo: 'Próximo contato', tipo: 'date' },
@@ -493,7 +527,7 @@ function formHonorario(id, valores = {}) {
   const campos = [
     { nome: 'clienteId', rotulo: 'Cliente', tipo: 'select', opcoes: opcoesClientes, obrig: true, vazio: 'Selecione…', full: true },
     { nome: 'processoId', rotulo: 'Processo vinculado', tipo: 'select', opcoes: opcoesProcessos, vazio: 'Nenhum', full: true },
-    { nome: 'descricao', rotulo: 'Descrição', obrig: true, full: true, placeholder: 'Ex.: Honorários contratuais — ação contra o INSS' },
+    { nome: 'descricao', rotulo: 'Descrição', obrig: true, full: true, placeholder: 'Ex.: Honorários contratuais — reclamação trabalhista' },
     { nome: 'tipo', rotulo: 'Modalidade', tipo: 'select', opcoes: TIPOS_HON, padrao: 'Parcelado' },
     { nome: 'percentualExito', rotulo: '% sobre o êxito', tipo: 'number', dica: 'Se houver cláusula de êxito' },
     { nome: 'dataContrato', rotulo: 'Data do contrato', tipo: 'date', padrao: hoje() },
@@ -617,12 +651,13 @@ function telaPainel() {
   const leadsAbertos = db.leads.filter((l) => !['fechado', 'perdido'].includes(l.etapa));
   const followUp = leadsAbertos.filter((l) => !l.proximoContato || diasAte(l.proximoContato) <= 2)
     .sort((a, b) => (a.proximoContato || '').localeCompare(b.proximoContato || ''));
+  const prescricoes = alertasPrescricao();
   const cobrar = parcelas.filter((p) => diasAte(p.vencimento) <= 10).sort((a, b) => a.vencimento.localeCompare(b.vencimento)).slice(0, 10);
 
   const totalRegistros = COLECOES.reduce((t, c) => t + db[c].length, 0);
   const ultimo = db.meta.ultimoBackup;
-  const avisoBackup = totalRegistros && (!ultimo || diasAte(ultimo.slice(0, 10)) < -7)
-    ? `<div class="aviso"><span>⚠️ ${ultimo ? `Último backup em ${fmtData(ultimo)}.` : 'Você ainda não fez nenhum backup.'} Os dados ficam só neste navegador — exporte uma cópia regularmente.</span>${btn('Fazer backup agora', 'exportarBackup')}</div>`
+  const avisoBackup = totalRegistros && (!ultimo || diasAte(ultimo.slice(0, 10)) < -30)
+    ? `<div class="aviso"><span>⚠️ ${ultimo ? `Último backup em ${fmtData(ultimo)}.` : 'Você ainda não fez nenhum backup.'} Os dados já ficam no banco online; uma cópia mensal em arquivo é uma garantia extra.</span>${btn('Fazer backup agora', 'exportarBackup')}</div>`
     : '';
   const boasVindas = !totalRegistros
     ? `<div class="aviso info"><span>👋 Bem-vindo! Comece cadastrando um cliente ou um lead — ou carregue dados de exemplo para conhecer o sistema.</span>
@@ -642,10 +677,19 @@ function telaPainel() {
         ${kpi('Em atraso', fmtMoeda(soma(vencidas, (p) => p.valor)), vencidas.length ? 'perigo' : '', `${vencidas.length} parcela(s)`)}
       </div>
       <div class="grade g2">
-        <section class="cartao">
-          <div class="cartao-cab"><h3>Prazos e compromissos (15 dias)</h3><a href="#/agenda">ver agenda →</a></div>
-          ${listaEventos(proximos)}
-        </section>
+        <div>
+          <section class="cartao">
+            <div class="cartao-cab"><h3>Prazos e compromissos (15 dias)</h3><a href="#/agenda">ver agenda →</a></div>
+            ${listaEventos(proximos)}
+          </section>
+          ${prescricoes.length ? `<section class="cartao">
+            <div class="cartao-cab"><h3>Prazo de 2 anos para ajuizar</h3></div>
+            <ul class="eventos">${prescricoes.map((i) => `<li class="evento"><div class="corpo">
+              ${i.href ? `<a class="titulo" href="${i.href}">${esc(i.nome)}</a>` : `<button class="btn-link titulo" ${i.acao}>${esc(i.nome)}</button>`}
+              <span class="sub">${esc(i.sub)} · saída em ${fmtData(i.saida)}</span></div>
+              <div class="quando">${etiquetaPrescricao(i.saida)}</div></li>`).join('')}</ul>
+          </section>` : ''}
+        </div>
         <div>
           <section class="cartao">
             <div class="cartao-cab"><h3>Honorários a cobrar</h3><a href="#/financeiro">financeiro →</a></div>
@@ -761,7 +805,7 @@ function telaCliente(id) {
         ${ficha([
           ['CPF / CNPJ', esc(c.documento)], ['Telefone', esc(c.telefone)], ['E-mail', esc(c.email)],
           ['Nascimento', c.nascimento ? `${fmtData(c.nascimento)} (${idade} anos)` : ''], ['Profissão', esc(c.profissao)],
-          ['Benefício INSS', esc(c.beneficioINSS)], ['Origem', esc(c.origem)], ['Endereço', esc(c.endereco), true],
+          ['Origem', esc(c.origem)], ['Endereço', esc(c.endereco), true],
           ['Observações', c.observacoes ? `<span style="white-space:pre-wrap">${esc(c.observacoes)}</span>` : '', true],
         ])}
       </section>
@@ -834,6 +878,9 @@ function telaProcesso(id) {
           ['Parte contrária', esc(p.parteContraria)], ['Tribunal', esc(p.tribunal)], ['Vara / juízo', esc(p.vara)],
           ['Comarca', esc(p.comarca)], ['Fase', esc(p.fase)], ['Valor da causa', p.valorCausa ? fmtMoeda(p.valorCausa) : ''],
           ['Distribuição', fmtData(p.distribuicao)],
+          ['Função', esc(p.funcao)], ['Admissão', fmtData(p.admissao)], ['Saída', fmtData(p.saida)],
+          ['Como saiu', esc(p.motivoSaida)], ['Último salário', p.ultimoSalario ? fmtMoeda(p.ultimoSalario) : ''],
+          ['Prazo para ajuizar', !casoAjuizado(p) && p.saida ? etiquetaPrescricao(p.saida) : ''],
           ['Observações', p.observacoes ? `<span style="white-space:pre-wrap">${esc(p.observacoes)}</span>` : '', true],
         ])}
       </section>
@@ -947,6 +994,7 @@ function telaLeads() {
                 <div class="linha">${esc([l.area, l.origem].filter(Boolean).join(' · '))}</div>
                 ${l.telefone ? `<div class="linha"><a href="${linkWhats(l.telefone)}" target="_blank" rel="noopener">${esc(l.telefone)}</a></div>` : ''}
                 ${l.valorEstimado ? `<div class="linha">${fmtMoeda(l.valorEstimado)}</div>` : ''}
+                ${aberto && l.dataSaida ? `<div class="linha">${etiquetaPrescricao(l.dataSaida)}</div>` : ''}
                 ${aberto && l.proximoContato ? `<div class="linha"><span class="etiqueta ${d < 0 ? 'perigo' : d <= 1 ? 'alerta' : ''}">retorno: ${fmtData(l.proximoContato)}</span></div>` : ''}
                 ${l.etapa === 'perdido' && l.motivoPerda ? `<div class="linha">Motivo: ${esc(l.motivoPerda)}</div>` : ''}
                 <div class="rodape">
@@ -1067,8 +1115,8 @@ function telaConfig() {
     acoes: '',
     html: `<section class="cartao">
         <div class="cartao-cab"><h3>Backup dos dados</h3></div>
-        <p>Os dados ficam salvos <strong>somente neste navegador, neste computador</strong>. Se limpar o histórico/dados do navegador ou trocar de computador, eles não vão junto.
-        Exporte um backup com frequência e guarde em local seguro (ex.: Google Drive). Para usar em outro computador, importe o arquivo lá.</p>
+        <p>Com login, os dados ficam no <strong>banco online do escritório</strong> (servidor em São Paulo) e aparecem iguais no celular e no computador.
+        Uma cópia em arquivo, uma vez por mês, é uma garantia extra: guarde em local seguro (ex.: Google Drive). Importar um backup <strong>substitui</strong> os dados online.</p>
         <p class="muted">Conteúdo atual: ${total} (${tamanho} KB).<br>Último backup: ${db.meta.ultimoBackup ? fmtData(db.meta.ultimoBackup) : 'nunca'}.</p>
         <div class="barra-filtros">
           ${btn('Exportar backup (.json)', 'exportarBackup')}
@@ -1149,7 +1197,7 @@ function importarArquivo(e) {
 
 function exportarCSV() {
   const cols = [['nome', 'Nome'], ['tipo', 'Tipo'], ['documento', 'CPF/CNPJ'], ['telefone', 'Telefone'], ['email', 'E-mail'],
-    ['nascimento', 'Nascimento'], ['profissao', 'Profissão'], ['beneficioINSS', 'Benefício INSS'], ['origem', 'Origem'], ['endereco', 'Endereço'], ['observacoes', 'Observações']];
+    ['nascimento', 'Nascimento'], ['profissao', 'Profissão'], ['origem', 'Origem'], ['endereco', 'Endereço'], ['observacoes', 'Observações']];
   const cel = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
   const linhas = [cols.map(([, r]) => cel(r)).join(';'),
     ...db.clientes.map((c) => cols.map(([k]) => cel(k === 'nascimento' ? fmtData(c[k]) : c[k])).join(';'))];
@@ -1187,25 +1235,25 @@ function carregarExemplo() {
   const temDados = COLECOES.some((c) => db[c].length);
   if (temDados && !confirm('Adicionar dados de exemplo aos dados existentes?')) return;
   const h = hoje();
-  const c1 = gravar('clientes', { nome: 'Maria das Graças Souza', tipo: 'PF', documento: '123.456.789-09', telefone: '(65) 99999-1234', email: 'maria@exemplo.com', nascimento: '1955-03-12', profissao: 'Aposentada', beneficioINSS: '123.456.789-0', origem: 'Site', observacoes: 'Descontos de associação não autorizada no benefício desde 2023.', atendimentos: [{ id: uid(), data: addDias(h, -20), descricao: 'Consulta inicial. Trouxe extratos do INSS com descontos mensais de R$ 45,00.' }] });
-  const c2 = gravar('clientes', { nome: 'José Carlos Pereira', tipo: 'PF', documento: '987.654.321-00', telefone: '(65) 98888-5678', origem: 'Indicação' });
-  const c3 = gravar('clientes', { nome: 'Comercial Araguaia Ltda.', tipo: 'PJ', documento: '12.345.678/0001-90', telefone: '(65) 3333-4444', email: 'financeiro@araguaia.com', origem: 'Indicação' });
-  const p1 = gravar('processos', { clienteId: c1.id, numero: '1001234-56.2026.4.01.3600', area: 'Previdenciário', tipoAcao: 'Restituição de descontos indevidos + danos morais', polo: 'Autor', parteContraria: 'INSS e Associação XYZ', tribunal: 'TRF1', vara: '1º Juizado Especial Federal', comarca: 'Cuiabá/MT', status: 'Ativo', fase: 'Conhecimento', valorCausa: 15000, distribuicao: addDias(h, -15), andamentos: [{ id: uid(), data: addDias(h, -15), descricao: 'Petição inicial distribuída.' }, { id: uid(), data: addDias(h, -3), descricao: 'Citação do INSS expedida.' }] });
-  const p2 = gravar('processos', { clienteId: c2.id, numero: '0801234-11.2025.8.11.0041', area: 'Consumidor', tipoAcao: 'Revisão de contrato bancário', polo: 'Autor', parteContraria: 'Banco ABC S.A.', tribunal: 'TJMT', vara: '3ª Vara Cível', comarca: 'Cuiabá', status: 'Em recurso', fase: 'Recursal', valorCausa: 42000 });
-  const p3 = gravar('processos', { clienteId: c3.id, area: 'Tributário', tipoAcao: 'Defesa em auto de infração', parteContraria: 'SEFAZ/MT', tribunal: 'SEFAZ/MT', status: 'Ativo', fase: 'Administrativo' });
-  gravar('eventos', { tipo: 'Prazo', titulo: 'Réplica à contestação', data: addDias(h, 3), processoId: p1.id, clienteId: c1.id, prioridade: 'Alta' });
-  gravar('eventos', { tipo: 'Audiência', titulo: 'Audiência de conciliação', data: addDias(h, 12), hora: '14:00', processoId: p1.id, clienteId: c1.id, local: 'Sala virtual — link no PJe' });
-  gravar('eventos', { tipo: 'Prazo', titulo: 'Contrarrazões de apelação', data: addDias(h, -1), processoId: p2.id, clienteId: c2.id, prioridade: 'Alta' });
-  gravar('eventos', { tipo: 'Prazo', titulo: 'Impugnação ao auto de infração', data: addDias(h, 20), processoId: p3.id, clienteId: c3.id });
-  gravar('eventos', { tipo: 'Reunião', titulo: 'Entregar cópia do processo à cliente', data: h, hora: '10:00', clienteId: c1.id });
-  gravar('leads', { nome: 'Ana Lúcia Ramos', telefone: '(65) 97777-0001', origem: 'Site', area: 'Previdenciário', etapa: 'novo', proximoContato: h, descricao: 'Preencheu o formulário do site: descontos no benefício.', valorEstimado: 2500 });
-  gravar('leads', { nome: 'Roberto Dias', telefone: '(65) 97777-0002', origem: 'Instagram', area: 'Previdenciário', etapa: 'consulta', proximoContato: addDias(h, 2), valorEstimado: 3000 });
-  gravar('leads', { nome: 'Francisca Lima', telefone: '(65) 97777-0003', origem: 'Indicação', area: 'Família e Sucessões', etapa: 'proposta', proximoContato: addDias(h, -1), valorEstimado: 6000, descricao: 'Inventário extrajudicial.' });
-  gravar('leads', { nome: 'Paulo Henrique', origem: 'Google', area: 'Trabalhista', etapa: 'perdido', motivoPerda: 'Achou os honorários altos' });
+  const c1 = gravar('clientes', { nome: 'Carlos Eduardo Martins', tipo: 'PF', documento: '123.456.789-09', telefone: '(62) 99999-1234', email: 'carlos@exemplo.com', nascimento: '1988-03-12', profissao: 'Motorista', origem: 'Site', atendimentos: [{ id: uid(), data: addDias(h, -20), descricao: 'Consulta inicial. Fazia jornada de 12h sem receber horas extras; trouxe TRCT e holerites.' }] });
+  const c2 = gravar('clientes', { nome: 'Juliana Ferreira Lima', tipo: 'PF', documento: '987.654.321-00', telefone: '(62) 98888-5678', profissao: 'Auxiliar administrativa', origem: 'Indicação' });
+  const c3 = gravar('clientes', { nome: 'Transportes Cerrado Ltda.', tipo: 'PJ', documento: '12.345.678/0001-90', telefone: '(62) 3333-4444', email: 'rh@cerrado.com', origem: 'Indicação' });
+  const p1 = gravar('processos', { clienteId: c1.id, numero: '0010123-45.2026.5.18.0005', area: 'Trabalhista', tipoAcao: 'Horas extras, intervalo intrajornada e verbas rescisórias', polo: 'Reclamante', parteContraria: 'Logística Alfa S.A.', funcao: 'Motorista', admissao: '2021-02-01', saida: addMeses(h, -4), motivoSaida: 'Dispensa sem justa causa', ultimoSalario: 3200, tribunal: 'TRT18', vara: '5ª Vara do Trabalho', comarca: 'Goiânia', status: 'Ativo', fase: 'Conhecimento', valorCausa: 48000, distribuicao: addDias(h, -15), andamentos: [{ id: uid(), data: addDias(h, -15), descricao: 'Reclamação trabalhista distribuída.' }, { id: uid(), data: addDias(h, -3), descricao: 'Audiência inicial designada.' }] });
+  const p2 = gravar('processos', { clienteId: c2.id, area: 'Trabalhista', tipoAcao: 'Rescisão indireta e dano moral (assédio)', polo: 'Reclamante', parteContraria: 'Comercial Beta Ltda.', funcao: 'Auxiliar administrativa', admissao: '2019-08-05', saida: addMeses(h, -22), motivoSaida: 'Pedido de demissão', ultimoSalario: 2100, status: 'Ativo', fase: 'Pré-processual' });
+  const p3 = gravar('processos', { clienteId: c3.id, numero: '0010987-11.2025.5.18.0012', area: 'Trabalhista', tipoAcao: 'Defesa em reclamação trabalhista', polo: 'Reclamado', parteContraria: 'Ex-empregado (motorista)', tribunal: 'TRT18', vara: '12ª Vara do Trabalho', comarca: 'Goiânia', status: 'Em recurso', fase: 'Recursal', valorCausa: 35000 });
+  gravar('eventos', { tipo: 'Audiência', titulo: 'Audiência inicial (UNA)', data: addDias(h, 12), hora: '09:30', processoId: p1.id, clienteId: c1.id, local: 'Sala virtual — link no PJe', prioridade: 'Alta' });
+  gravar('eventos', { tipo: 'Tarefa', titulo: 'Preparar testemunhas', data: addDias(h, 8), processoId: p1.id, clienteId: c1.id });
+  gravar('eventos', { tipo: 'Prazo', titulo: 'Contrarrazões ao recurso ordinário', data: addDias(h, -1), processoId: p3.id, clienteId: c3.id, prioridade: 'Alta' });
+  gravar('eventos', { tipo: 'Prazo', titulo: 'Ajuizar reclamação (prazo de 2 anos se aproximando)', data: addDias(h, 20), processoId: p2.id, clienteId: c2.id, prioridade: 'Alta' });
+  gravar('eventos', { tipo: 'Reunião', titulo: 'Conferir cálculo das verbas com o cliente', data: h, hora: '10:00', clienteId: c1.id });
+  gravar('leads', { nome: 'Ana Lúcia Ramos', telefone: '(62) 97777-0001', origem: 'Site', area: 'Trabalhista', empresa: 'Supermercado Gama', dataSaida: addMeses(h, -2), etapa: 'novo', proximoContato: h, descricao: 'Preencheu o formulário do site: rescisão paga a menor.', valorEstimado: 2500 });
+  gravar('leads', { nome: 'Roberto Dias', telefone: '(62) 97777-0002', origem: 'Instagram', area: 'Trabalhista', empresa: 'Construtora Delta', dataSaida: addMeses(h, -21), etapa: 'consulta', proximoContato: addDias(h, 2), valorEstimado: 3000, descricao: 'Adicional de insalubridade não pago.' });
+  gravar('leads', { nome: 'Francisca Lima', telefone: '(62) 97777-0003', origem: 'Indicação', area: 'Trabalhista', etapa: 'proposta', proximoContato: addDias(h, -1), valorEstimado: 6000, descricao: 'Ainda empregada; horas extras habituais sem pagamento.' });
+  gravar('leads', { nome: 'Paulo Henrique', origem: 'Google', area: 'Trabalhista', etapa: 'perdido', motivoPerda: 'Prazo de 2 anos já tinha passado' });
   const ph1 = gerarParcelas(3000, 6, addMeses(h, -2));
   ph1[0].pago = true; ph1[0].dataPagamento = ph1[0].vencimento; ph1[0].forma = 'PIX';
-  gravar('honorarios', { clienteId: c1.id, processoId: p1.id, descricao: 'Honorários contratuais — ação contra descontos indevidos', tipo: 'Parcelado', percentualExito: 30, dataContrato: addDias(h, -20), parcelas: ph1 });
-  gravar('honorarios', { clienteId: c3.id, processoId: '', descricao: 'Assessoria tributária mensal', tipo: 'Mensal (partido)', dataContrato: addMeses(h, -1), parcelas: gerarParcelas(4800, 3, addMeses(h, -1)) });
+  gravar('honorarios', { clienteId: c1.id, processoId: p1.id, descricao: 'Honorários contratuais — reclamação trabalhista', tipo: 'Êxito', percentualExito: 30, dataContrato: addDias(h, -20), parcelas: ph1 });
+  gravar('honorarios', { clienteId: c3.id, processoId: p3.id, descricao: 'Defesa trabalhista — honorários fixos', tipo: 'Parcelado', dataContrato: addMeses(h, -1), parcelas: gerarParcelas(4800, 3, addMeses(h, -1)) });
   toast('Dados de exemplo carregados');
   location.hash = '#/';
   render();
@@ -1271,7 +1319,7 @@ const acoes = {
   exportarICS,
   carregarExemplo,
   apagarTudo: () => {
-    if (!confirm('Apagar TODOS os dados deste navegador? Faça um backup antes.')) return;
+    if (!confirm('Apagar TODOS os dados do CRM, inclusive no banco online? Faça um backup antes.')) return;
     if (prompt('Para confirmar, digite APAGAR') !== 'APAGAR') return;
     db = vazio(); salvar(); toast('Dados apagados'); location.hash = '#/'; render();
   },
@@ -1334,7 +1382,8 @@ let telaAtual = null;
 let aposNavegar = null; // ação a executar depois da próxima troca de página
 
 function render() {
-  const [, rota = '', id] = location.hash.split('/');
+  // Links de login do Supabase chegam como #access_token=…: tratar como painel.
+  const [, rota = '', id] = location.hash.startsWith('#/') ? location.hash.split('/') : [];
   const tela = (ROTAS[rota] || telaNaoEncontrado)(id && decodeURIComponent(id));
   telaAtual = tela;
   $('#titulo-pagina').textContent = tela.titulo;
