@@ -179,3 +179,5 @@ p.lead { margin: 0 0 14px; color: var(--texto-2); }
 .status-reuniao[hidden], .btn-entrar[hidden] { display: none; }
 .voz-membro { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 8px; font-size: 13px; }
 .voz-membro select { font: inherit; font-size: 13px; max-width: 230px; padding: 5px 8px; border: 1px solid var(--borda); border-radius: 8px; background: var(--superficie); color: var(--texto); }
+.foto-real { object-fit: cover; object-position: center 25%; background: #ddd; }
+.foto-membro { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px; font-size: 13px; }

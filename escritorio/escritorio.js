@@ -50,7 +50,16 @@ function toast(msg) {
 }
 
 // ===== Estado e banco =====
-const estado = { sala: [], tarefas: [], atividades: [], status: {}, vozes: {}, carregado: false };
+const estado = { sala: [], tarefas: [], atividades: [], status: {}, vozes: {}, fotos: {}, carregado: false };
+// Foto real (enviada na aba Equipe) quando existir; senão o desenho.
+function avatar(id, tamanho = 96) {
+  const foto = estado.fotos?.[id];
+  if (typeof foto === 'string' && /^[0-9a-f]{32}$/.test(foto)) {
+    const nome = TIME[id]?.nome || '';
+    return `<img class="avatar foto-real" src="/_blob/${foto}" width="${tamanho}" height="${tamanho}" alt="${esc(nome)}" loading="lazy">`;
+  }
+  return avatarSVG(id, tamanho);
+}
 let banco = null;
 const EM_CLAUDE = typeof window.claude?.use === 'function';
 const colecao = (c) => banco.doc('escritorio/dados').collection(c);
@@ -79,7 +88,7 @@ async function iniciarBanco() {
   colecao('sala').orderBy('criadoEm', 'desc').limit(200).onSnapshot((r) => { estado.sala = r.docs.map((d) => d.data()).reverse(); ok(); renderSala(); }, (e) => console.warn(e));
   colecao('tarefas').onSnapshot((r) => { estado.tarefas = r.docs.map((d) => d.data()); ok(); renderTarefas(); renderEquipe(); }, (e) => console.warn(e));
   colecao('atividades').orderBy('criadoEm', 'desc').limit(150).onSnapshot((r) => { estado.atividades = r.docs.map((d) => d.data()); ok(); renderMural(); }, (e) => console.warn(e));
-  colecao('config').onSnapshot((r) => { const d = r.docs.find((x) => x.id === 'vozes'); estado.vozes = d ? d.data() : {}; renderEquipe(); }, (e) => console.warn(e));
+  colecao('config').onSnapshot((r) => { const d = r.docs.find((x) => x.id === 'vozes'); estado.vozes = d ? d.data() : {}; const f = r.docs.find((x) => x.id === 'fotos'); estado.fotos = f ? f.data() : {}; renderTudo(); }, (e) => console.warn(e));
   colecao('equipe').onSnapshot((r) => { estado.status = Object.fromEntries(r.docs.map((d) => [d.id, d.data()])); ok(); renderEquipe(); renderPresenca(); }, (e) => console.warn(e));
 }
 function mostrarAvisoGeral(msg) {
@@ -104,10 +113,10 @@ function renderPresenca() {
   const lugar = (graus) => { const r = (graus * Math.PI) / 180; return `left:${(50 + 41 * Math.cos(r)).toFixed(2)}%;top:${(50 + 40 * Math.sin(r)).toFixed(2)}%`; };
   $('#assentos').innerHTML = ORDEM.map((id) => `
     <button class="assento" data-chamar="${id}" style="${lugar(LUGARES[id])}" title="${esc(TIME[id].nome)} — ${esc(TIME[id].cargo)}">
-      <span class="foto">${avatarSVG(id, 64)}<span class="ponto ${ativoHoje(id) ? 'ativo' : ''}"></span></span>
+      <span class="foto">${avatar(id, 64)}<span class="ponto ${ativoHoje(id) ? 'ativo' : ''}"></span></span>
       <span class="nome">${esc(TIME[id].nome)}</span><span class="cargo">${esc(TIME[id].cargo)}</span>
     </button>`).join('') + `
-    <div class="assento dr" style="${lugar(90)}"><span class="foto">${avatarSVG('adonias', 64)}</span><span class="nome">Dr. Adonias</span><span class="cargo">Diretor</span></div>`;
+    <div class="assento dr" style="${lugar(90)}"><span class="foto">${avatar('adonias', 64)}</span><span class="nome">Dr. Adonias</span><span class="cargo">Diretor</span></div>`;
 }
 function legenda(quem, texto, modo = '') {
   const el = $('#legenda');
@@ -129,7 +138,7 @@ const SUGESTOES = [
 function bolha(m) {
   if (m.quem === 'dr') return `<div class="fala dr"><div class="bolha"><div class="quem">Dr. Adonias</div><div class="txt">${esc(m.texto)}</div></div></div>`;
   const cls = m.pensando ? 'pensando' : m.erro ? 'erro' : '';
-  return `<div class="fala ${cls}" data-id="${esc(m.id)}">${avatarSVG(m.quem, 34)}<div class="bolha">
+  return `<div class="fala ${cls}" data-id="${esc(m.id)}">${avatar(m.quem, 34)}<div class="bolha">
     <div class="quem">${esc(nomeDe(m.quem))}${!m.pensando && !m.erro && vozDisponivel ? `<button class="btn-link" data-ouvir="${esc(m.id)}">ouvir</button>` : ''}</div>
     <div class="txt">${esc(m.texto)}</div></div></div>`;
 }
@@ -500,11 +509,12 @@ function renderEquipe() {
     <div class="grade-equipe">${ORDEM.map((id) => {
       const s = estado.status[id];
       const n = abertas(id);
-      return `<article class="cartao membro">${avatarSVG(id, 72)}<div>
+      return `<article class="cartao membro">${avatar(id, 72)}<div>
         <h3>${esc(TIME[id].nome)}</h3>
         <div class="cargo">${esc(TIME[id].cargo)} · ${esc(EQUIPE[id].area)}</div>
         <p class="missao">${esc(EQUIPE[id].missao)}</p>
         <div class="status">${s?.status ? `${esc(s.status)} <span class="muted">· ${esc(quando(s.atualizadoEm))}</span>` : '<span class="muted">Aguardando o primeiro turno de trabalho.</span>'}</div>
+        <div class="foto-membro">${assets ? `<button class="btn-link" data-foto="${id}">📷 ${estado.fotos?.[id] ? 'Trocar a foto' : 'Colocar foto'}</button>` : ''}${estado.fotos?.[id] ? `<button class="btn-link" data-tirar-foto="${id}">Voltar ao desenho</button>` : ''}</div>
         <div class="voz-membro"><label>Voz <select data-voz="${id}">${opcoesDeVoz(escolhaDe(id))}</select></label><button class="btn-link" data-provar="${id}">▶ Ouvir</button></div>
         <div class="acoes">${n ? `<span class="etq info">${n} tarefa(s) em aberto</span>` : ''}</div>
       </div></article>`;
@@ -527,7 +537,7 @@ function renderTarefas() {
     <div class="quadro">${colunas.map(([, titulo, filtro]) => {
       const itens = estado.tarefas.filter(filtro).sort((a, b) => (b.atualizadoEm || '').localeCompare(a.atualizadoEm || ''));
       return `<div class="coluna"><h3>${titulo}<span class="muted">${itens.length}</span></h3>
-        ${itens.length ? itens.map((t) => `<div class="tarefa" data-tarefa="${esc(t.id)}">${avatarSVG(t.para, 34)}<div>
+        ${itens.length ? itens.map((t) => `<div class="tarefa" data-tarefa="${esc(t.id)}">${avatar(t.para, 34)}<div>
           <div class="t">${esc(t.titulo)}</div>
           <div class="s">${esc(nomeDe(t.de))} → ${esc(nomeDe(t.para))} · ${esc(quando(t.atualizadoEm || t.criadoEm))}</div>
           ${t.status === 'bloqueada' ? '<span class="etq perigo">Bloqueada</span>' : ''}${t.prioridade === 'alta' ? ' <span class="etq alerta">Alta</span>' : ''}
@@ -551,7 +561,7 @@ function abrirTarefa(id) {
   if (!t) return;
   const [rotulo, cls] = STATUS_TAREFA[t.status] || [t.status, ''];
   abrirModal(`
-    <div class="linha">${avatarSVG(t.para, 44)}<div><h3>${esc(t.titulo)}</h3>
+    <div class="linha">${avatar(t.para, 44)}<div><h3>${esc(t.titulo)}</h3>
       <div class="muted">${esc(nomeDe(t.de))} → ${esc(nomeDe(t.para))} · criada ${esc(quando(t.criadoEm))}</div></div></div>
     <span class="etq ${cls}">${esc(rotulo)}</span>${t.prioridade === 'alta' ? ' <span class="etq alerta">Prioridade alta</span>' : ''}
     ${t.descricao ? `<pre>${esc(t.descricao)}</pre>` : ''}
@@ -593,7 +603,7 @@ function renderMural() {
     <h2 class="titulo">Mural de atividades</h2>
     <p class="lead">Tudo o que a equipe fez, do mais recente para o mais antigo.</p>
     ${estado.atividades.length ? `<ul class="mural">${estado.atividades.map((a) => `
-      <li>${a.quem === 'dr' ? avatarSVG('adonias', 38) : avatarSVG(a.quem, 38)}<div>
+      <li>${a.quem === 'dr' ? avatar('adonias', 38) : avatar(a.quem, 38)}<div>
         <span class="q">${esc(nomeDe(a.quem))}</span> <span class="w">${esc(quando(a.criadoEm))}</span>
         <p>${esc(a.texto)}</p></div></li>`).join('')}</ul>` : '<div class="cartao vazio">Ainda não há atividades. Elas aparecem quando a equipe começa a trabalhar.</div>'}`;
 }
@@ -624,8 +634,14 @@ $('#btn-escrever').addEventListener('click', () => {
 });
 $('#btn-parar-voz').addEventListener('click', pararVoz);
 document.addEventListener('click', (e) => {
-  const el = e.target.closest('[data-chamar],[data-provar],[data-sugestao],[data-ouvir],[data-tarefa],[data-fechar],[data-decidir],#btn-nova-tarefa');
+  const el = e.target.closest('[data-chamar],[data-provar],[data-foto],[data-tirar-foto],[data-sugestao],[data-ouvir],[data-tarefa],[data-fechar],[data-decidir],#btn-nova-tarefa');
   if (!el) return;
+  if (el.dataset.foto) { escolherFoto(el.dataset.foto); return; }
+  if (el.dataset.tirarFoto) {
+    const fotos = { ...estado.fotos }; delete fotos[el.dataset.tirarFoto]; delete fotos.id;
+    estado.fotos = fotos; salvar('config', { ...fotos, id: 'fotos' }).catch(() => {}); renderTudo();
+    return;
+  }
   if (el.dataset.provar) {
     const id = el.dataset.provar;
     falar([{ id: uid('msg'), quem: id, texto: `Olá, Dr. Adonias. Eu sou ${id === 'claude' ? 'o Harvy, seu gerente geral' : `${VOZES[id].g === 'f' ? 'a' : 'o'} ${TIME[id].nome[0] + TIME[id].nome.slice(1).toLowerCase()}, ${TIME[id].cargo.toLowerCase()}`}. Estou pronto para trabalhar.`.replace('pronto', VOZES[id].g === 'f' ? 'pronta' : 'pronto') }]);
@@ -657,9 +673,46 @@ document.addEventListener('click', (e) => {
   }
 });
 
+// ===== Fotos da equipe =====
+let assets = null;
+async function iniciarFotos() { if (EM_CLAUDE) { assets = await window.claude.use('assets'); renderEquipe(); } }
+function recortarQuadrado(arquivo, lado = 480) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const m = Math.min(img.width, img.height);
+      const sx = (img.width - m) / 2, sy = Math.max(0, (img.height - m) * 0.25);
+      const c = document.createElement('canvas'); c.width = lado; c.height = lado;
+      c.getContext('2d').drawImage(img, sx, sy, m, m, 0, 0, lado, lado);
+      c.toBlob((b) => (b ? resolve(b) : reject(new Error('imagem inválida'))), 'image/jpeg', 0.88);
+      URL.revokeObjectURL(img.src);
+    };
+    img.onerror = () => reject(new Error('Não consegui abrir essa imagem.'));
+    img.src = URL.createObjectURL(arquivo);
+  });
+}
+function escolherFoto(id) {
+  if (!assets) return;
+  const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/*';
+  inp.onchange = async () => {
+    const arq = inp.files?.[0]; if (!arq) return;
+    try {
+      toast('Enviando a foto…');
+      const blob = await recortarQuadrado(arq);
+      const r = await assets.upload(blob, { type: 'image/jpeg' });
+      const fotos = { ...estado.fotos, [id]: r.id }; delete fotos.id;
+      estado.fotos = fotos;
+      await salvar('config', { ...fotos, id: 'fotos' });
+      renderTudo(); toast(`Foto de ${TIME[id].nome} atualizada.`);
+    } catch (e) { toast('Não foi possível enviar a foto: ' + (e?.message || e?.code || e)); }
+  };
+  inp.click();
+}
+
 // ===== Início =====
 function renderTudo() { renderPresenca(); renderSala(); renderEquipe(); renderTarefas(); renderMural(); }
 renderTudo();
 try { const aba = localStorage.getItem('escritorio-aba'); if (aba) abrirAba(aba); } catch { /* ignora */ }
 iniciarBanco();
 iniciarVoz();
+iniciarFotos();
