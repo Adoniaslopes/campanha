@@ -236,6 +236,17 @@ function gravar(col, obj) {
 }
 function remover(col, id) { db[col] = db[col].filter((x) => x.id !== id); salvar(); }
 
+/** Acha o cliente pelo nome digitado; se não existir, cadastra um novo com esse nome. */
+function resolverCliente(nome) {
+  nome = (nome || '').replace(/\s+/g, ' ').trim();
+  if (!nome) return '';
+  const chave = nome.toLocaleLowerCase('pt-BR');
+  const achado = db.clientes.find((c) => (c.nome || '').replace(/\s+/g, ' ').trim().toLocaleLowerCase('pt-BR') === chave);
+  if (achado) return achado.id;
+  const novo = gravar('clientes', { nome, tipo: 'PF' });
+  toast(`Cliente novo cadastrado: ${nome}`);
+  return novo.id;
+}
 const nomeCliente = (id) => buscar('clientes', id)?.nome || '—';
 const opcoesClientes = () => [...db.clientes].sort((a, b) => a.nome.localeCompare(b.nome)).map((c) => ({ v: c.id, l: c.nome }));
 const opcoesProcessos = () => db.processos.map((p) => ({ v: p.id, l: `${p.numero || 'Sem número'} — ${nomeCliente(p.clienteId)}` }));
@@ -341,6 +352,10 @@ function campoHTML(c, v) {
   let input;
   if (c.tipo === 'textarea') {
     input = `<textarea id="${id}" name="${c.nome}" rows="${c.linhas || 3}" ${req}>${esc(v)}</textarea>`;
+  } else if (c.tipo === 'cliente') {
+    const nome = v ? (buscar('clientes', v)?.nome || '') : '';
+    input = `<input id="${id}" name="${c.nome}" type="text" list="${id}_lista" autocomplete="off" value="${esc(nome)}" placeholder="Digite o nome (novo ou já cadastrado)" ${req}>
+      <datalist id="${id}_lista">${opcoesClientes().map((o) => `<option value="${esc(o.l)}"></option>`).join('')}</datalist>`;
   } else if (c.tipo === 'select') {
     const ops = (typeof c.opcoes === 'function' ? c.opcoes() : c.opcoes).map((o) => (typeof o === 'string' ? { v: o, l: o } : o));
     input = `<select id="${id}" name="${c.nome}" ${req}>
@@ -377,6 +392,7 @@ function abrirForm({ titulo, campos, valores = {}, onSalvar, onExcluir }) {
       if (!el || c.tipo === 'secao') continue;
       let v = c.tipo === 'checkbox' ? el.checked : el.value.trim();
       if (c.tipo === 'number' || c.tipo === 'money') v = v === '' ? null : Number(v);
+      if (c.tipo === 'cliente') v = resolverCliente(v);
       dados[c.nome] = v;
     }
     if (onSalvar(dados) !== false) { fecharModal(); render(); }
@@ -437,7 +453,7 @@ async function excluirCliente(id) {
 }
 
 const CAMPOS_PROCESSO = [
-  { nome: 'clienteId', rotulo: 'Cliente', tipo: 'select', opcoes: opcoesClientes, obrig: true, vazio: 'Selecione…', full: true },
+  { nome: 'clienteId', rotulo: 'Cliente', tipo: 'cliente', obrig: true, full: true, dica: 'Nome novo? O cliente é cadastrado ao salvar; complete os dados dele depois.' },
   { nome: 'numero', rotulo: 'Número do processo (CNJ)', mascara: 'cnj', placeholder: '0000000-00.0000.0.00.0000', dica: 'Deixe em branco se ainda não foi distribuído' },
   { nome: 'area', rotulo: 'Área', tipo: 'select', opcoes: AREAS, padrao: 'Trabalhista' },
   { nome: 'tipoAcao', rotulo: 'Tipo de ação / pedidos principais', placeholder: 'Ex.: Reclamação trabalhista — horas extras e verbas rescisórias' },
@@ -462,7 +478,6 @@ const CAMPOS_PROCESSO = [
 ];
 
 function formProcesso(id, valores = {}) {
-  if (!db.clientes.length) { toast('Cadastre um cliente primeiro'); return formCliente(); }
   abrirForm({
     titulo: id ? 'Editar processo' : 'Novo processo',
     campos: CAMPOS_PROCESSO,
@@ -494,7 +509,7 @@ const CAMPOS_EVENTO = [
   { nome: 'data', rotulo: 'Data', tipo: 'date', obrig: true },
   { nome: 'hora', rotulo: 'Hora', tipo: 'time' },
   { nome: 'processoId', rotulo: 'Processo', tipo: 'select', opcoes: opcoesProcessos, vazio: 'Nenhum', full: true },
-  { nome: 'clienteId', rotulo: 'Cliente (se não houver processo)', tipo: 'select', opcoes: opcoesClientes, vazio: 'Nenhum', full: true },
+  { nome: 'clienteId', rotulo: 'Cliente (se não houver processo)', tipo: 'cliente', full: true },
   { nome: 'local', rotulo: 'Local / link da sala virtual', full: true },
   { nome: 'observacoes', rotulo: 'Observações', tipo: 'textarea' },
   { nome: 'concluido', rotulo: 'Concluído', tipo: 'checkbox' },
@@ -560,9 +575,8 @@ function converterLead(id) {
 }
 
 function formHonorario(id, valores = {}) {
-  if (!db.clientes.length) { toast('Cadastre um cliente primeiro'); return formCliente(); }
   const campos = [
-    { nome: 'clienteId', rotulo: 'Cliente', tipo: 'select', opcoes: opcoesClientes, obrig: true, vazio: 'Selecione…', full: true },
+    { nome: 'clienteId', rotulo: 'Cliente', tipo: 'cliente', obrig: true, full: true, dica: 'Nome novo? O cliente é cadastrado ao salvar; complete os dados dele depois.' },
     { nome: 'processoId', rotulo: 'Processo vinculado', tipo: 'select', opcoes: opcoesProcessos, vazio: 'Nenhum', full: true },
     { nome: 'descricao', rotulo: 'Descrição', obrig: true, full: true, placeholder: 'Ex.: Honorários contratuais — reclamação trabalhista' },
     { nome: 'tipo', rotulo: 'Modalidade', tipo: 'select', opcoes: TIPOS_HON, padrao: 'Parcelado' },
