@@ -117,7 +117,7 @@ function mostrarEstado(estado, detalhe = '') {
 }
 
 // ===== Envio das alterações =====
-function aoSalvar() {
+function aoSalvarNuvem() {
   if (!nuvem.usuario || !nuvem.snap) return;
   mostrarEstado('salvando');
   clearTimeout(nuvem.timer);
@@ -213,7 +213,7 @@ async function iniciarSessao(usuario) {
     const baixado = await baixarTudo();
     const locais = contar(db);
     if (locais && !contar(baixado.remoto)) {
-      if (confirm(`Este aparelho tem ${locais} registro(s) salvos. Enviar para o banco online?\n\nSe cancelar, eles continuam guardados neste aparelho, mas não aparecem no CRM online.`)) {
+      if (await confirmar(`Este aparelho tem ${locais} registro(s) salvos. Enviar para o banco online?\n\nSe cancelar, eles continuam guardados neste aparelho, mas não aparecem no CRM online.`, { ok: 'Enviar' })) {
         nuvem.snap = snapVazio();
         gravarSnap();
         await sincronizar();
@@ -225,7 +225,7 @@ async function iniciarSessao(usuario) {
     } else if (locais) {
       const remotos = new Set(ORDEM.flatMap((c) => baixado.remoto[c].map((o) => o.id)));
       const extras = ORDEM.flatMap((c) => db[c].filter((o) => !remotos.has(o.id)).map((o) => [c, o]));
-      if (extras.length && confirm(`Este aparelho tem ${extras.length} registro(s) que não estão no banco online. Juntar com os dados online?`)) {
+      if (extras.length && await confirmar(`Este aparelho tem ${extras.length} registro(s) que não estão no banco online. Juntar com os dados online?`, { ok: 'Juntar' })) {
         extras.forEach(([c, o]) => baixado.remoto[c].push(o));
         aplicar(baixado);
         await sincronizar();
@@ -329,7 +329,7 @@ function esconderLogin() {
 }
 
 async function sair() {
-  if (nuvem.snap && temPendencias(nuvem.snap) && !confirm('Há alterações que ainda não chegaram ao banco online (sem internet?). Se sair agora, elas serão perdidas. Sair mesmo assim?')) return;
+  if (nuvem.snap && temPendencias(nuvem.snap) && !await confirmar('Há alterações que ainda não chegaram ao banco online (sem internet?). Se sair agora, elas serão perdidas. Sair mesmo assim?', { ok: 'Sair', perigo: true })) return;
   await nuvem.cliente.auth.signOut();
   // Limpa a cópia local: num aparelho compartilhado, ninguém vê os dados depois de sair.
   [CHAVE, CHAVE_SYNC].forEach((k) => { try { localStorage.removeItem(k); } catch { /* ignora */ } });
@@ -342,6 +342,8 @@ async function sair() {
 
 // ===== Inicialização =====
 (async function iniciarNuvem() {
+  if (EM_ARTIFACT) return; // no claude.ai os dados ficam no banco da própria página (js/banco-claude.js)
+  window.aoSalvar = aoSalvarNuvem;
   const rodape = document.querySelector('.menu-rodape');
   if (rodape) {
     rodape.insertAdjacentHTML('beforeend', `

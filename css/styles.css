@@ -22,7 +22,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --fundo: #12151c;
     --superficie: #1b1f29;
     --superficie-2: #222735;
@@ -41,6 +41,25 @@
     --sucesso-fundo: #173325;
     --sombra: none;
   }
+}
+:root[data-theme="dark"] {
+    --fundo: #12151c;
+    --superficie: #1b1f29;
+    --superficie-2: #222735;
+    --texto: #e6e8ee;
+    --texto-2: #9aa3b5;
+    --borda: #2e3445;
+    --marca: #0d1220;
+    --primario: #5b7fd1;
+    --primario-hover: #6d8fde;
+    --perigo: #ec7063;
+    --perigo-fundo: #3b1f1d;
+    --alerta: #f5b041;
+    --alerta-fundo: #3a2e17;
+    --info-fundo: #1d2940;
+    --sucesso: #58d68d;
+    --sucesso-fundo: #173325;
+    --sombra: none;
 }
 
 * { box-sizing: border-box; }
@@ -264,6 +283,13 @@ td.acoes { text-align: right; white-space: nowrap; }
 
 .calc { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; align-items: end; }
 .resultado-calc { margin-top: 12px; padding: 12px 14px; border-radius: 8px; background: var(--info-fundo); display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+.modal.dialogo { z-index: 80; align-items: center; }
+.modal.dialogo .modal-caixa { max-width: 440px; }
+.dialogo-texto { margin: 0 0 14px; white-space: pre-wrap; }
+.dialogo-input { margin-bottom: 4px; }
+.btn.perigo-cheio { background: var(--perigo); border-color: var(--perigo); color: #fff; }
+@media (max-width: 560px) { .modal.dialogo { padding: 16px; } .modal.dialogo .modal-caixa { min-height: 0; border-radius: 12px; } }
 
 .toasts { position: fixed; bottom: 20px; right: 20px; display: flex; flex-direction: column; gap: 8px; z-index: 60; }
 .toast { background: var(--marca); color: #fff; padding: 10px 16px; border-radius: 8px; box-shadow: 0 6px 20px rgba(0,0,0,.2); font-size: 14px; max-width: 360px; }

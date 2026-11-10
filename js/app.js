@@ -44,12 +44,49 @@ function linkWhats(tel) {
   return `https://wa.me/${d}`;
 }
 
-function baixar(nome, conteudo, tipo) {
+// Aberto como página do Claude (claude.ai)? Lá o app roda num quadro com `window.claude`.
+const EM_ARTIFACT = typeof window.claude?.use === 'function';
+
+async function baixar(nome, conteudo, tipo) {
+  if (EM_ARTIFACT) {
+    const downloads = await window.claude.use('downloads');
+    if (!downloads) { toast('Download indisponível aqui', 'erro'); return false; }
+    try { await downloads.save({ filename: nome, data: conteudo }); return true; }
+    catch (e) { if (e?.code !== 'declined') toast('Não foi possível baixar: ' + (e?.message || e), 'erro'); return false; }
+  }
   const url = URL.createObjectURL(new Blob([conteudo], { type: tipo }));
   const a = document.createElement('a');
   a.href = url; a.download = nome;
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
+  return true;
+}
+
+/** Caixa de confirmação própria (as janelas nativas não funcionam dentro do claude.ai). */
+function confirmar(mensagem, { ok = 'Confirmar', perigo = false, pedirTexto = '' } = {}) {
+  return new Promise((resolver) => {
+    const fundo = document.createElement('div');
+    fundo.className = 'modal dialogo';
+    fundo.innerHTML = `<div class="modal-caixa" role="alertdialog" aria-modal="true">
+      <div class="modal-corpo">
+        <p class="dialogo-texto">${esc(mensagem)}</p>
+        ${pedirTexto ? `<input type="text" class="dialogo-input" autocomplete="off" placeholder="${esc(pedirTexto)}">` : ''}
+        <div class="form-acoes">
+          <button type="button" class="btn" data-r="0">Cancelar</button>
+          <button type="button" class="btn ${perigo ? 'perigo-cheio' : 'primario'}" data-r="1">${esc(ok)}</button>
+        </div>
+      </div></div>`;
+    const fim = (v) => { fundo.remove(); document.removeEventListener('keydown', tecla, true); resolver(v); };
+    const tecla = (e) => { if (e.key === 'Escape') { e.stopPropagation(); fim(false); } };
+    fundo.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-r]');
+      if (b) fim(b.dataset.r === '1' && (!pedirTexto || fundo.querySelector('.dialogo-input').value.trim().toUpperCase() === pedirTexto));
+      else if (e.target === fundo) fim(false);
+    });
+    document.addEventListener('keydown', tecla, true);
+    document.body.appendChild(fundo);
+    (fundo.querySelector('.dialogo-input') || fundo.querySelector('[data-r="1"]')).focus();
+  });
 }
 
 function toast(msg, tipo = '') {
@@ -165,7 +202,7 @@ function carregar() {
     if (raw) return { ...vazio(), ...JSON.parse(raw) };
   } catch (e) {
     console.error(e);
-    alert('Não foi possível ler os dados salvos. Restaure um backup em "Backup e ajustes".');
+    setTimeout(() => toast('Não foi possível ler os dados salvos. Restaure um backup em "Backup e ajustes".', 'erro'), 0);
   }
   return vazio();
 }
@@ -177,8 +214,8 @@ function salvar() {
   } catch (e) {
     toast('Erro ao salvar: ' + e.message, 'erro');
   }
-  // Envia ao banco online (js/nuvem.js), quando houver login.
-  if (typeof aoSalvar === 'function') aoSalvar();
+  // Envia ao banco online (js/nuvem.js ou js/banco-claude.js), quando ativo.
+  window.aoSalvar?.();
 }
 // Pede ao navegador para não apagar os dados automaticamente.
 if (navigator.storage?.persist) navigator.storage.persist().catch(() => {});
@@ -345,8 +382,8 @@ function abrirForm({ titulo, campos, valores = {}, onSalvar, onExcluir }) {
     if (onSalvar(dados) !== false) { fecharModal(); render(); }
   });
   if (onExcluir) {
-    $('#form-excluir').addEventListener('click', () => {
-      if (onExcluir() !== false) { fecharModal(); render(); }
+    $('#form-excluir').addEventListener('click', async () => {
+      if (await onExcluir() !== false) { fecharModal(); render(); }
     });
   }
   form.querySelector('input:not([type=checkbox]), select, textarea')?.focus();
@@ -375,13 +412,13 @@ function formCliente(id, valores = {}) {
     onSalvar: (d) => {
       const c = gravar('clientes', { ...d, id });
       toast('Cliente salvo');
-      if (!id) location.hash = `#/cliente/${c.id}`;
+      if (!id) irPara(`#/cliente/${c.id}`);
     },
     onExcluir: id ? () => excluirCliente(id) : null,
   });
 }
 
-function excluirCliente(id) {
+async function excluirCliente(id) {
   const procs = db.processos.filter((p) => p.clienteId === id);
   const procIds = new Set(procs.map((p) => p.id));
   const evs = db.eventos.filter((e) => e.clienteId === id || procIds.has(e.processoId));
@@ -389,14 +426,14 @@ function excluirCliente(id) {
   const aviso = procs.length || evs.length || hons.length
     ? `\n\nTambém serão excluídos: ${procs.length} processo(s), ${evs.length} compromisso(s) e ${hons.length} contrato(s) de honorários.`
     : '';
-  if (!confirm(`Excluir o cliente "${nomeCliente(id)}"?${aviso}\n\nEsta ação não pode ser desfeita.`)) return false;
+  if (!await confirmar(`Excluir o cliente "${nomeCliente(id)}"?${aviso}\n\nEsta ação não pode ser desfeita.`, { ok: 'Excluir', perigo: true })) return false;
   db.processos = db.processos.filter((p) => p.clienteId !== id);
   db.eventos = db.eventos.filter((e) => !evs.includes(e));
   db.honorarios = db.honorarios.filter((h) => h.clienteId !== id);
   db.leads.forEach((l) => { if (l.clienteId === id) l.clienteId = ''; });
   remover('clientes', id);
   toast('Cliente excluído');
-  location.hash = '#/clientes';
+  irPara('#/clientes');
 }
 
 const CAMPOS_PROCESSO = [
@@ -433,21 +470,21 @@ function formProcesso(id, valores = {}) {
     onSalvar: (d) => {
       const p = gravar('processos', { ...d, id });
       toast('Processo salvo');
-      if (!id) location.hash = `#/processo/${p.id}`;
+      if (!id) irPara(`#/processo/${p.id}`);
     },
     onExcluir: id ? () => excluirProcesso(id) : null,
   });
 }
 
-function excluirProcesso(id) {
+async function excluirProcesso(id) {
   const p = buscar('processos', id);
   const evs = db.eventos.filter((e) => e.processoId === id);
-  if (!confirm(`Excluir o processo "${rotuloProcesso(p)}"?${evs.length ? `\n\n${evs.length} compromisso(s) vinculado(s) também serão excluídos.` : ''}`)) return false;
+  if (!await confirmar(`Excluir o processo "${rotuloProcesso(p)}"?${evs.length ? `\n\n${evs.length} compromisso(s) vinculado(s) também serão excluídos.` : ''}`, { ok: 'Excluir', perigo: true })) return false;
   db.eventos = db.eventos.filter((e) => e.processoId !== id);
   db.honorarios.forEach((h) => { if (h.processoId === id) h.processoId = ''; });
   remover('processos', id);
   toast('Processo excluído');
-  location.hash = `#/cliente/${p.clienteId}`;
+  irPara(`#/cliente/${p.clienteId}`);
 }
 
 const CAMPOS_EVENTO = [
@@ -473,8 +510,8 @@ function formEvento(id, valores = {}) {
       gravar('eventos', { ...d, id });
       toast('Compromisso salvo');
     },
-    onExcluir: id ? () => {
-      if (!confirm('Excluir este compromisso?')) return false;
+    onExcluir: id ? async () => {
+      if (!await confirmar('Excluir este compromisso?', { ok: 'Excluir', perigo: true })) return false;
       remover('eventos', id);
       toast('Compromisso excluído');
     } : null,
@@ -502,8 +539,8 @@ function formLead(id) {
     campos: CAMPOS_LEAD,
     valores: id ? buscar('leads', id) : { proximoContato: hoje() },
     onSalvar: (d) => { gravar('leads', { ...d, id }); toast('Lead salvo'); },
-    onExcluir: id ? () => {
-      if (!confirm('Excluir este lead?')) return false;
+    onExcluir: id ? async () => {
+      if (!await confirmar('Excluir este lead?', { ok: 'Excluir', perigo: true })) return false;
       remover('leads', id);
     } : null,
   });
@@ -511,7 +548,7 @@ function formLead(id) {
 
 function converterLead(id) {
   const l = buscar('leads', id);
-  if (l.clienteId && buscar('clientes', l.clienteId)) { location.hash = `#/cliente/${l.clienteId}`; return; }
+  if (l.clienteId && buscar('clientes', l.clienteId)) { irPara(`#/cliente/${l.clienteId}`); return; }
   const c = gravar('clientes', {
     nome: l.nome, tipo: 'PF', telefone: l.telefone, email: l.email, origem: l.origem,
     observacoes: l.descricao ? `Resumo do primeiro contato: ${l.descricao}` : '',
@@ -519,7 +556,7 @@ function converterLead(id) {
   gravar('leads', { id, etapa: 'fechado', clienteId: c.id });
   toast('Lead convertido em cliente');
   aposNavegar = () => formCliente(c.id);
-  location.hash = `#/cliente/${c.id}`;
+  irPara(`#/cliente/${c.id}`);
 }
 
 function formHonorario(id, valores = {}) {
@@ -552,13 +589,13 @@ function formHonorario(id, valores = {}) {
       const parcelas = valorTotal > 0 ? gerarParcelas(valorTotal, qtdParcelas, primeiroVencimento || hoje()) : [];
       const h = gravar('honorarios', { ...resto, parcelas });
       toast('Contrato criado');
-      location.hash = `#/honorario/${h.id}`;
+      irPara(`#/honorario/${h.id}`);
     },
-    onExcluir: id ? () => {
-      if (!confirm('Excluir este contrato e todas as suas parcelas?')) return false;
+    onExcluir: id ? async () => {
+      if (!await confirmar('Excluir este contrato e todas as suas parcelas?', { ok: 'Excluir', perigo: true })) return false;
       const h = buscar('honorarios', id);
       remover('honorarios', id);
-      location.hash = `#/cliente/${h.clienteId}`;
+      irPara(`#/cliente/${h.clienteId}`);
     } : null,
   });
 }
@@ -584,8 +621,8 @@ function formParcela(hid, pid) {
       else h.parcelas.push({ id: uid(), numero: h.parcelas.length + 1, ...d });
       salvar();
     },
-    onExcluir: p ? () => {
-      if (!confirm('Excluir esta parcela?')) return false;
+    onExcluir: p ? async () => {
+      if (!await confirmar('Excluir esta parcela?', { ok: 'Excluir', perigo: true })) return false;
       h.parcelas = h.parcelas.filter((x) => x.id !== pid);
       h.parcelas.forEach((x, i) => { x.numero = i + 1; });
       salvar();
@@ -905,7 +942,7 @@ function telaProcesso(id) {
 function telaAgenda() {
   return {
     titulo: 'Prazos e agenda',
-    acoes: btn('Exportar p/ Google Agenda', 'exportarICS', '', '') + btn('+ Novo compromisso', 'novoEvento'),
+    acoes: (EM_ARTIFACT ? '' : btn('Exportar p/ Google Agenda', 'exportarICS', '', '')) + btn('+ Novo compromisso', 'novoEvento'),
     html: `<section class="cartao">
         <div class="cartao-cab"><h3>Calculadora de prazo processual</h3></div>
         <form id="form-calc" class="calc">
@@ -1115,7 +1152,9 @@ function telaConfig() {
     acoes: '',
     html: `<section class="cartao">
         <div class="cartao-cab"><h3>Backup dos dados</h3></div>
-        <p>Com login, os dados ficam no <strong>banco online do escritório</strong> (servidor em São Paulo) e aparecem iguais no celular e no computador.
+        <p>${EM_ARTIFACT
+          ? 'Os dados ficam guardados com esta página no <strong>claude.ai</strong>, visíveis só para você, e aparecem iguais no celular e no computador.'
+          : 'Com login, os dados ficam no <strong>banco online do escritório</strong> (servidor em São Paulo) e aparecem iguais no celular e no computador.'}
         Uma cópia em arquivo, uma vez por mês, é uma garantia extra: guarde em local seguro (ex.: Google Drive). Importar um backup <strong>substitui</strong> os dados online.</p>
         <p class="muted">Conteúdo atual: ${total} (${tamanho} KB).<br>Último backup: ${db.meta.ultimoBackup ? fmtData(db.meta.ultimoBackup) : 'nunca'}.</p>
         <div class="barra-filtros">
@@ -1128,9 +1167,9 @@ function telaConfig() {
         <div class="cartao-cab"><h3>Exportações</h3></div>
         <div class="barra-filtros">
           ${btn('Clientes (planilha CSV)', 'exportarCSV', '', '')}
-          ${btn('Agenda (.ics para Google/Outlook)', 'exportarICS', '', '')}
+          ${EM_ARTIFACT ? '' : btn('Agenda (.ics para Google/Outlook)', 'exportarICS', '', '')}
         </div>
-        <p class="muted" style="font-size:13px;margin:0">O arquivo .ics pode ser importado no Google Agenda (Configurações → Importar) para receber lembretes no celular.</p>
+        <p class="muted" style="font-size:13px;margin:0" ${EM_ARTIFACT ? 'hidden' : ''}>O arquivo .ics pode ser importado no Google Agenda (Configurações → Importar) para receber lembretes no celular.</p>
       </section>
       <section class="cartao">
         <div class="cartao-cab"><h3>Escritório</h3></div>
@@ -1174,17 +1213,17 @@ function importarArquivo(e) {
   const arq = e.target.files[0];
   if (!arq) return;
   const leitor = new FileReader();
-  leitor.onload = () => {
+  leitor.onload = async () => {
     try {
       const json = JSON.parse(leitor.result);
       const dados = json.dados || json;
       if (!COLECOES.every((c) => Array.isArray(dados[c]))) throw new Error('arquivo não parece ser um backup deste CRM');
       const resumo = COLECOES.map((c) => `${dados[c].length} ${c}`).join(', ');
-      if (!confirm(`Importar backup com ${resumo}?\n\nOs dados atuais deste navegador serão SUBSTITUÍDOS.`)) return;
+      if (!await confirmar(`Importar backup com ${resumo}?\n\nOs dados atuais do CRM serão SUBSTITUÍDOS.`, { ok: 'Importar', perigo: true })) return;
       db = { ...vazio(), ...dados, meta: { ...(dados.meta || {}) } };
       salvar();
       toast('Backup importado');
-      location.hash = '#/';
+      irPara('#/');
       render();
     } catch (err) {
       toast('Não foi possível importar: ' + err.message, 'erro');
@@ -1231,9 +1270,9 @@ function exportarICS() {
   toast(`${evs.length} compromisso(s) exportado(s)`);
 }
 
-function carregarExemplo() {
+async function carregarExemplo() {
   const temDados = COLECOES.some((c) => db[c].length);
-  if (temDados && !confirm('Adicionar dados de exemplo aos dados existentes?')) return;
+  if (temDados && !await confirmar('Adicionar dados de exemplo aos dados existentes?', { ok: 'Adicionar' })) return;
   const h = hoje();
   const c1 = gravar('clientes', { nome: 'Carlos Eduardo Martins', tipo: 'PF', documento: '123.456.789-09', telefone: '(62) 99999-1234', email: 'carlos@exemplo.com', nascimento: '1988-03-12', profissao: 'Motorista', origem: 'Site', atendimentos: [{ id: uid(), data: addDias(h, -20), descricao: 'Consulta inicial. Fazia jornada de 12h sem receber horas extras; trouxe TRCT e holerites.' }] });
   const c2 = gravar('clientes', { nome: 'Juliana Ferreira Lima', tipo: 'PF', documento: '987.654.321-00', telefone: '(62) 98888-5678', profissao: 'Auxiliar administrativa', origem: 'Indicação' });
@@ -1255,7 +1294,7 @@ function carregarExemplo() {
   gravar('honorarios', { clienteId: c1.id, processoId: p1.id, descricao: 'Honorários contratuais — reclamação trabalhista', tipo: 'Êxito', percentualExito: 30, dataContrato: addDias(h, -20), parcelas: ph1 });
   gravar('honorarios', { clienteId: c3.id, processoId: p3.id, descricao: 'Defesa trabalhista — honorários fixos', tipo: 'Parcelado', dataContrato: addMeses(h, -1), parcelas: gerarParcelas(4800, 3, addMeses(h, -1)) });
   toast('Dados de exemplo carregados');
-  location.hash = '#/';
+  irPara('#/');
   render();
 }
 
@@ -1282,8 +1321,8 @@ const acoes = {
   },
   novoAtendimento: (d) => formRegistro('clientes', d.id, 'atendimentos', 'Registrar atendimento'),
   novoAndamento: (d) => formRegistro('processos', d.id, 'andamentos', 'Registrar andamento'),
-  removerRegistro: (d) => {
-    if (!confirm('Remover este registro?')) return;
+  removerRegistro: async (d) => {
+    if (!await confirmar('Remover este registro?', { ok: 'Remover', perigo: true })) return;
     const obj = buscar(d.col, d.id);
     obj[d.lista] = (obj[d.lista] || []).filter((r) => r.id !== d.rid);
     salvar(); render();
@@ -1318,10 +1357,9 @@ const acoes = {
   exportarCSV,
   exportarICS,
   carregarExemplo,
-  apagarTudo: () => {
-    if (!confirm('Apagar TODOS os dados do CRM, inclusive no banco online? Faça um backup antes.')) return;
-    if (prompt('Para confirmar, digite APAGAR') !== 'APAGAR') return;
-    db = vazio(); salvar(); toast('Dados apagados'); location.hash = '#/'; render();
+  apagarTudo: async () => {
+    if (!await confirmar('Apagar TODOS os dados do CRM, inclusive no banco online? Faça um backup antes.\n\nPara confirmar, digite APAGAR abaixo.', { ok: 'Apagar tudo', perigo: true, pedirTexto: 'APAGAR' })) return;
+    db = vazio(); salvar(); toast('Dados apagados'); irPara('#/'); render();
   },
 };
 
@@ -1381,9 +1419,32 @@ const MENU_DE = { cliente: 'clientes', processo: 'processos', honorario: 'financ
 let telaAtual = null;
 let aposNavegar = null; // ação a executar depois da próxima troca de página
 
+// No claude.ai só um #nome simples passa pelo endereço; lá a rota fica guardada aqui.
+let rotaInterna = '#/';
+const rotaAtual = () => (EM_ARTIFACT ? rotaInterna : location.hash);
+function irPara(destino) {
+  if (!EM_ARTIFACT) { location.hash = destino; return; }
+  rotaInterna = destino;
+  aoNavegar();
+}
+function aoNavegar() {
+  if (!$('#modal').hidden) fecharModal();
+  document.body.classList.remove('menu-aberto');
+  window.scrollTo(0, 0);
+  render();
+  if (aposNavegar) { const fn = aposNavegar; aposNavegar = null; fn(); }
+}
+document.addEventListener('click', (e) => {
+  const link = e.target.closest?.('a[href^="#/"]');
+  if (!EM_ARTIFACT || !link) return;
+  e.preventDefault();
+  irPara(link.getAttribute('href'));
+});
+
 function render() {
   // Links de login do Supabase chegam como #access_token=…: tratar como painel.
-  const [, rota = '', id] = location.hash.startsWith('#/') ? location.hash.split('/') : [];
+  const hash = rotaAtual();
+  const [, rota = '', id] = hash.startsWith('#/') ? hash.split('/') : [];
   const tela = (ROTAS[rota] || telaNaoEncontrado)(id && decodeURIComponent(id));
   telaAtual = tela;
   $('#titulo-pagina').textContent = tela.titulo;
@@ -1396,23 +1457,17 @@ function render() {
   tela.depois?.();
   const menu = MENU_DE[rota] ?? rota;
   document.querySelectorAll('.menu nav a').forEach((a) => a.classList.toggle('ativo', a.dataset.rota === menu));
-  if (render.ultimaRota === location.hash) window.scrollTo(0, rolagem);
-  render.ultimaRota = location.hash;
+  if (render.ultimaRota === hash) window.scrollTo(0, rolagem);
+  render.ultimaRota = hash;
 }
 
-window.addEventListener('hashchange', () => {
-  if (!$('#modal').hidden) fecharModal();
-  document.body.classList.remove('menu-aberto');
-  window.scrollTo(0, 0);
-  render();
-  if (aposNavegar) { const fn = aposNavegar; aposNavegar = null; fn(); }
-});
+window.addEventListener('hashchange', () => { if (!EM_ARTIFACT) aoNavegar(); });
 // Sincroniza se o CRM estiver aberto em outra aba
 window.addEventListener('storage', (e) => { if (e.key === CHAVE) { db = carregar(); render(); } });
 render();
 
 // ===== App instalável (PWA) =====
-if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+if ('serviceWorker' in navigator && location.protocol !== 'file:' && !EM_ARTIFACT) {
   navigator.serviceWorker.register('sw.js').catch((e) => console.warn('Service worker não registrado', e));
 }
 let pedidoInstalacao = null;
