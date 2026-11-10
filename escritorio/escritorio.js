@@ -108,15 +108,14 @@ document.querySelector('.abas').addEventListener('click', (e) => { const b = e.t
 // ===== Sala =====
 const ativoHoje = (id) => { const s = estado.status[id]; return s?.atualizadoEm && Date.now() - new Date(s.atualizadoEm) < 864e5; };
 // Lugares em volta da mesa (graus; 90 = embaixo, onde fica o Dr. Adonias; 270 = cabeceira).
-const LUGARES = { claude: 270, lara: 312, rui: 0, aureo: 48, iris: 234, plinio: 200, guido: 160, tessa: 126 };
+const LUGARES = { claude: 270, lara: 315, rui: 0, aureo: 45, iris: 90, tessa: 135, guido: 180, plinio: 225 };
 function renderPresenca() {
   const lugar = (graus) => { const r = (graus * Math.PI) / 180; return `left:${(50 + 41 * Math.cos(r)).toFixed(2)}%;top:${(50 + 40 * Math.sin(r)).toFixed(2)}%`; };
   $('#assentos').innerHTML = ORDEM.map((id) => `
     <button class="assento" data-chamar="${id}" style="${lugar(LUGARES[id])}" title="${esc(TIME[id].nome)} — ${esc(TIME[id].cargo)}">
       <span class="foto">${avatar(id, 64)}<span class="ponto ${ativoHoje(id) ? 'ativo' : ''}"></span></span>
       <span class="nome">${esc(TIME[id].nome)}</span><span class="cargo">${esc(TIME[id].cargo)}</span>
-    </button>`).join('') + `
-    <div class="assento dr" style="${lugar(90)}"><span class="foto">${avatar('adonias', 64)}</span><span class="nome">Dr. Adonias</span><span class="cargo">Diretor</span></div>`;
+    </button>`).join('');
 }
 function legenda(quem, texto, modo = '') {
   const el = $('#legenda');
@@ -603,7 +602,7 @@ function renderMural() {
     <h2 class="titulo">Mural de atividades</h2>
     <p class="lead">Tudo o que a equipe fez, do mais recente para o mais antigo.</p>
     ${estado.atividades.length ? `<ul class="mural">${estado.atividades.map((a) => `
-      <li>${a.quem === 'dr' ? avatar('adonias', 38) : avatar(a.quem, 38)}<div>
+      <li>${a.quem === 'dr' ? '<span class="avatar iniciais" style="width:38px;height:38px">DA</span>' : avatar(a.quem, 38)}<div>
         <span class="q">${esc(nomeDe(a.quem))}</span> <span class="w">${esc(quando(a.criadoEm))}</span>
         <p>${esc(a.texto)}</p></div></li>`).join('')}</ul>` : '<div class="cartao vazio">Ainda não há atividades. Elas aparecem quando a equipe começa a trabalhar.</div>'}`;
 }
