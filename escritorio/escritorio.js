@@ -133,7 +133,7 @@ const SUGESTOES = [
   'Bom dia, equipe! Como estamos hoje?',
   'Harvy, me dê o resumo da empresa.',
   'Donna, como está o atendimento?',
-  'TESSA, que teses você vai pesquisar primeiro?',
+  'Jessica, que teses você vai pesquisar primeiro?',
 ];
 function bolha(m) {
   if (m.quem === 'dr') return `<div class="fala dr"><div class="bolha"><div class="quem">Dr. Adonias</div><div class="txt">${esc(m.texto)}</div></div></div>`;
