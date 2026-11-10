@@ -10,7 +10,7 @@ Publicado como página do claude.ai (capacidades: db, sample, tts, dictation).
 
 | Funcionário | Área | Turno |
 |---|---|---|
-| CLAUDE | Gerente geral (relatório ao Dr.) | dias úteis 7h17 |
+| HARVY | Gerente geral (relatório ao Dr.) | dias úteis 7h17 |
 | RUI | Contencioso | dias úteis 7h43 |
 | LARA | Atendimento | dias úteis 8h13 |
 | ÁUREO | Financeiro | dias úteis 8h47 |

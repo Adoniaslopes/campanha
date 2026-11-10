@@ -8,7 +8,7 @@ const PELE = { clara: '#F2CBA8', media: '#DDA77F', morena: '#B97E57', escura: '#
 
 const TIME = {
   adonias: { nome: 'Dr. Adonias', cargo: 'Diretor', fundo: '#DCE3F0', roupa: '#1F2A44', pele: PELE.media, cabelo: 'curto', corCabelo: '#2B2018', extra: ['terno'], selo: null },
-  claude: { nome: 'Claude', cargo: 'Gerente geral', fundo: '#F6E3D8', especial: 'claude' },
+  claude: { nome: 'HARVY', cargo: 'Gerente geral', fundo: '#E4E7EE', roupa: '#2B2F3A', pele: PELE.clara, cabelo: 'lateral', corCabelo: '#3A2A1E', extra: ['terno'], selo: null },
   tessa: { nome: 'TESSA', cargo: 'Teses e nichos', fundo: '#DDF0EC', roupa: '#1E7F74', pele: PELE.clara, cabelo: 'coque', corCabelo: '#5A3A22', extra: ['oculos'], selo: 'lupa', corSelo: '#1E7F74' },
   guido: { nome: 'GUIDO', cargo: 'Campanhas', fundo: '#E3E8F8', roupa: '#3A55B4', pele: PELE.morena, cabelo: 'curto', corCabelo: '#1C1410', extra: ['barba'], selo: 'grafico', corSelo: '#3A55B4' },
   plinio: { nome: 'PLÍNIO', cargo: 'Copywriter', fundo: '#F4E9D6', roupa: '#A8692A', pele: PELE.escura, cabelo: 'cacheado', corCabelo: '#1A120D', extra: [], selo: 'pena', corSelo: '#A8692A' },

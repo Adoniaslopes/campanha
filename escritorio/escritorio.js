@@ -105,7 +105,7 @@ function renderPresenca() {
 }
 const SUGESTOES = [
   'Bom dia, equipe! Como estamos hoje?',
-  'Claude, me dê o resumo da empresa.',
+  'Harvy, me dê o resumo da empresa.',
   'LARA, como está o atendimento?',
   'TESSA, que teses você vai pesquisar primeiro?',
 ];
@@ -122,7 +122,7 @@ function renderSala() {
   $('#conversa').innerHTML = msgs.length ? msgs.map(bolha).join('') : `
     <div class="vazio-sala">
       <div class="equipe-mini">${ORDEM.map((id) => avatarSVG(id, 40)).join('')}</div>
-      <p><strong>Sala de reunião</strong><br>Fale com a equipe por texto${dictacao ? ' ou pelo microfone' : ''}. O Claude conduz, e cada funcionário responde quando o assunto é dele${vozDisponivel ? ', em voz alta' : ''}.</p>
+      <p><strong>Sala de reunião</strong><br>Fale com a equipe por texto${dictacao ? ' ou pelo microfone' : ''}. O Harvy conduz, e cada funcionário responde quando o assunto é dele${vozDisponivel ? ', em voz alta' : ''}.</p>
       <div class="sugestoes">${SUGESTOES.map((s) => `<button class="chip" data-sugestao="${esc(s)}">${esc(s)}</button>`).join('')}</div>
     </div>`;
   rolarConversa();
@@ -152,10 +152,10 @@ QUEM ESTÁ NA SALA
 ${time}
 
 COMO RESPONDER
-- Responda à última fala do Dr. Adonias. O Claude sempre fala: conduz, responde pelo time e fecha com o próximo passo. Chame só os funcionários de quem é o assunto ou que foram chamados pelo nome. Normalmente de 1 a 3 falas; no máximo 5.
+- Responda à última fala do Dr. Adonias. O Harvy (código claude) sempre fala: conduz, responde pelo time e fecha com o próximo passo. Chame só os funcionários de quem é o assunto ou que foram chamados pelo nome. Normalmente de 1 a 3 falas; no máximo 5.
 - Cada fala na primeira pessoa, no jeito daquele funcionário, com 1 a 3 frases curtas. As falas são ouvidas em voz alta: linguagem falada, sem listas, sem markdown, sem emojis, sem siglas difíceis.
 - Use só as informações do ESTADO DA EMPRESA abaixo. Nunca invente cliente, número, prazo, campanha, resultado ou trabalho já feito. Se a informação não está lá, diga com naturalidade que ainda não há registro.
-- Os funcionários fazem o trabalho nos seus turnos, sozinhos, e registram tudo; na sala eles conversam e combinam. Quando o Dr. Adonias pedir um trabalho, o Claude usa a ferramenta criar_tarefa para o funcionário certo e diz quem vai fazer. Use decidir_tarefa só quando o Dr. Adonias disser claramente que aprova ou recusa uma tarefa que está aguardando por ele.
+- Os funcionários fazem o trabalho nos seus turnos, sozinhos, e registram tudo; na sala eles conversam e combinam. Quando o Dr. Adonias pedir um trabalho, o Harvy usa a ferramenta criar_tarefa para o funcionário certo e diz quem vai fazer. Use decidir_tarefa só quando o Dr. Adonias disser claramente que aprova ou recusa uma tarefa que está aguardando por ele.
 - Respeite a ética da advocacia: Código de Ética da OAB e Provimento 205/2021.
 
 ESTADO DA EMPRESA
