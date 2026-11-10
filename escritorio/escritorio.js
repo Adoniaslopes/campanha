@@ -97,11 +97,27 @@ document.querySelector('.abas').addEventListener('click', (e) => { const b = e.t
 
 // ===== Sala =====
 const ativoHoje = (id) => { const s = estado.status[id]; return s?.atualizadoEm && Date.now() - new Date(s.atualizadoEm) < 864e5; };
+// Lugares em volta da mesa (graus; 90 = embaixo, onde fica o Dr. Adonias; 270 = cabeceira).
+const LUGARES = { claude: 270, lara: 318, rui: 0, aureo: 42, iris: 222, plinio: 190, guido: 158, tessa: 126 };
 function renderPresenca() {
-  $('#presenca').innerHTML = ORDEM.map((id) => `
-    <button class="p" data-chamar="${id}" title="${esc(TIME[id].nome)} — ${esc(TIME[id].cargo)}">
-      <span class="ponto ${ativoHoje(id) ? 'ativo' : ''}"></span>${avatarSVG(id, 44)}${esc(TIME[id].nome)}
-    </button>`).join('');
+  const lugar = (graus) => { const r = (graus * Math.PI) / 180; return `left:${(50 + 44 * Math.cos(r)).toFixed(2)}%;top:${(50 + 41 * Math.sin(r)).toFixed(2)}%`; };
+  $('#assentos').innerHTML = ORDEM.map((id) => `
+    <button class="assento" data-chamar="${id}" style="${lugar(LUGARES[id])}" title="${esc(TIME[id].nome)} — ${esc(TIME[id].cargo)}">
+      <span class="foto">${avatarSVG(id, 64)}<span class="ponto ${ativoHoje(id) ? 'ativo' : ''}"></span></span>
+      <span class="nome">${esc(TIME[id].nome)}</span><span class="cargo">${esc(TIME[id].cargo)}</span>
+    </button>`).join('') + `
+    <div class="assento dr" style="${lugar(90)}"><span class="foto">${avatarSVG('adonias', 64)}</span><span class="nome">Dr. Adonias</span><span class="cargo">Diretor</span></div>`;
+}
+function legenda(quem, texto, modo = '') {
+  const el = $('#legenda');
+  if (!el) return;
+  el.className = `legenda ${modo}`;
+  el.innerHTML = quem ? `<span class="q">${esc(quem)}</span><span class="t">${esc(texto)}</span>` : `<span class="t">${esc(texto)}</span>`;
+}
+function legendaPadrao() {
+  const ult = [...estado.sala].reverse().find((m) => m.quem !== 'dr');
+  if (ult) legenda(nomeDe(ult.quem), ult.texto);
+  else legenda('', dictacao ? 'Toque em “Falar”, diga o que precisa e toque de novo para enviar.' : 'Escreva para a equipe ao lado. O Harvy conduz a reunião.');
 }
 const SUGESTOES = [
   'Bom dia, equipe! Como estamos hoje?',
@@ -121,10 +137,10 @@ function renderSala() {
   const msgs = pensandoMsg ? [...estado.sala, pensandoMsg] : estado.sala;
   $('#conversa').innerHTML = msgs.length ? msgs.map(bolha).join('') : `
     <div class="vazio-sala">
-      <div class="equipe-mini">${ORDEM.map((id) => avatarSVG(id, 40)).join('')}</div>
-      <p><strong>Sala de reunião</strong><br>Fale com a equipe por texto${dictacao ? ' ou pelo microfone' : ''}. O Harvy conduz, e cada funcionário responde quando o assunto é dele${vozDisponivel ? ', em voz alta' : ''}.</p>
+      <p>A reunião ainda não começou. Algumas ideias:</p>
       <div class="sugestoes">${SUGESTOES.map((s) => `<button class="chip" data-sugestao="${esc(s)}">${esc(s)}</button>`).join('')}</div>
     </div>`;
+  if (!ocupado && !(dictacao && dictacao.active()) && !falandoAgora) legendaPadrao();
   rolarConversa();
 }
 function rolarConversa() { const c = $('#conversa'); c.scrollTop = c.scrollHeight; }
@@ -225,6 +241,7 @@ async function enviarNaSala(texto) {
   }
   pensandoMsg = { id: 'pensando', quem: 'claude', texto: 'A equipe está pensando…', pensando: true };
   renderSala();
+  legenda('', 'A equipe está pensando…', 'pensando');
   controleFala = new AbortController();
   try {
     const limites = await sample.limits().catch(() => null);
@@ -241,6 +258,8 @@ async function enviarNaSala(texto) {
     const base = Date.now();
     for (const [i, f] of falas.entries()) await salvar('sala', { ...f, criadoEm: new Date(base + i).toISOString() }).catch(() => {});
     renderSala();
+    const ultima = falas[falas.length - 1];
+    legenda(nomeDe(ultima.quem), ultima.texto);
     falar(falas);
   } catch (e) {
     const avisos = {
@@ -279,30 +298,40 @@ async function iniciarVoz() {
   }
   dictacao = await window.claude.use('dictation');
   if (dictacao) {
-    $('#btn-mic').hidden = false;
-    dictacao.onFinal(({ text }) => {
-      const caixa = $('#texto-sala');
-      caixa.value = (caixa.value ? caixa.value : text.trimStart()) + (caixa.value ? text : '');
-      ajustarCaixa();
-    });
-    dictacao.onPartial(({ text }) => { $('#texto-sala').placeholder = text || 'Ouvindo…'; });
+    $('#btn-falar').hidden = false;
+    let falado = '';
+    dictacao.onFinal(({ text }) => { falado = falado ? falado + text : text.trimStart(); legenda('Você', falado, 'voce'); });
+    dictacao.onPartial(({ text }) => { if (text) legenda('Você', `${falado}${falado ? ' ' : ''}${text}`, 'voce'); });
     dictacao.onState(({ state, reason }) => {
-      const btn = $('#btn-mic');
-      btn.classList.toggle('ouvindo', state !== 'idle');
-      btn.textContent = state === 'idle' ? '🎙' : '■';
+      const btn = $('#btn-falar');
+      const ouvindo = state !== 'idle';
+      btn.classList.toggle('ouvindo', ouvindo);
+      btn.querySelector('.ic').textContent = ouvindo ? '■' : '🎙';
+      btn.querySelector('.rot').textContent = state === 'starting' ? 'Abrindo o microfone…' : ouvindo ? 'Toque para enviar' : 'Toque para falar';
+      $('#dica-voz').textContent = ouvindo ? 'Pode falar. Quando terminar, toque no botão para enviar.' : '';
+      if (state === 'listening' && !falado) legenda('Você', 'Ouvindo…', 'voce');
       if (state === 'idle') {
-        $('#texto-sala').placeholder = 'Fale com a equipe…';
-        if (reason === 'stopped' && $('#texto-sala').value.trim()) enviarNaSala($('#texto-sala').value);
-        if (reason === 'unavailable') btn.hidden = true;
+        const texto = falado.trim();
+        falado = '';
+        if (['stopped', 'viewer_stopped'].includes(reason) && texto) enviarNaSala(texto);
+        else legendaPadrao();
+        if (reason === 'unavailable') { btn.hidden = true; $('#dica-voz').textContent = 'O microfone não está disponível aqui. Escreva para a equipe.'; }
+        if (reason === 'not_granted') $('#dica-voz').textContent = 'O microfone foi bloqueado para o escritório. Libere em Permissões, no menu da página.';
       }
     });
+  } else {
+    $('#dica-voz').textContent = 'Para falar pelo microfone, abra o escritório no Chrome ou no aplicativo do Claude para computador.';
   }
   renderSala();
 }
 const idParaQuem = {};
+let falandoAgora = null;
 function marcarFalando(idMsg) {
   const quem = idMsg ? idParaQuem[idMsg] : null;
-  document.querySelectorAll('.presenca .p').forEach((b) => b.classList.toggle('falando', b.dataset.chamar === quem));
+  falandoAgora = quem;
+  document.querySelectorAll('.assento').forEach((b) => b.classList.toggle('falando', Boolean(quem) && b.dataset.chamar === quem));
+  if (quem) { const m = estado.sala.find((x) => x.id === idMsg); if (m) legenda(nomeDe(quem), m.texto, 'falando'); }
+  else legendaPadrao();
 }
 function falar(falas) {
   if (!tts || !vozDisponivel || !$('#chk-voz').checked) return;
@@ -432,13 +461,16 @@ function ajustarCaixa() { const c = $('#texto-sala'); c.style.height = 'auto'; c
 $('#texto-sala').addEventListener('input', ajustarCaixa);
 $('#texto-sala').addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); enviarNaSala(e.target.value); } });
 $('#form-sala').addEventListener('submit', (e) => { e.preventDefault(); enviarNaSala($('#texto-sala').value); });
-$('#btn-mic').addEventListener('click', () => {
+$('#btn-falar').addEventListener('click', () => {
   if (!dictacao) return;
   if (dictacao.active()) { dictacao.stop().catch(() => {}); return; }
+  if (ocupado) { toast('A equipe ainda está respondendo. Um instante.'); return; }
   dictacao.start({ language: 'pt-BR' }).catch((e) => {
-    if (e?.code === 'not_granted') { toast('Microfone não permitido para o escritório.'); $('#btn-mic').hidden = true; }
+    if (e?.code === 'not_granted') toast('Microfone não permitido para o escritório.');
+    else if (e?.code === 'unavailable') toast('O microfone não está disponível neste aparelho.');
     else if (e?.code !== 'dismissed' && e?.code !== 'stopped') toast('Não foi possível usar o microfone agora.');
   });
+  tts?.stop().catch(() => {});
 });
 $('#btn-parar-voz').addEventListener('click', () => tts?.stop().catch(() => {}));
 $('#chk-voz').addEventListener('change', (e) => {

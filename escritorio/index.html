@@ -23,17 +23,30 @@
 
   <main>
     <section id="aba-sala" class="aba ativa" aria-label="Sala de reunião">
-      <div class="presenca" id="presenca"></div>
-      <div class="conversa" id="conversa" aria-live="polite"></div>
-      <form class="entrada" id="form-sala">
-        <button type="button" class="btn-redondo" id="btn-mic" hidden aria-label="Falar pelo microfone" title="Falar">🎙</button>
-        <textarea id="texto-sala" rows="1" placeholder="Fale com a equipe…"></textarea>
-        <button type="submit" class="btn-redondo primario" id="btn-enviar" aria-label="Enviar">➤</button>
-      </form>
-      <div class="barra-voz">
-        <label id="opcao-voz" hidden><input type="checkbox" id="chk-voz" checked> Ouvir as respostas em voz alta</label>
-        <button type="button" class="btn-link" id="btn-parar-voz" hidden>Parar voz</button>
-        <span id="aviso-voz" class="muted"></span>
+      <div class="sala">
+        <div class="palco">
+          <div class="mesa-area" id="mesa-area">
+            <div class="mesa"><div class="legenda" id="legenda" aria-live="polite"></div></div>
+            <div id="assentos"></div>
+          </div>
+          <div class="controle-voz">
+            <button type="button" class="btn-falar" id="btn-falar" hidden><span class="ic">🎙</span><span class="rot">Toque para falar</span></button>
+            <p class="dica-voz muted" id="dica-voz"></p>
+            <div class="barra-voz">
+              <label id="opcao-voz" hidden><input type="checkbox" id="chk-voz" checked> Ouvir as respostas em voz alta</label>
+              <button type="button" class="btn-link" id="btn-parar-voz" hidden>Parar voz</button>
+              <span id="aviso-voz" class="muted"></span>
+            </div>
+          </div>
+        </div>
+        <div class="painel-conversa">
+          <div class="painel-titulo">Conversa</div>
+          <div class="conversa" id="conversa"></div>
+          <form class="entrada" id="form-sala">
+            <textarea id="texto-sala" rows="1" placeholder="Ou escreva para a equipe…"></textarea>
+            <button type="submit" class="btn-redondo primario" id="btn-enviar" aria-label="Enviar">➤</button>
+          </form>
+        </div>
       </div>
     </section>
 
