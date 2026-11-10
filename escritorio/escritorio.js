@@ -132,7 +132,7 @@ function legendaPadrao() {
 const SUGESTOES = [
   'Bom dia, equipe! Como estamos hoje?',
   'Harvy, me dê o resumo da empresa.',
-  'LARA, como está o atendimento?',
+  'Donna, como está o atendimento?',
   'TESSA, que teses você vai pesquisar primeiro?',
 ];
 function bolha(m) {
