@@ -58,6 +58,10 @@ function toast(msg) {
 const estado = { sala: [], tarefas: [], atividades: [], status: {}, vozes: {}, fotos: {}, carregado: false };
 // Foto real (enviada na aba Equipe) quando existir; senão o desenho.
 function avatar(id, tamanho = 96) {
+  const dadosFoto = window.FOTOS_DADOS?.[id];
+  if (typeof dadosFoto === 'string' && dadosFoto.startsWith('data:image/')) {
+    return `<img class="avatar foto-real" src="${dadosFoto}" width="${tamanho}" height="${tamanho}" alt="${esc(TIME[id]?.nome || '')}" loading="lazy">`;
+  }
   const foto = estado.fotos?.[id];
   if (typeof foto === 'string' && /^[0-9a-f]{32}$/.test(foto)) {
     const nome = TIME[id]?.nome || '';
@@ -301,8 +305,9 @@ async function enviarNaSala(texto) {
       not_granted: 'Para a equipe responder, permita que o escritório use o Claude (toque em Permitir quando o aviso aparecer).',
       rate_limited: 'Muitos pedidos seguidos ou limite de uso atingido. Tente de novo em alguns minutos.',
       cancelled: 'Resposta interrompida.',
+      sem_chave: 'A inteligência da equipe ainda não foi ligada: falta cadastrar a chave da Anthropic no servidor.',
     };
-    pensandoMsg = { id: 'erro', quem: 'claude', texto: avisos[e?.code] || `Não consegui responder agora (${e?.code || e?.message || 'erro'}). Tente de novo.`, erro: true };
+    pensandoMsg = { id: 'erro', quem: 'claude', texto: avisos[e?.code] || (e?.message ? `Não consegui responder agora: ${e.message}` : null) || `Não consegui responder agora (${e?.code || e?.message || 'erro'}). Tente de novo.`, erro: true };
     registrarErro('sala', e);
     renderSala();
     legenda('Aviso', pensandoMsg.texto, 'pensando');
@@ -368,10 +373,13 @@ const VOZES_CLAUDE = [['buttery', 'Voz Claude 1'], ['glassy', 'Voz Claude 2'], [
 const ehNatural = (v) => /natural|online|neural/i.test(v.name);
 function escolhaDe(quem) {
   const salva = estado.vozes?.[quem];
-  if (typeof salva === 'string' && salva) return salva;
+  const valida = !window.VOZES_EXTERNAS || !String(salva).startsWith('claude:') || window.VOZES_EXTERNAS.some(([v]) => `claude:${v}` === salva);
+  if (typeof salva === 'string' && salva && valida) return salva;
   const g = VOZES[quem]?.g || 'm';
   const naturais = (vozesNav?.[g] || []).filter(ehNatural);
   if (naturais.length) { const mesmos = ORDEM.filter((id) => VOZES[id].g === g); return `nav:${naturais[mesmos.indexOf(quem) % naturais.length].name}`; }
+  const ext = window.VOZES_EXTERNAS_G?.[g];
+  if (tts && ext?.length) { const mesmos = ORDEM.filter((id) => VOZES[id].g === g); return `claude:${ext[mesmos.indexOf(quem) % ext.length]}`; }
   if (tts) return `claude:${g === 'm' ? (['claude', 'rui', 'plinio'].includes(quem) ? 'buttery' : 'glassy') : (quem === 'lara' ? 'airy' : 'rounded')}`;
   return 'nav:';
 }
@@ -431,7 +439,7 @@ function pararVoz() {
 function opcoesDeVoz(atual) {
   const opt = (v, rot) => `<option value="${esc(v)}"${v === atual ? ' selected' : ''}>${esc(rot)}</option>`;
   let h = '';
-  if (tts) h += `<optgroup label="Vozes do Claude (naturais)">${VOZES_CLAUDE.map(([v, r]) => opt(`claude:${v}`, r)).join('')}</optgroup>`;
+  if (tts) h += `<optgroup label="${window.VOZES_EXTERNAS ? 'Vozes ElevenLabs' : 'Vozes do Claude (naturais)'}">${(window.VOZES_EXTERNAS || VOZES_CLAUDE).map(([v, r]) => opt(`claude:${v}`, r)).join('')}</optgroup>`;
   const nav = vozesNav?.todas || [];
   if (nav.length) {
     const ord = [...nav].sort((a, b) => Number(ehNatural(b)) - Number(ehNatural(a)));

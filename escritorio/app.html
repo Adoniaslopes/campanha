@@ -1,0 +1,63 @@
+<!doctype html>
+<!-- Versão do escritório para abrir no navegador (GitHub Pages). Gerada a partir de index.html: mantenha as duas iguais, exceto pelos scripts externo.js e supabase. -->
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Escritório Digital</title>
+  <meta name="theme-color" content="#f7f4ee">
+  <link rel="stylesheet" href="escritorio.css">
+</head>
+<body>
+  <main>
+    <section id="aba-sala" class="aba ativa" aria-label="Sala de reunião">
+      <div class="sala">
+        <header class="titulo-escritorio">
+          <h1>Lopes Araújo <span>Advocacia</span></h1>
+          <p>Escritório Digital · Advocacia Trabalhista e Cível · Dr. Adonias Lopes de Araújo — OAB/GO 50.607</p>
+        </header>
+        <div class="mesa-area" id="mesa-area">
+          <div class="mesa"><div class="legenda" id="legenda" aria-live="polite"></div></div>
+          <div id="assentos"></div>
+        </div>
+        <div class="controle-voz">
+          <button type="button" class="btn-entrar" id="btn-entrar" hidden>🎙 Entrar na reunião</button>
+          <button type="button" class="btn-entrar" id="btn-falar-cel" hidden>🎙 Falar</button>
+          <div class="status-reuniao" id="status-reuniao" hidden><span class="luz"></span><span class="txt"></span></div>
+          <form class="entrada" id="form-sala" hidden>
+            <textarea id="texto-sala" rows="1" placeholder="Escreva para a equipe…"></textarea>
+            <button type="submit" class="btn-redondo primario" id="btn-enviar" aria-label="Enviar">➤</button>
+          </form>
+          <div class="barra-voz">
+            <button type="button" class="btn-link" id="btn-escrever">⌨ Escrever</button>
+            <button type="button" class="btn-link" id="btn-parar-voz" hidden>Interromper</button>
+            <span id="aviso-voz" class="muted"></span>
+          </div>
+        </div>
+        <div id="conversa" hidden></div>
+      </div>
+    </section>
+
+    <section id="aba-equipe" class="aba" aria-label="Equipe"></section>
+    <section id="aba-tarefas" class="aba" aria-label="Quadro de tarefas"></section>
+    <section id="aba-mural" class="aba" aria-label="Mural de atividades"></section>
+  </main>
+
+  <nav class="abas" role="tablist" aria-label="Seções do escritório">
+    <button role="tab" data-aba="sala" aria-selected="true"><span>🏛</span>Sala</button>
+    <button role="tab" data-aba="equipe"><span>👥</span>Equipe</button>
+    <button role="tab" data-aba="tarefas"><span>🗂</span>Tarefas</button>
+    <button role="tab" data-aba="mural"><span>📌</span>Mural</button>
+    <a class="link-crm" href="https://claude.ai/artifact/3HNhXEqp4WWjLtJ7dYUJtX" target="_blank" rel="noopener"><span>📇</span>CRM ↗</a>
+  </nav>
+
+  <div id="modal" class="modal" hidden></div>
+  <div id="toast" class="toast" hidden></div>
+
+  <script src="../js/vendor/supabase-2.119.0.js"></script>
+  <script src="externo.js"></script>
+  <script src="avatares.js"></script>
+  <script src="estrutura.js"></script>
+  <script src="escritorio.js"></script>
+</body>
+</html>

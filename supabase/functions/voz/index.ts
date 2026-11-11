@@ -4,6 +4,17 @@
 //   GET  /voz            → lista as vozes da conta ElevenLabs (id, nome, idioma)
 //   POST /voz {texto, voz} → áudio MP3
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+// Confere se quem chama é membro do escritório (tabela escritorio_membros, protegida por RLS).
+async function ehMembro(req: Request): Promise<boolean> {
+  const auth = req.headers.get("Authorization") || "";
+  if (!auth.startsWith("Bearer ")) return false;
+  const r = await fetch(`${Deno.env.get("SUPABASE_URL")}/rest/v1/escritorio_membros?select=email`, {
+    headers: { apikey: Deno.env.get("SUPABASE_ANON_KEY") || "", Authorization: auth },
+  });
+  if (!r.ok) return false;
+  const linhas = await r.json();
+  return Array.isArray(linhas) && linhas.length > 0;
+}
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -15,6 +26,7 @@ const json = (dados: unknown, status = 200) =>
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
+  if (!(await ehMembro(req))) return json({ erro: "Acesso restrito ao escritório" }, 403);
   const chave = Deno.env.get("ELEVENLABS_API_KEY");
   if (!chave) return json({ erro: "A chave do ElevenLabs ainda não foi cadastrada no Supabase (segredo ELEVENLABS_API_KEY)." }, 503);
 
