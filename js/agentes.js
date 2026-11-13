@@ -32,10 +32,10 @@ const AGENTES = [
     sugestoes: ['Fechei com um cliente novo: ', 'Que documentos peço para uma reclamação trabalhista?', 'Abra o caso do cliente '],
   },
   {
-    id: 'contencioso', pasta: 'contencioso-escritorio', nome: 'Departamento Jurídico', sigla: '04 · JURÍDICO', icone: '⚖️', resp: 'rui', time: ['guido', 'aureo', 'tessa'],
-    desc: 'Louis coordena; Alex cuida do trabalhista (e dos prazos), Mike dos casos complexos e Jessica da pesquisa. Andamentos, prazos, audiências e rascunhos de peças.',
+    id: 'contencioso', pasta: 'contencioso-escritorio', nome: 'Departamento Jurídico', sigla: '04 · JURÍDICO', icone: '⚖️', resp: 'tessa', time: ['rui', 'aureo'],
+    desc: 'Jessica dirige, cria teses e aconselha nos casos; Louis conduz os casos complexos e Mike os processos trabalhistas. Andamentos, audiências e rascunhos de peças.',
     refs: ['crm.md', 'prazos-jt.md'],
-    sugestoes: ['Quais prazos vencem esta semana?', 'Mike, qual a situação de Atibaia?', 'Alex, calcule o prazo do recurso ordinário: fui intimado hoje'],
+    sugestoes: ['Jessica, que tese cabe neste caso? ', 'Louis, qual a situação de Atibaia?', 'Mike, analise este caso trabalhista: '],
   },
   {
     id: 'prazos', pasta: 'contencioso-escritorio', nome: 'Protocolo e Prazos', sigla: '05 · DOCKET', icone: '📅', resp: 'guido',
@@ -83,7 +83,7 @@ function instrucoes(ag, regras, comFerramentas) {
   const agora = new Date();
   const resp = EQUIPE_CRM[ag.resp];
   const time = (ag.time || []).map((t) => EQUIPE_CRM[t]).join(', ');
-  return `Você é ${resp}, responsável pela área ${ag.sigla} — ${ag.nome} do escritório Lopes Araújo Advocacia${ag.interino ? ' (você responde por ela interinamente, como controller)' : ''}${time ? `, junto com ${time}: quando o Dr. chamar um deles pelo nome, responda como essa pessoa (ALEX = trabalhista, MIKE = casos complexos de Atibaia/TJSP/STJ, JESSICA = pesquisa e teses, LOUIS = coordenação e revisão)` : ''}. Você está conversando com o Dr. Adonias dentro do CRM Jurídico (aberto no claude.ai). Hoje é ${fmtData(hoje())} (${DIAS_SEMANA[agora.getDay()]}).
+  return `Você é ${resp}, responsável pela área ${ag.sigla} — ${ag.nome} do escritório Lopes Araújo Advocacia${ag.interino ? ' (você responde por ela interinamente, como controller)' : ''}${time ? `, junto com ${time}: quando o Dr. chamar um deles pelo nome, responda como essa pessoa (JESSICA = diretora do Jurídico, teses, aconselhamento e jurisprudência; LOUIS = casos complexos de Atibaia/TJSP/STJ; MIKE = processos trabalhistas)` : ''}. Você está conversando com o Dr. Adonias dentro do CRM Jurídico (aberto no claude.ai). Hoje é ${fmtData(hoje())} (${DIAS_SEMANA[agora.getDay()]}).
 
 COMO TRABALHAR NESTE CHAT
 - Siga as regras da sua skill, abaixo.
