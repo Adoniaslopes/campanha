@@ -33,12 +33,12 @@ const AGENTES = [
   },
   {
     id: 'contencioso', pasta: 'contencioso-escritorio', nome: 'Departamento Jurídico', sigla: '04 · JURÍDICO', icone: '⚖️', resp: 'rui', time: ['guido', 'aureo', 'tessa'],
-    desc: 'Louis coordena; Alex cuida do trabalhista, Mike dos casos complexos e Jessica da pesquisa. Andamentos, prazos, audiências e rascunhos de peças.',
+    desc: 'Louis coordena; Alex cuida do trabalhista (e dos prazos), Mike dos casos complexos e Jessica da pesquisa. Andamentos, prazos, audiências e rascunhos de peças.',
     refs: ['crm.md', 'prazos-jt.md'],
     sugestoes: ['Quais prazos vencem esta semana?', 'Mike, qual a situação de Atibaia?', 'Alex, calcule o prazo do recurso ordinário: fui intimado hoje'],
   },
   {
-    id: 'prazos', pasta: 'contencioso-escritorio', nome: 'Protocolo e Prazos', sigla: '05 · DOCKET', icone: '📅', resp: 'claude', interino: true,
+    id: 'prazos', pasta: 'contencioso-escritorio', nome: 'Protocolo e Prazos', sigla: '05 · DOCKET', icone: '📅', resp: 'guido',
     desc: 'Controla os prazos e as audiências de todos os processos, com conferência dupla, e avisa o que vence primeiro.',
     refs: ['crm.md', 'prazos-jt.md'],
     sugestoes: ['O que vence nos próximos 10 dias?', 'Quais prazos estão sem confirmação no tribunal?', 'Cadastre uma audiência no processo '],

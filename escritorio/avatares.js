@@ -16,7 +16,7 @@ const TIME = {
   rui: { nome: 'LOUIS', cargo: 'Coordenador Jurídico', fundo: '#E4E8EF', roupa: '#1F2A44', pele: PELE.clara, cabelo: 'fade', corCabelo: '#2A2320', extra: ['gravata', 'barbaRala'], selo: 'balanca', corSelo: '#1F2A44' },
   aureo: { nome: 'MIKE', cargo: 'Advogado — Casos Complexos', fundo: '#F3EEDD', roupa: '#34465F', pele: PELE.clara, cabelo: 'lateral', corCabelo: '#2A1F18', extra: ['gravata', 'barbaRala'], selo: null },
   tessa: { nome: 'JESSICA', cargo: 'Advogada — Pesquisa e Teses', fundo: '#EFE7DC', roupa: '#C9AE8E', pele: PELE.morena, cabelo: 'ondulado', corCabelo: '#3B2418', extra: ['brincos'], selo: 'lupa', corSelo: '#8A6A45' },
-  guido: { nome: 'ALEX', cargo: 'Advogado Trabalhista', fundo: '#E6E8EC', roupa: '#5B6170', pele: PELE.escura, cabelo: 'fade', corCabelo: '#15100C', extra: ['gravata', 'barba'], selo: 'grafico', corSelo: '#3C5CC8' },
+  guido: { nome: 'ALEX', cargo: 'Advogado Trabalhista e Diretor de Prazos', fundo: '#E6E8EC', roupa: '#5B6170', pele: PELE.escura, cabelo: 'fade', corCabelo: '#15100C', extra: ['gravata', 'barba'], selo: 'grafico', corSelo: '#3C5CC8' },
   plinio: { nome: 'RACHEL', cargo: 'Diretora de Onboarding', fundo: '#F3EDE3', roupa: '#EFE6D6', pele: PELE.media, cabelo: 'ondulado', corCabelo: '#5A3420', extra: ['brincos'], selo: null },
   gretchen: { nome: 'GRETCHEN', cargo: 'Diretora de Onboarding', fundo: '#F1E6EA', roupa: '#7A3E55', pele: PELE.escura, cabelo: 'chanel', corCabelo: '#2A1C17', extra: ['brincos', 'oculos'], selo: null },
   benjamin: { nome: 'BENJAMIN', cargo: 'Diretor de Protocolo e Prazos', fundo: '#E2EEF0', roupa: '#3D5C66', pele: PELE.clara, cabelo: 'curto', corCabelo: '#4A3526', extra: ['camisa', 'oculos'], selo: null },
