@@ -1,0 +1,22 @@
+name: Diagnóstico do site (Pages)
+on:
+  push:
+    branches: [claude/crm-escritorio-juridico-lidq8j]
+    paths: ['.github/workflows/diagnostico-pages.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: read
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configuração do Pages
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api repos/${{ github.repository }}/pages || echo "PAGES NAO CONFIGURADO"
+      - name: Endereços
+        run: |
+          for u in https://adoniaslopes.github.io/campanha/ https://adoniaslopes.github.io/campanha/escritorio/app.html; do
+            echo "$u -> $(curl -s -o /dev/null -w '%{http_code}' $u)"
+          done
