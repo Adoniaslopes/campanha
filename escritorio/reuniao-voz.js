@@ -3,6 +3,7 @@
  * Usa o agente de voz do escritório no ElevenLabs (Harvey e equipe): o Dr. toca em "Falar"
  * e conversa à vontade; a fala aparece na mesa, quem está falando acende e tudo fica guardado na sala. */
 (() => {
+  const VERSAO = '202611132214';
   const AGENTE = 'agent_4301m795s4z6e06arr6830nmtw3p';
   const btn = document.getElementById('btn-falar-cel');
   if (!btn || !window.ElevenConversation) return;
@@ -74,7 +75,7 @@
   const estadoOrbe = (e) => { orbe.dataset.estado = e; orbe.querySelector('.orbe-txt').textContent = { livre: 'Toque para falar', conectando: 'Conectando…', ouvindo: 'Ouvindo…', falando: '' }[e] ?? ''; };
   estadoOrbe('livre');
   window.__estadoOrbe = estadoOrbe;
-  const mostrar = () => { btn.hidden = false; btn.textContent = '🎙 Falar com a equipe'; status('Toque em “Falar com a equipe” e converse por voz, como numa reunião.'); };
+  const mostrar = () => { btn.hidden = false; btn.textContent = '🎙 Falar com a equipe'; status('Toque em “Falar com a equipe” e converse por voz, como numa reunião. (versão ' + VERSAO + ')'); };
   // espera o escritorio.js montar a sala
   setTimeout(mostrar, 1500);
 })();
