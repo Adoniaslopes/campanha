@@ -7,6 +7,8 @@ Roda direto no navegador, sem servidor, sem mensalidade e sem instalar nada.
 
 **https://adoniaslopes.github.io/campanha/**
 
+Escritório Digital (versão do navegador, com reunião por voz): **https://adoniaslopes.github.io/campanha/escritorio/app.html**
+
 ### Ativar o link (uma única vez)
 
 1. No GitHub, abra o repositório **campanha** → **Settings** → **Pages**.
