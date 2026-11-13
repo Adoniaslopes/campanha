@@ -367,18 +367,20 @@ let fimDaFala = 0;
 const idParaQuem = {};
 const filaNav = [];
 // Vozes escolhidas na aba Equipe (banco: escritorio/dados/config/vozes). Valor: "claude:<voz>" ou "nav:<nome da voz do navegador>".
-const VOZES_CLAUDE = [['buttery', 'Voz Claude 1'], ['glassy', 'Voz Claude 2'], ['rounded', 'Voz Claude 3'], ['airy', 'Voz Claude 4']];
+// Em português, só a "buttery" sai masculina; as outras três saem femininas.
+const VOZES_CLAUDE = [['buttery', 'Voz Claude masculina'], ['glassy', 'Voz Claude feminina 1'], ['rounded', 'Voz Claude feminina 2'], ['airy', 'Voz Claude feminina 3']];
 const ehNatural = (v) => /natural|online|neural/i.test(v.name);
 function escolhaDe(quem) {
   const salva = estado.vozes?.[quem];
   const valida = !window.VOZES_EXTERNAS || !String(salva).startsWith('claude:') || window.VOZES_EXTERNAS.some(([v]) => `claude:${v}` === salva);
-  if (typeof salva === 'string' && salva && valida) return salva;
+  const vozFemininaEmHomem = !window.VOZES_EXTERNAS && (VOZES[quem]?.g === 'm') && /^claude:(glassy|rounded|airy)$/.test(String(salva));
+  if (typeof salva === 'string' && salva && valida && !vozFemininaEmHomem) return salva;
   const g = VOZES[quem]?.g || 'm';
   const naturais = (vozesNav?.[g] || []).filter(ehNatural);
   if (naturais.length) { const mesmos = ORDEM.filter((id) => VOZES[id].g === g); return `nav:${naturais[mesmos.indexOf(quem) % naturais.length].name}`; }
   const ext = window.VOZES_EXTERNAS_G?.[g];
   if (tts && ext?.length) { const mesmos = ORDEM.filter((id) => VOZES[id].g === g); return `claude:${ext[mesmos.indexOf(quem) % ext.length]}`; }
-  if (tts) return `claude:${g === 'm' ? (['claude', 'rui', 'plinio'].includes(quem) ? 'buttery' : 'glassy') : (quem === 'lara' ? 'airy' : 'rounded')}`;
+  if (tts) return `claude:${g === 'm' ? 'buttery' : (quem === 'lara' ? 'airy' : quem === 'tessa' ? 'glassy' : 'rounded')}`;
   return 'nav:';
 }
 function falarUmNav(f, nome) {
@@ -402,10 +404,12 @@ function falarUmNav(f, nome) {
     prox();
   });
 }
+// Os quatro homens usam a mesma voz masculina: o ritmo diferencia cada um.
+const RITMO_CLAUDE = { rui: 0.9, aureo: 1.06, guido: 1.14 };
 async function falarUmClaude(f, voz) {
   if (!tts) return;
   if (dictacao?.active()) { await dictacao.stop().catch(() => {}); pedirRetomada = true; }
-  await tts.speak([{ text: f.texto.slice(0, 1990), voice: voz, language: 'pt-BR', id: f.id }]).catch((e) => {
+  await tts.speak([{ text: f.texto.slice(0, 1990), voice: voz, language: 'pt-BR', id: f.id, ...(RITMO_CLAUDE[f.quem] ? { rate: RITMO_CLAUDE[f.quem] } : {}) }]).catch((e) => {
     if (e?.code === 'rate_limited') $('#aviso-voz').textContent = 'Limite de voz atingido por agora.';
     if (e?.code === 'no_gesture') $('#aviso-voz').textContent = 'Toque em qualquer lugar da página para liberar a voz.';
   });
