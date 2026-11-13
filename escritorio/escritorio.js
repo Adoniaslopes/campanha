@@ -422,8 +422,11 @@ async function falar(falas) {
     marcarFalando(f.id);
     const [tipo, ...resto] = escolhaDe(f.quem).split(':');
     const valor = resto.join(':');
-    if (tipo === 'claude' && tts) await falarUmClaude(f, valor);
-    else await falarUmNav(f, valor);
+    // Com a reunião aberta (microfone ligado), a voz do Claude derrubaria o microfone:
+    // usa a voz do próprio aparelho para os dois funcionarem juntos.
+    const microfoneAberto = Boolean(dictacao?.active()) && Boolean(vozesNav?.todas?.length);
+    if (tipo === 'claude' && tts && !microfoneAberto) await falarUmClaude(f, valor);
+    else await falarUmNav(f, tipo === 'nav' ? valor : '');
   }
   falando = false; fimDaFala = Date.now(); ultimaResposta = Date.now(); marcarFalando(null); atualizarStatus();
 }
