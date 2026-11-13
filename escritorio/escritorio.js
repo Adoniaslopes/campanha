@@ -540,9 +540,12 @@ async function iniciarVoz() {
     $('#form-sala').hidden = false;
     $('#btn-escrever').hidden = true;
     const celular = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
-    if (RECONHECEDOR || GRAVA) { $('#btn-falar-cel').hidden = false; }
+    const dentroDoClaude = !window.claude?.externo;
+    if (GRAVA || (RECONHECEDOR && !(dentroDoClaude && celular))) { $('#btn-falar-cel').hidden = false; }
     $('#texto-sala').placeholder = celular ? 'Toque aqui e use o 🎤 do teclado…' : 'Escreva para a equipe…';
-    $('#aviso-voz').textContent = GRAVA
+    $('#aviso-voz').textContent = (dentroDoClaude && celular)
+      ? 'Para conversar por voz pelo celular, toque em 📞 Ligar, na barra de baixo.'
+      : GRAVA
       ? 'Toque em “Falar” e fale. Quando o senhor parar de falar, a mensagem vai sozinha.'
       : RECONHECEDOR
       ? 'Toque em “Falar”, fale e pare: a mensagem vai sozinha. Se preferir, escreva abaixo.'
