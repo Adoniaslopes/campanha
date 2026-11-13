@@ -118,6 +118,8 @@ document.querySelector('.abas').addEventListener('click', (e) => { const b = e.t
 const ativoHoje = (id) => { const s = estado.status[id]; return s?.atualizadoEm && Date.now() - new Date(s.atualizadoEm) < 864e5; };
 // Lugares em volta da mesa (graus; 90 = embaixo, onde fica o Dr. Adonias; 270 = cabeceira).
 const RECONHECEDOR = window.SpeechRecognition || window.webkitSpeechRecognition || null;
+// Fora do claude.ai: grava o áudio e o servidor transcreve (funciona em qualquer celular).
+const GRAVA = Boolean(window.claude?.externo && navigator.mediaDevices?.getUserMedia && window.MediaRecorder);
 const LUGARES = { claude: 270, lara: 300, gretchen: 330, rui: 0, kyle: 30, benjamin: 60, aureo: 90, faye: 120, tessa: 150, guido: 180, plinio: 210, iris: 240 };
 function renderPresenca() {
   const lugar = (graus) => { const r = (graus * Math.PI) / 180; return `left:${(50 + 41 * Math.cos(r)).toFixed(2)}%;top:${(50 + 40 * Math.sin(r)).toFixed(2)}%`; };
@@ -542,9 +544,11 @@ async function iniciarVoz() {
     $('#form-sala').hidden = false;
     $('#btn-escrever').hidden = true;
     const celular = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
-    if (RECONHECEDOR) { $('#btn-falar-cel').hidden = false; }
+    if (RECONHECEDOR || GRAVA) { $('#btn-falar-cel').hidden = false; }
     $('#texto-sala').placeholder = celular ? 'Toque aqui e use o 🎤 do teclado…' : 'Escreva para a equipe…';
-    $('#aviso-voz').textContent = RECONHECEDOR
+    $('#aviso-voz').textContent = GRAVA
+      ? 'Toque em “Falar” e fale. Quando o senhor parar de falar, a mensagem vai sozinha.'
+      : RECONHECEDOR
       ? 'Toque em “Falar”, fale e pare: a mensagem vai sozinha. Se preferir, escreva abaixo.'
       : celular
       ? 'Este navegador não libera o microfone para a página. Escreva abaixo ou use o 🎤 do teclado, se aparecer.'
@@ -694,7 +698,65 @@ $('#form-sala').addEventListener('submit', (e) => { e.preventDefault(); enviarNa
 $('#btn-entrar').addEventListener('click', entrarNaReuniao);
 // Microfone alternativo (reconhecimento de fala do próprio navegador), usado quando o ditado do claude.ai não está disponível, como no celular.
 let rec = null;
+let gravacao = null;
+let semTranscricao = false;
+async function gravarOuParar() {
+  const b = $('#btn-falar-cel');
+  if (gravacao) { gravacao.parar(); return; }
+  if (falando) pararVoz();
+  let stream;
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
+  } catch (e) {
+    $('#aviso-voz').textContent = e?.name === 'NotAllowedError'
+      ? 'O microfone foi negado. Toque no cadeado (ou em “Aa”) ao lado do endereço, permita o microfone e recarregue a página.'
+      : e?.name === 'NotFoundError' ? 'Nenhum microfone encontrado neste aparelho.' : 'Não consegui abrir o microfone: ' + (e?.message || e);
+    return;
+  }
+  const mime = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg'].find((t) => window.MediaRecorder.isTypeSupported?.(t)) || '';
+  const mr = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined);
+  const pedacos = [];
+  mr.ondataavailable = (e) => { if (e.data.size) pedacos.push(e.data); };
+  let ctx = null; let timer = null;
+  try { // para sozinho depois de 1,6 s de silêncio
+    ctx = new (window.AudioContext || window.webkitAudioContext)();
+    ctx.resume?.();
+    const an = ctx.createAnalyser(); an.fftSize = 1024;
+    ctx.createMediaStreamSource(stream).connect(an);
+    const buf = new Uint8Array(an.fftSize);
+    const inicio = Date.now(); let falou = false; let ultimoSom = inicio;
+    timer = setInterval(() => {
+      an.getByteTimeDomainData(buf);
+      let soma = 0; for (const v of buf) { const x = (v - 128) / 128; soma += x * x; }
+      if (Math.sqrt(soma / buf.length) > 0.035) { falou = true; ultimoSom = Date.now(); }
+      const t = Date.now();
+      if ((falou && t - ultimoSom > 1600) || (!falou && t - inicio > 10000) || t - inicio > 90000) gravacao?.parar();
+    }, 120);
+  } catch { /* sem detecção de silêncio: o Dr. toca em Enviar */ }
+  mr.onstop = async () => {
+    clearInterval(timer); ctx?.close?.().catch?.(() => {}); stream.getTracks().forEach((t) => t.stop());
+    gravacao = null; b.textContent = '🎙 Falar';
+    const blob = new Blob(pedacos, { type: mr.mimeType || mime || 'audio/webm' });
+    if (blob.size < 1200) { legendaPadrao(); return; }
+    legenda('Você', 'Transcrevendo…', 'voce');
+    try {
+      const texto = await window.claude.transcrever(blob);
+      if (texto) { $('#aviso-voz').textContent = ''; legenda('Você', texto, 'voce'); enviarNaSala(texto); }
+      else legenda('', 'Não entendi o áudio. Tente de novo, mais perto do celular.', 'pensando');
+    } catch (e) {
+      if (e?.code === 'sem_chave') { semTranscricao = true; $('#aviso-voz').textContent = 'A transcrição ainda não foi ligada (falta a chave do ElevenLabs). ' + (RECONHECEDOR ? 'Toque em Falar de novo para usar o reconhecimento do navegador.' : 'Por enquanto, escreva abaixo.'); }
+      else $('#aviso-voz').textContent = 'Microfone: ' + (e?.message || e);
+      legendaPadrao();
+    }
+  };
+  gravacao = { parar: () => { if (mr.state !== 'inactive') mr.stop(); } };
+  mr.start(250);
+  b.textContent = '■ Enviar';
+  legenda('Você', 'Ouvindo… pode falar.', 'voce');
+}
 $('#btn-falar-cel').addEventListener('click', () => {
+  if (GRAVA && !semTranscricao) { gravarOuParar(); return; }
+  if (!RECONHECEDOR) return;
   const b = $('#btn-falar-cel');
   if (rec) { rec.stop(); return; }
   if (falando) pararVoz();

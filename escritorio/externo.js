@@ -216,8 +216,22 @@
 
   let pronto = null;
   const preparar = () => (pronto ||= logado.then(async () => { await Promise.all([carregarFotos().catch(() => {}), carregarVozesEleven().catch(() => false)]); }));
+  // ---------- Transcrição do áudio gravado (função "ouvir", ElevenLabs) ----------
+  async function transcrever(blob) {
+    const { data: s } = await sb.auth.getSession();
+    const r = await fetch(`${URL_SB}/functions/v1/ouvir`, {
+      method: 'POST',
+      headers: { 'Content-Type': blob.type || 'audio/webm', apikey: CHAVE_SB, Authorization: `Bearer ${s.session?.access_token}` },
+      body: blob,
+    }).catch(() => { throw { message: 'sem conexão com o servidor.' }; });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) throw { code: j.code || 'upstream_error', message: j.erro || `erro ${r.status}` };
+    return j.texto || '';
+  }
+
   window.claude = {
     externo: true,
+    transcrever,
     async use(nome) {
       await preparar();
       if (nome === 'db') return db;
