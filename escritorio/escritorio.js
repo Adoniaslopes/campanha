@@ -424,8 +424,7 @@ async function falar(falas) {
     const valor = resto.join(':');
     // Com a reunião aberta (microfone ligado), a voz do Claude derrubaria o microfone:
     // usa a voz do próprio aparelho para os dois funcionarem juntos.
-    const microfoneAberto = Boolean(dictacao?.active()) && Boolean(vozesNav?.todas?.length);
-    if (tipo === 'claude' && tts && !microfoneAberto) await falarUmClaude(f, valor);
+    if (tipo === 'claude' && tts) await falarUmClaude(f, valor);
     else await falarUmNav(f, tipo === 'nav' ? valor : '');
   }
   falando = false; fimDaFala = Date.now(); ultimaResposta = Date.now(); marcarFalando(null); atualizarStatus();
@@ -451,7 +450,7 @@ function opcoesDeVoz(atual) {
 function marcarFalando(idMsg) {
   const quem = idMsg ? idParaQuem[idMsg] : null;
   falandoAgora = quem;
-  document.querySelectorAll('.assento').forEach((b) => b.classList.toggle('falando', Boolean(quem) && b.dataset.chamar === quem));
+  orbe(quem ? 'falando' : null, quem);
   if (quem) { const m = estado.sala.find((x) => x.id === idMsg); if (m) legenda(nomeDe(quem), m.texto, 'falando'); }
   else legendaPadrao();
   atualizarStatus();
@@ -478,7 +477,36 @@ function atualizarStatus() {
   else if (falando) { cls = 'falando'; txt = falandoAgora ? `${nomeDe(falandoAgora)} está falando…` : 'A equipe está falando…'; }
   else if (ouvindo) { cls = 'ouvindo'; txt = 'Ouvindo — pode falar, Dr. Adonias'; }
   st.className = `status-reuniao ${cls}`;
+  if (!falando) orbe(null);
   st.querySelector('.txt').textContent = txt;
+}
+// ===== Esfera de voz no centro da mesa =====
+// Pisca e muda de cor quando alguém fala: uma cor para cada personagem e outra para o Dr.
+const COR_ORBE = { dr: 210, claude: 215, lara: 5, plinio: 330, rui: 260, aureo: 190, tessa: 30, guido: 140, iris: 285 };
+function orbe(modo, quem) {
+  const o = document.querySelector('.orbe-voz');
+  if (!o) return;
+  if (!modo) modo = ocupado ? 'pensando' : (ouvindo ? 'ouvindo' : 'livre');
+  o.dataset.estado = modo;
+  const hue = modo === 'voce' ? COR_ORBE.dr : (COR_ORBE[quem] ?? 170);
+  o.style.setProperty('--h', hue);
+  const txt = { livre: pedirRetomada ? 'Toque para falar de novo' : 'Toque para falar', ouvindo: 'Ouvindo…', voce: '', pensando: 'Pensando…', falando: '' }[modo] ?? '';
+  o.querySelector('.orbe-txt').textContent = txt;
+}
+function montarOrbe() {
+  const mesa = document.querySelector('.mesa');
+  if (!mesa || mesa.querySelector('.orbe-voz')) return;
+  const o = document.createElement('button');
+  o.type = 'button'; o.className = 'orbe-voz'; o.setAttribute('aria-label', 'Falar com a equipe');
+  o.innerHTML = '<span class="orbe-bola"></span><span class="orbe-txt">Toque para falar</span>';
+  mesa.appendChild(o);
+  o.addEventListener('click', () => {
+    if (falando) { pararVoz(); return; }
+    if (dictacao) { if (!dictacao.active()) entrarNaReuniao(); return; }
+    const b = document.getElementById('btn-falar-cel');
+    if (b && !b.hidden) b.click(); else { const f = $('#form-sala'); if (f) { f.hidden = false; $('#texto-sala').focus(); } }
+  });
+  orbe(null);
 }
 // Para não enviar conversas de fundo: fora de uma conversa em andamento, só envia quando a fala chama a equipe pelo nome.
 const CHAMADOS = /\b(harvey|harvy|harve|rárvi|rarvi|donna|dona|louis|luís|luis|luiz|lui|mike|maique|maik|jessica|jéssica|alex|aléx|rachel|raquel|reitchel|samantha|samanta|equipe|pessoal|time|galera|escritório)\b/i;
@@ -543,6 +571,7 @@ async function iniciarVoz() {
     dictacao.onPartial(({ text }) => {
       if (!text || ignorandoMicrofone()) return;
       clearTimeout(timerPausa);
+      orbe('voce');
       legenda('Você', `${falado}${falado ? ' ' : ''}${text}`, 'voce');
     });
     dictacao.onState(({ state, reason }) => {
@@ -897,6 +926,7 @@ function escolherFoto(id) {
 function renderTudo() { renderPresenca(); renderSala(); renderEquipe(); renderTarefas(); renderMural(); }
 renderTudo();
 try { const aba = localStorage.getItem('escritorio-aba'); if (aba) abrirAba(aba); } catch { /* ignora */ }
+montarOrbe();
 iniciarBanco();
 iniciarVoz();
 iniciarFotos();

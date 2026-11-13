@@ -1,22 +1,13 @@
 'use strict';
-/* Esfera de voz no centro da mesa (versão do navegador, app.html).
- * Tocar na esfera é o mesmo que tocar em "Falar": o Chrome ouve, a mensagem vai para a equipe
- * e a equipe responde com as vozes do próprio aparelho. */
+/* Versão do navegador (app.html): a esfera criada pelo escritorio.js acompanha o botão "Falar"
+ * (reconhecimento de voz do Chrome) e mostra a versão carregada. */
 (() => {
-  const VERSAO = '202611132226';
+  const VERSAO = '202611132309';
   const btn = document.getElementById('btn-falar-cel');
-  const mesa = document.querySelector('.mesa');
-  if (!btn || !mesa) return;
-  const orbe = document.createElement('button');
-  orbe.type = 'button'; orbe.className = 'orbe-voz'; orbe.setAttribute('aria-label', 'Falar com a equipe');
-  orbe.innerHTML = '<span class="orbe-bola"></span><span class="orbe-txt">Toque para falar</span>';
-  mesa.appendChild(orbe);
-  orbe.addEventListener('click', () => btn.click());
-  // acompanha o botão: "■ Parar" = ouvindo
+  if (!btn) return;
   new MutationObserver(() => {
-    const ouvindo = /Parar|Enviar/.test(btn.textContent);
-    orbe.dataset.estado = ouvindo ? 'ouvindo' : 'livre';
-    orbe.querySelector('.orbe-txt').textContent = ouvindo ? 'Ouvindo…' : 'Toque para falar';
+    if (typeof orbe !== 'function') return;
+    if (/Parar|Enviar/.test(btn.textContent)) orbe('voce'); else orbe(null);
   }).observe(btn, { childList: true, characterData: true, subtree: true });
   setTimeout(() => {
     const a = document.getElementById('aviso-voz');
