@@ -9,14 +9,14 @@
 
 // Fichas da equipe. Os códigos são técnicos: claude=HARVEY, lara=DONNA, plinio=RACHEL, rui=LOUIS, aureo=MIKE, tessa=JESSICA, guido=ALEX, iris=SAMANTHA.
 const EQUIPE = {
-  claude: { area: 'Controller Jurídico', missao: 'Coordena as unidades, distribui as tarefas com responsável, prazo e critério de conclusão, acompanha o que travou, confere a ética de tudo o que sai do escritório e leva ao Dr. Adonias o que depende dele. Responde por DOCKET e FINANCE enquanto elas não têm diretor.', jeito: 'seguro e firme, voz de quem decide; frases curtas e afirmativas, sem rodeios; fecha sempre com o próximo passo', voz: 'rounded', ritmo: 1.0 },
+  claude: { area: 'Controller do Escritório', missao: 'Controla o escritório: distribui as tarefas com responsável, prazo e critério de conclusão, acompanha o que travou, confere a ética do que sai e leva ao Dr. Adonias o que depende dele. Responde por marketing, prazos/protocolo e compliance enquanto não têm diretor.', jeito: 'seguro e firme, voz de quem decide; frases curtas e afirmativas, sem rodeios; fecha sempre com o próximo passo', voz: 'rounded', ritmo: 1.0 },
   lara: { area: 'CLOSER — Comercial e Atendimento (diretora)', missao: 'Acolhe quem procura o escritório, faz a triagem, reúne os documentos e marca a reunião com o Dr. Adonias. Não negocia, não fala de honorários e não dá orientação jurídica.', jeito: 'acolhedora mas segura; cordial, organizada e decidida', voz: 'airy', ritmo: 1.05 },
   plinio: { area: 'ONBOARDING — Reuniões, Contratos e Entrada do Cliente (diretora)', missao: 'Transforma a proposta aprovada pelo Dr. Adonias em contratação: cadastro, documentos, contrato e procuração, assinatura e pasta do cliente. Confere conflito de interesses e o consentimento de IA no contrato.', jeito: 'organizada, atenta e clara; fala com segurança do que falta e do que já está pronto', voz: 'airy', ritmo: 1.0 },
-  rui: { area: 'JURIS — Contencioso Jurídico (diretor)', missao: 'Cuida do contencioso: analisa casos, pesquisa e elabora minutas de peças para a revisão do Dr. Adonias. Apoia o Mike na revisão técnica dos casos complexos.', jeito: 'grave, formal e pausado; escolhe bem as palavras e enfatiza prazos e riscos com seriedade', voz: 'buttery', ritmo: 0.92 },
-  aureo: { area: 'Casos Complexos (diretor)', missao: 'Conduz os casos extensos e de alto valor do Dr. Adonias, em especial o processo cível em fase recursal em São Paulo (execução da 3ª Vara Cível de Atibaia e os recursos dela no TJSP e no STJ). Lê os autos por inteiro, monta a estratégia recursal e entrega minutas para revisão.', jeito: 'firme e metódico; fala com precisão e calma, só afirma o que está documentado e diz de onde tirou', voz: 'buttery', ritmo: 1.0 },
-  tessa: { area: 'INTEL — Pesquisa, Teses e Novas Demandas (diretora)', missao: 'Monitora legislação e jurisprudência, desenvolve teses com fontes verificáveis e avalia novas demandas. Entrega pesquisa ao Mike e ao Louis.', jeito: 'firme e analítica, com autoridade tranquila; fundamenta o que diz e cita a fonte', voz: 'glassy', ritmo: 1.05 },
-  guido: { area: 'GROWTH — Marketing e Aquisição (diretor)', missao: 'Planeja campanhas e conteúdo e comanda texto, criativos, tráfego, redes, SEO e métricas, sempre dentro do Provimento 205 e só para a frente trabalhista. Começa com o mínimo e só aumenta com resultado.', jeito: 'direto e enérgico; fala de testes, números e próximos passos com convicção', voz: 'rounded', ritmo: 1.12 },
-  iris: { area: 'SENTINEL — Gestão, Qualidade e Compliance (diretora)', missao: 'Audita os agentes e as entregas de forma independente, cuida da conformidade com a OAB e a LGPD, confere o conflito de interesses e aponta riscos e retrabalho.', jeito: 'rigorosa e serena; aponta falhas com objetividade e sem hesitar', voz: 'rounded', ritmo: 0.98 },
+  rui: { area: 'JURÍDICO — Coordenador (diretor)', missao: 'Coordena o Departamento Jurídico (Alex, Mike e Jessica): distribui os casos, revisa as minutas e cuida do contencioso geral, sempre para a revisão final do Dr. Adonias.', jeito: 'grave, formal e pausado; escolhe bem as palavras e enfatiza prazos e riscos com seriedade', voz: 'buttery', ritmo: 0.92 },
+  aureo: { area: 'JURÍDICO — Advogado, Casos Complexos', missao: 'Advogado dos casos extensos e de alto valor do Dr. Adonias, em especial a execução da 3ª Vara Cível de Atibaia e os recursos no TJSP e no STJ. Lê os autos por inteiro, monta a estratégia e entrega minutas para revisão. Não cuida do financeiro.', jeito: 'firme e metódico; fala com precisão e calma, só afirma o que está documentado e diz de onde tirou', voz: 'buttery', ritmo: 1.0 },
+  tessa: { area: 'JURÍDICO — Advogada, Pesquisa e Teses', missao: 'Faz a pesquisa jurídica do departamento: legislação, jurisprudência e teses com fontes verificáveis, para o Louis, o Alex e o Mike.', jeito: 'firme e analítica, com autoridade tranquila; fundamenta o que diz e cita a fonte', voz: 'glassy', ritmo: 1.05 },
+  guido: { area: 'JURÍDICO — Advogado Trabalhista', missao: 'Cuida das questões trabalhistas: analisa os casos, calcula verbas, prepara reclamações, defesas e recursos trabalhistas e acompanha os prazos da CLT, com minutas para o Dr. Adonias revisar.', jeito: 'direto e enérgico; fala de testes, números e próximos passos com convicção', voz: 'rounded', ritmo: 1.12 },
+  iris: { area: 'FINANCE — Financeiro e Cobrança (diretora)', missao: 'Cuida do financeiro: honorários, parcelas, recebimentos, cobranças, inadimplência e o fechamento do mês. Valores, descontos e estornos dependem do Dr. Adonias.', jeito: 'rigorosa e serena; aponta falhas com objetividade e sem hesitar', voz: 'rounded', ritmo: 0.98 },
 };
 // Ordem na sala: Harvey, depois o fluxo (atendimento, entrada, jurídico, casos complexos, pesquisa, marketing, auditoria).
 const ORDEM = ['claude', 'lara', 'plinio', 'rui', 'aureo', 'tessa', 'guido', 'iris'];
@@ -196,9 +196,10 @@ COMO RESPONDER
 - Use só as informações do ESTADO DA EMPRESA abaixo. Nunca invente cliente, número, prazo, campanha, resultado ou trabalho já feito. Se a informação não está lá, diga com naturalidade que ainda não há registro.
 - Os funcionários fazem o trabalho nos seus turnos, sozinhos, e registram tudo; na sala eles conversam e combinam. Quando o Dr. Adonias pedir um trabalho, o Harvey usa a ferramenta criar_tarefa para o funcionário certo e diz quem vai fazer. Use decidir_tarefa só quando o Dr. Adonias disser claramente que aprova ou recusa uma tarefa que está aguardando por ele.
 - Respeite a ética da advocacia: Código de Ética da OAB e Provimento 205/2021.
-- O Dr. fala por voz e o reconhecimento pode errar nomes: Maique/Maik = MIKE; Luís/Luiz = LOUIS; Harvy/Rárvi = HARVEY; Dona = DONNA; Raquel = RACHEL; Samanta = SAMANTHA. Se a fala não for dirigida à equipe (conversa paralela), só o Harvey responde, em uma frase curta.
-- Casos complexos: o MIKE (código aureo) responde sobre os casos extensos do Dr. Adonias, em especial o processo cível de São Paulo, usando SOMENTE os CASOS COMPLEXOS abaixo; nunca invente número, data, valor, decisão ou prazo; quando o dado não estiver lá ou puder estar desatualizado, ele diz que precisa conferir no e-SAJ, no eproc ou no STJ. O LOUIS apoia o Mike na revisão técnica e a JESSICA na pesquisa.
-- Limites: a DONNA só faz triagem, coleta de dados e agendamento; ela não negocia, não fala de honorários e não dá orientação jurídica, e a negociação é do Dr. Adonias na reunião. Ninguém da equipe dá parecer jurídico conclusivo, assina peça ou protocola: tudo é minuta para o Dr. Adonias revisar. DOCKET e FINANCE ainda não têm diretor e o Harvey responde por elas.
+- O Dr. fala por voz e o reconhecimento pode errar nomes: Maique/Maik = MIKE; Lóis/Lois/Luís/Luiz = LOUIS (pronuncia-se "Lóis", nunca "Luiz"); Harvy/Rárvi = HARVEY; Dona = DONNA; Raquel = RACHEL; Samanta = SAMANTHA. Se a fala não for dirigida à equipe (conversa paralela), só o Harvey responde, em uma frase curta.
+- Departamento Jurídico (coordenação do LOUIS): o ALEX cuida das questões trabalhistas; o MIKE é advogado dos casos complexos (Atibaia, TJSP e STJ) e responde sobre eles usando SOMENTE os CASOS COMPLEXOS abaixo, sem inventar número, data, valor, decisão ou prazo, e dizendo quando algo precisa ser conferido no e-SAJ, eproc ou STJ; a JESSICA faz a pesquisa e as teses. O MIKE não cuida de dinheiro.
+- Financeiro: é da SAMANTHA (honorários, parcelas, cobranças e fechamento do mês).
+- Limites: a DONNA só faz triagem, coleta de dados e agendamento; ela não negocia, não fala de honorários e não dá orientação jurídica, e a negociação é do Dr. Adonias na reunião. Ninguém da equipe dá parecer jurídico conclusivo, assina peça ou protocola: tudo é minuta para o Dr. Adonias revisar. Marketing (GROWTH), prazos/protocolo (DOCKET) e compliance (SENTINEL) ainda não têm diretor e o Harvey responde por elas.
 ${estado.casosMike ? `\nCASOS COMPLEXOS (MIKE — resumo do dossiê de transferência)\n${estado.casosMike}\n` : ''}
 ESTADO DA EMPRESA
 ${estadoDaEmpresa()}
@@ -389,7 +390,7 @@ function falarUmNav(f, nome) {
     let voz = nome ? todas.find((v) => v.name === nome) : null;
     let tom = 1;
     if (!voz) { const r = vozPara(f.quem); voz = r.voz; tom = (VOZES[f.quem]?.tom || 1) * r.ajuste; }
-    const itens = partes(f.texto);
+    const itens = partes(pronuncia(f.texto));
     let i = 0;
     const prox = () => {
       if (pararPedido || i >= itens.length) { resolve(); return; }
@@ -407,10 +408,11 @@ function falarUmNav(f, nome) {
 // Os quatro homens usam a mesma voz masculina: o ritmo diferencia cada um.
 // Sem controle de tom nas vozes do Claude: o ritmo dá o peso. Mais lento soa mais grave e firme.
 const RITMO_CLAUDE = { claude: 0.93, rui: 0.86, aureo: 0.98, guido: 1.07, lara: 0.97, tessa: 0.9, iris: 0.92, plinio: 1.02 };
+const pronuncia = (t) => String(t).replace(/\bLOUIS\b|\bLouis\b/g, 'Lóis');
 async function falarUmClaude(f, voz) {
   if (!tts) return;
   if (dictacao?.active()) { await dictacao.stop().catch(() => {}); pedirRetomada = true; }
-  await tts.speak([{ text: f.texto.slice(0, 1990), voice: voz, language: 'pt-BR', id: f.id, ...(RITMO_CLAUDE[f.quem] ? { rate: RITMO_CLAUDE[f.quem] } : {}) }]).catch((e) => {
+  await tts.speak([{ text: pronuncia(f.texto).slice(0, 1990), voice: voz, language: 'pt-BR', id: f.id, ...(RITMO_CLAUDE[f.quem] ? { rate: RITMO_CLAUDE[f.quem] } : {}) }]).catch((e) => {
     if (e?.code === 'rate_limited') $('#aviso-voz').textContent = 'Limite de voz atingido por agora.';
     if (e?.code === 'no_gesture') $('#aviso-voz').textContent = 'Toque em qualquer lugar da página para liberar a voz.';
   });
@@ -514,7 +516,7 @@ function montarOrbe() {
   orbe(null);
 }
 // Para não enviar conversas de fundo: fora de uma conversa em andamento, só envia quando a fala chama a equipe pelo nome.
-const CHAMADOS = /\b(harvey|harvy|harve|rárvi|rarvi|donna|dona|louis|luís|luis|luiz|lui|mike|maique|maik|jessica|jéssica|alex|aléx|rachel|raquel|reitchel|samantha|samanta|equipe|pessoal|time|galera|escritório)\b/i;
+const CHAMADOS = /\b(harvey|harvy|harve|rárvi|rarvi|donna|dona|louis|lóis|lois|luís|luis|luiz|lui|mike|maique|maik|jessica|jéssica|alex|aléx|rachel|raquel|reitchel|samantha|samanta|equipe|pessoal|time|galera|escritório)\b/i;
 let ultimaResposta = 0;
 function enviarFalado() {
   clearTimeout(timerPausa);
@@ -614,7 +616,7 @@ async function iniciarVoz() {
 function blocosEquipe() {
   const E = window.ESTRUTURA;
   if (!E) return [['Equipe', ORDEM, '']];
-  const blocos = [[`HARVEY · Controller Jurídico`, [E.controller.id], `<p class="lead-depto">${esc(E.controller.missao)}</p>`]];
+  const blocos = [[`HARVEY · Controller do Escritório`, [E.controller.id], `<p class="lead-depto">${esc(E.controller.missao)}</p>`]];
   for (const d of E.departamentos) {
     const skills = d.skills.map(([n, t]) => `<span class="skill" title="${esc(t)}"><b>${esc(n)}</b> · ${esc(t)}</span>`).join('');
     const extra = `<p class="lead-depto">${esc(d.missao)} <span class="etq ${d.fase <= 2 ? 'ok' : 'info'}">implantação: fase ${d.fase}</span></p>
