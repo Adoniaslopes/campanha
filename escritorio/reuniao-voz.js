@@ -21,16 +21,16 @@
   }
   function status(t) { const a = document.getElementById('aviso-voz'); if (a) a.textContent = t; }
   async function iniciar() {
-    btn.disabled = true; btn.textContent = 'Conectando…';
+    btn.disabled = true; btn.textContent = 'Conectando…'; window.__estadoOrbe?.('conectando');
     status('Permita o microfone quando o navegador pedir.');
     try {
       conversa = await window.ElevenConversation.startSession({
         agentId: AGENTE,
         connectionType: 'webrtc',
-        onConnect: () => { btn.disabled = false; btn.textContent = '■ Encerrar reunião'; status('Reunião aberta: pode falar normalmente. Chame pelo nome para falar com alguém.'); },
-        onDisconnect: () => { conversa = null; acender(null); btn.disabled = false; btn.textContent = '🎙 Falar com a equipe'; status('Reunião encerrada.'); },
+        onConnect: () => { window.__estadoOrbe?.('ouvindo'); btn.disabled = false; btn.textContent = '■ Encerrar reunião'; status('Reunião aberta: pode falar normalmente. Chame pelo nome para falar com alguém.'); },
+        onDisconnect: () => { window.__estadoOrbe?.('livre'); conversa = null; acender(null); btn.disabled = false; btn.textContent = '🎙 Falar com a equipe'; status('Reunião encerrada.'); },
         onError: (m) => { status('Voz: ' + (m || 'erro na conexão')); },
-        onModeChange: ({ mode }) => { if (mode === 'listening') acender(null); else acender(quemFala); },
+        onModeChange: ({ mode }) => { window.__estadoOrbe?.(mode === 'speaking' ? 'falando' : 'ouvindo'); if (mode === 'listening') acender(null); else acender(quemFala); },
         onMessage: ({ message, source, role }) => {
           const ia = (role || source) === 'ai' || (role || source) === 'agent';
           const texto = String(message || '').trim();
@@ -42,7 +42,7 @@
         },
       });
     } catch (e) {
-      conversa = null; btn.disabled = false; btn.textContent = '🎙 Falar com a equipe';
+      conversa = null; window.__estadoOrbe?.('livre'); btn.disabled = false; btn.textContent = '🎙 Falar com a equipe';
       status(/permission|notallowed|denied/i.test(String(e?.name || e?.message || e))
         ? 'O microfone foi negado. Toque no cadeado ao lado do endereço, permita o microfone e tente de novo.'
         : 'Não consegui abrir a reunião por voz: ' + (e?.message || e));
@@ -53,6 +53,15 @@
     e.stopImmediatePropagation(); e.preventDefault();
     if (conversa) conversa.endSession(); else iniciar();
   }, true);
+  // Esfera de voz no centro da mesa: tocar nela abre ou encerra a reunião.
+  const orbe = document.createElement('button');
+  orbe.type = 'button'; orbe.className = 'orbe-voz'; orbe.setAttribute('aria-label', 'Falar com a equipe');
+  orbe.innerHTML = '<span class="orbe-bola"></span><span class="orbe-txt">Toque para falar</span>';
+  document.querySelector('.mesa')?.appendChild(orbe);
+  orbe.addEventListener('click', () => btn.click());
+  const estadoOrbe = (e) => { orbe.dataset.estado = e; orbe.querySelector('.orbe-txt').textContent = { livre: 'Toque para falar', conectando: 'Conectando…', ouvindo: 'Ouvindo…', falando: '' }[e] ?? ''; };
+  estadoOrbe('livre');
+  window.__estadoOrbe = estadoOrbe;
   const mostrar = () => { btn.hidden = false; btn.textContent = '🎙 Falar com a equipe'; status('Toque em “Falar com a equipe” e converse por voz, como numa reunião.'); };
   // espera o escritorio.js montar a sala
   setTimeout(mostrar, 1500);

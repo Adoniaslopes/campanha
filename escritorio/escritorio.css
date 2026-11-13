@@ -199,3 +199,17 @@ p.lead { margin: 0 0 14px; color: var(--texto-2); }
 .login-caixa button { font: inherit; font-weight: 600; padding: 12px; border: 0; border-radius: 10px; background: var(--primario); color: #fff; cursor: pointer; }
 .login-msg { color: var(--perigo); min-height: 1em; }
 .login-dica { color: var(--texto-2); }
+/* Esfera de voz no centro da mesa (versão do navegador) */
+.mesa:has(.orbe-voz) .legenda { position: absolute; bottom: 8%; left: 10%; right: 10%; font-size: 12.5px; pointer-events: none; }
+.orbe-voz { position: relative; width: min(62%, 210px); aspect-ratio: 1; border: 0; padding: 0; background: none; cursor: pointer; display: grid; place-items: center; margin-bottom: 22%; }
+.orbe-bola { position: absolute; inset: 0; border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #b9f3e4 0%, #3fb59a 35%, #1f7f86 65%, #2a4f8a 100%);
+  box-shadow: 0 10px 30px rgba(20,80,90,.35), inset -10px -14px 30px rgba(10,30,60,.35), inset 8px 10px 24px rgba(255,255,255,.35);
+  animation: orbe-respira 4s ease-in-out infinite; }
+.orbe-txt { position: relative; font-size: 13px; font-weight: 700; color: #fff; text-shadow: 0 1px 4px rgba(0,0,0,.35); }
+.orbe-voz[data-estado="conectando"] .orbe-bola { animation: orbe-gira 1.2s linear infinite; }
+.orbe-voz[data-estado="ouvindo"] .orbe-bola { animation: orbe-respira 1.6s ease-in-out infinite; }
+.orbe-voz[data-estado="falando"] .orbe-bola { animation: orbe-fala .5s ease-in-out infinite alternate; }
+@keyframes orbe-respira { 50% { transform: scale(1.05); filter: brightness(1.08); } }
+@keyframes orbe-fala { from { transform: scale(1); } to { transform: scale(1.12); filter: brightness(1.15) saturate(1.2); } }
+@keyframes orbe-gira { to { filter: hue-rotate(360deg); transform: rotate(360deg); } }
