@@ -6,20 +6,23 @@
 
 const PELE = { clara: '#F5D0B0', media: '#E0AC85', morena: '#C08660', escura: '#8C5A3C' };
 
+/* Os ids (claude, lara, rui, aureo, tessa, guido, plinio, iris) são códigos técnicos do banco e não mudam.
+ * Quem é quem hoje: claude=HARVEY, lara=DONNA, rui=LOUIS, aureo=MIKE, tessa=JESSICA, guido=ALEX, plinio=RACHEL, iris=SAMANTHA.
+ * gretchen, benjamin, faye e kyle são legado: ficam só para exibir mensagens antigas da sala. */
 const TIME = {
   adonias: { nome: 'Dr. Adonias', cargo: 'Diretor', fundo: '#DCE5F2', roupa: '#1F2A44', pele: PELE.media, cabelo: 'lateral', corCabelo: '#2B2018', extra: ['gravata'], selo: null },
   claude: { nome: 'HARVEY', cargo: 'Controller Jurídico', fundo: '#DDE7F7', roupa: '#24324F', pele: PELE.clara, cabelo: 'topete', corCabelo: '#3B2A1E', extra: ['blazer', 'barbaRala'], selo: null },
   lara: { nome: 'DONNA', cargo: 'Diretora Comercial e Atendimento', fundo: '#E3EAF3', roupa: '#9DB0C4', pele: PELE.clara, cabelo: 'ondulado', corCabelo: '#B4501F', extra: ['brincos'], selo: null },
   rui: { nome: 'LOUIS', cargo: 'Diretor Jurídico (Juris)', fundo: '#E4E8EF', roupa: '#1F2A44', pele: PELE.clara, cabelo: 'fade', corCabelo: '#2A2320', extra: ['gravata', 'barbaRala'], selo: 'balanca', corSelo: '#1F2A44' },
-  aureo: { nome: 'MIKE', cargo: 'Diretor Financeiro', fundo: '#F3EEDD', roupa: '#34465F', pele: PELE.clara, cabelo: 'lateral', corCabelo: '#2A1F18', extra: ['gravata', 'barbaRala'], selo: 'moeda', corSelo: '#C9961A' },
+  aureo: { nome: 'MIKE', cargo: 'Diretor de Casos Complexos', fundo: '#F3EEDD', roupa: '#34465F', pele: PELE.clara, cabelo: 'lateral', corCabelo: '#2A1F18', extra: ['gravata', 'barbaRala'], selo: null },
   tessa: { nome: 'JESSICA', cargo: 'Diretora de Pesquisa e Teses', fundo: '#EFE7DC', roupa: '#C9AE8E', pele: PELE.morena, cabelo: 'ondulado', corCabelo: '#3B2418', extra: ['brincos'], selo: 'lupa', corSelo: '#8A6A45' },
   guido: { nome: 'ALEX', cargo: 'Diretor de Marketing (Growth)', fundo: '#E6E8EC', roupa: '#5B6170', pele: PELE.escura, cabelo: 'fade', corCabelo: '#15100C', extra: ['gravata', 'barba'], selo: 'grafico', corSelo: '#3C5CC8' },
-  plinio: { nome: 'RACHEL', cargo: 'Copywriter', fundo: '#F3EDE3', roupa: '#EFE6D6', pele: PELE.media, cabelo: 'ondulado', corCabelo: '#5A3420', extra: ['brincos'], selo: 'pena', corSelo: '#C0682F' },
+  plinio: { nome: 'RACHEL', cargo: 'Diretora de Onboarding', fundo: '#F3EDE3', roupa: '#EFE6D6', pele: PELE.media, cabelo: 'ondulado', corCabelo: '#5A3420', extra: ['brincos'], selo: null },
   gretchen: { nome: 'GRETCHEN', cargo: 'Diretora de Onboarding', fundo: '#F1E6EA', roupa: '#7A3E55', pele: PELE.escura, cabelo: 'chanel', corCabelo: '#2A1C17', extra: ['brincos', 'oculos'], selo: null },
   benjamin: { nome: 'BENJAMIN', cargo: 'Diretor de Protocolo e Prazos', fundo: '#E2EEF0', roupa: '#3D5C66', pele: PELE.clara, cabelo: 'curto', corCabelo: '#4A3526', extra: ['camisa', 'oculos'], selo: null },
   faye: { nome: 'FAYE', cargo: 'Diretora de Compliance', fundo: '#EAE8EF', roupa: '#2B2B3A', pele: PELE.clara, cabelo: 'rabo', corCabelo: '#3A2A20', extra: ['gravata'], selo: null },
   kyle: { nome: 'KYLE', cargo: 'Advogado Júnior', fundo: '#E3E9F1', roupa: '#2C3A52', pele: PELE.clara, cabelo: 'lateral', corCabelo: '#6B4A2B', extra: ['gravata'], selo: 'balanca', corSelo: '#2C3A52' },
-  iris: { nome: 'SAMANTHA', cargo: 'Criativos', fundo: '#ECE6F3', roupa: '#1E1E24', pele: PELE.clara, cabelo: 'chanel', corCabelo: '#E0C07A', extra: ['brincos'], selo: 'paleta', corSelo: '#8E44C0' },
+  iris: { nome: 'SAMANTHA', cargo: 'Diretora de Compliance', fundo: '#ECE6F3', roupa: '#1E1E24', pele: PELE.clara, cabelo: 'chanel', corCabelo: '#E0C07A', extra: ['brincos'], selo: null },
 };
 
 function cabeloAtras(estilo, cor) {

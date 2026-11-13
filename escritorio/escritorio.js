@@ -7,21 +7,19 @@
  * Os clientes, casos e o financeiro ficam no CRM (outra página).
  * ===================================================================== */
 
+// Fichas da equipe. Os códigos são técnicos: claude=HARVEY, lara=DONNA, plinio=RACHEL, rui=LOUIS, aureo=MIKE, tessa=JESSICA, guido=ALEX, iris=SAMANTHA.
 const EQUIPE = {
-  claude: { area: 'Gerência', missao: 'Coordena o time, acompanha cada funcionário e se reporta ao Dr. Adonias.', jeito: 'objetivo e organizado; conduz a reunião, resume e fecha com o próximo passo', voz: 'rounded', ritmo: 1.0 },
-  lara: { area: 'Atendimento', missao: 'Acolhe quem procura o escritório, faz a triagem, reúne os documentos e marca a reunião com o Dr. Adonias.', jeito: 'acolhedora, cordial e organizada; fala do atendimento e dos clientes que chegaram', voz: 'airy', ritmo: 1.05 },
-  rui: { area: 'JURIS — Contencioso Jurídico (diretor)', missao: 'Analisa os casos, elabora contrato, procuração e petições, protocola sob supervisão e acompanha os prazos.', jeito: 'formal, preciso e sereno; cita a lei quando ajuda e é cuidadoso com prazos', voz: 'buttery', ritmo: 0.92 },
-  kyle: { area: 'JURIS — área cível (3ª Vara de Atibaia)', missao: 'Advogado júnior da área cível, sob a coordenação do Louis. Cuida da execução 0015372-93.2010.8.26.0048 (3ª Vara Cível de Atibaia) e de todos os recursos e incidentes dela no TJSP e no STJ.', jeito: 'objetivo e cuidadoso; só afirma o que está no dossiê ou nos autos, diz de onde tirou e avisa quando algo precisa ser conferido no e-SAJ ou no STJ', voz: 'buttery', ritmo: 1.0 },
-  gretchen: { area: 'ONBOARDING — Reuniões, Contratos e Entrada do Cliente', missao: 'Transforma a proposta aprovada pelo Dr. em contratação: cadastro, documentos, contrato e procuração no papel timbrado, assinatura e pasta do cliente.', jeito: 'experiente, organizada e direta; não deixa documento pendente', voz: 'airy', ritmo: 1.0 },
-  benjamin: { area: 'DOCKET — Protocolo e Gestão Processual', missao: 'Acompanha processos, intimações e prazos com conferência dupla; prepara protocolos só com autorização do Dr.', jeito: 'técnico e meticuloso; fala de sistemas, prazos e conferências', voz: 'glassy', ritmo: 1.05 },
-  faye: { area: 'SENTINEL — Gestão, Qualidade e Compliance', missao: 'Audita os agentes e as entregas, cuida da conformidade com a OAB e a LGPD e aponta riscos e retrabalho.', jeito: 'rigorosa e independente; aponta falhas com objetividade', voz: 'rounded', ritmo: 0.98 },
-  aureo: { area: 'Financeiro', missao: 'Cuida das cobranças, dos recebimentos, da inadimplência e do fechamento do mês.', jeito: 'prudente e direto com números; nunca promete dinheiro que não entrou', voz: 'glassy', ritmo: 0.95 },
-  tessa: { area: 'Marketing', missao: 'Pesquisa o mundo jurídico e descobre teses e nichos trabalhistas com demanda.', jeito: 'curiosa e analítica; gosta de fundamentos e fontes', voz: 'glassy', ritmo: 1.05 },
-  guido: { area: 'Marketing', missao: 'Transforma teses em campanhas, testa com o mínimo e mede o que traz cliente.', jeito: 'direto, fala de testes, números e próximos passos', voz: 'rounded', ritmo: 1.12 },
-  plinio: { area: 'Marketing', missao: 'Escreve os textos dos anúncios e dos posts, dentro das regras da OAB.', jeito: 'eloquente, gosta das palavras certas, mas fala simples', voz: 'buttery', ritmo: 1.05 },
-  iris: { area: 'Marketing', missao: 'Cria a identidade visual do escritório, as artes e os vídeos das campanhas.', jeito: 'entusiasmada e visual; pensa em cores, formas e imagens', voz: 'airy', ritmo: 1.15 },
+  claude: { area: 'Controller Jurídico', missao: 'Coordena as unidades, distribui as tarefas com responsável, prazo e critério de conclusão, acompanha o que travou, confere a ética de tudo o que sai do escritório e leva ao Dr. Adonias o que depende dele. Responde por DOCKET e FINANCE enquanto elas não têm diretor.', jeito: 'objetivo e organizado; conduz a reunião, resume e fecha com o próximo passo', voz: 'rounded', ritmo: 1.0 },
+  lara: { area: 'CLOSER — Comercial e Atendimento (diretora)', missao: 'Acolhe quem procura o escritório, faz a triagem, reúne os documentos e marca a reunião com o Dr. Adonias. Não negocia, não fala de honorários e não dá orientação jurídica.', jeito: 'acolhedora, cordial e organizada; fala do atendimento e dos clientes que chegaram', voz: 'airy', ritmo: 1.05 },
+  plinio: { area: 'ONBOARDING — Reuniões, Contratos e Entrada do Cliente (diretora)', missao: 'Transforma a proposta aprovada pelo Dr. Adonias em contratação: cadastro, documentos, contrato e procuração, assinatura e pasta do cliente. Confere conflito de interesses e o consentimento de IA no contrato.', jeito: 'organizada, atenta a detalhes e direta; não deixa documento pendente', voz: 'airy', ritmo: 1.0 },
+  rui: { area: 'JURIS — Contencioso Jurídico (diretor)', missao: 'Cuida do contencioso: analisa casos, pesquisa e elabora minutas de peças para a revisão do Dr. Adonias. Apoia o Mike na revisão técnica dos casos complexos.', jeito: 'formal, preciso e sereno; cita a lei quando ajuda e é cuidadoso com prazos', voz: 'buttery', ritmo: 0.92 },
+  aureo: { area: 'Casos Complexos (diretor)', missao: 'Conduz os casos extensos e de alto valor do Dr. Adonias, em especial o processo cível em fase recursal em São Paulo (execução da 3ª Vara Cível de Atibaia e os recursos dela no TJSP e no STJ). Lê os autos por inteiro, monta a estratégia recursal e entrega minutas para revisão.', jeito: 'brilhante e metódico; só afirma o que está no dossiê ou nos autos, diz de onde tirou e avisa quando algo precisa ser conferido no e-SAJ ou no STJ', voz: 'buttery', ritmo: 1.0 },
+  tessa: { area: 'INTEL — Pesquisa, Teses e Novas Demandas (diretora)', missao: 'Monitora legislação e jurisprudência, desenvolve teses com fontes verificáveis e avalia novas demandas. Entrega pesquisa ao Mike e ao Louis.', jeito: 'curiosa e analítica; gosta de fundamentos e fontes', voz: 'glassy', ritmo: 1.05 },
+  guido: { area: 'GROWTH — Marketing e Aquisição (diretor)', missao: 'Planeja campanhas e conteúdo e comanda texto, criativos, tráfego, redes, SEO e métricas, sempre dentro do Provimento 205 e só para a frente trabalhista. Começa com o mínimo e só aumenta com resultado.', jeito: 'direto, fala de testes, números e próximos passos', voz: 'rounded', ritmo: 1.12 },
+  iris: { area: 'SENTINEL — Gestão, Qualidade e Compliance (diretora)', missao: 'Audita os agentes e as entregas de forma independente, cuida da conformidade com a OAB e a LGPD, confere o conflito de interesses e aponta riscos e retrabalho.', jeito: 'rigorosa e independente; aponta falhas com objetividade', voz: 'rounded', ritmo: 0.98 },
 };
-const ORDEM = ['claude', 'lara', 'gretchen', 'rui', 'kyle', 'benjamin', 'aureo', 'faye', 'tessa', 'guido', 'plinio', 'iris'];
+// Ordem na sala: Harvey, depois o fluxo (atendimento, entrada, jurídico, casos complexos, pesquisa, marketing, auditoria).
+const ORDEM = ['claude', 'lara', 'plinio', 'rui', 'aureo', 'tessa', 'guido', 'iris'];
 
 const STATUS_TAREFA = {
   a_fazer: ['A fazer', 'info'],
@@ -97,7 +95,7 @@ async function iniciarBanco() {
   colecao('sala').orderBy('criadoEm', 'desc').limit(200).onSnapshot((r) => { estado.sala = r.docs.map((d) => d.data()).reverse(); ok(); renderSala(); }, (e) => console.warn(e));
   colecao('tarefas').onSnapshot((r) => { estado.tarefas = r.docs.map((d) => d.data()); ok(); renderTarefas(); renderEquipe(); }, (e) => console.warn(e));
   colecao('atividades').orderBy('criadoEm', 'desc').limit(150).onSnapshot((r) => { estado.atividades = r.docs.map((d) => d.data()); ok(); renderMural(); }, (e) => console.warn(e));
-  colecao('config').onSnapshot((r) => { const d = r.docs.find((x) => x.id === 'vozes'); estado.vozes = d ? d.data() : {}; const f = r.docs.find((x) => x.id === 'fotos'); estado.fotos = f ? f.data() : {}; const k = r.docs.find((x) => x.id === 'kyle'); estado.casosKyle = k ? String(k.data().resumo || '') : ''; renderTudo(); }, (e) => console.warn(e));
+  colecao('config').onSnapshot((r) => { const d = r.docs.find((x) => x.id === 'vozes'); estado.vozes = d ? d.data() : {}; const f = r.docs.find((x) => x.id === 'fotos'); estado.fotos = f ? f.data() : {}; const k = r.docs.find((x) => x.id === 'kyle'); estado.casosMike = k ? String(k.data().resumo || '') : ''; renderTudo(); }, (e) => console.warn(e));
   colecao('equipe').onSnapshot((r) => { estado.status = Object.fromEntries(r.docs.map((d) => [d.id, d.data()])); ok(); renderEquipe(); renderPresenca(); }, (e) => console.warn(e));
 }
 function mostrarAvisoGeral(msg) {
@@ -120,7 +118,8 @@ const ativoHoje = (id) => { const s = estado.status[id]; return s?.atualizadoEm 
 const RECONHECEDOR = window.SpeechRecognition || window.webkitSpeechRecognition || null;
 // Fora do claude.ai: grava o áudio e o servidor transcreve (funciona em qualquer celular).
 const GRAVA = Boolean(window.claude?.externo && navigator.mediaDevices?.getUserMedia && window.MediaRecorder);
-const LUGARES = { claude: 270, lara: 300, gretchen: 330, rui: 0, kyle: 30, benjamin: 60, aureo: 90, faye: 120, tessa: 150, guido: 180, plinio: 210, iris: 240 };
+// Harvey na cabeceira; à esquerda o núcleo jurídico; à direita o fluxo do cliente (Alex, Donna, Rachel); Samantha audita de frente para o Harvey.
+const LUGARES = { claude: 270, rui: 225, tessa: 180, iris: 135, plinio: 90, lara: 45, guido: 0, aureo: 315 };
 function renderPresenca() {
   const lugar = (graus) => { const r = (graus * Math.PI) / 180; return `left:${(50 + 41 * Math.cos(r)).toFixed(2)}%;top:${(50 + 40 * Math.sin(r)).toFixed(2)}%`; };
   $('#assentos').innerHTML = ORDEM.map((id) => `
@@ -182,10 +181,10 @@ function montarPrompt(fala) {
   const hoje = new Date();
   const time = ORDEM.map((id) => `- ${TIME[id].nome} (código "${id}"), ${TIME[id].cargo} — ${EQUIPE[id].missao} Jeito de falar: ${EQUIPE[id].jeito}.`).join('\n');
   const conversa = estado.sala.slice(-24).map((m) => `${nomeDe(m.quem)}: ${m.texto}`).join('\n') || '(início da reunião)';
-  return `Você dá voz ao time do Escritório Digital Lopes Araújo, um escritório de advocacia trabalhista 100% digital do Dr. Adonias Lopes de Araújo (OAB/GO 50.607). Vocês estão numa reunião na sala virtual da empresa. Hoje é ${hoje.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}, ${hoje.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}.
+  return `Você dá voz ao time do Escritório Digital Lopes Araújo, um escritório de advocacia 100% digital do Dr. Adonias Lopes de Araújo (OAB/GO 50.607), com uma frente trabalhista e uma carteira de casos complexos. Vocês estão numa reunião na sala virtual da empresa. Hoje é ${hoje.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}, ${hoje.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}.
 
 ESTRUTURA DO ESCRITÓRIO
-${window.ESTRUTURA ? window.ESTRUTURA.departamentos.map((d) => `- ${d.n} ${d.sigla} (${d.nome}): diretor ${TIME[d.diretor].nome}${d.agentes.length ? `; agentes: ${d.agentes.map((a) => TIME[a].nome).join(', ')}` : ''}; skills: ${d.skills.map((x) => x[0]).join(', ')}`).join('\n') : ''}
+${window.ESTRUTURA ? window.ESTRUTURA.departamentos.map((d) => `- ${d.n} ${d.sigla} (${d.nome}): ${d.diretor ? `diretor ${TIME[d.diretor].nome}` : 'sem diretor por enquanto (o Harvey responde por esta unidade)'}${d.agentes.length ? `; agentes: ${d.agentes.map((a) => TIME[a].nome).join(', ')}` : ''}; skills: ${d.skills.map((x) => x[0]).join(', ')}`).join('\n') : ''}
 
 QUEM ESTÁ NA SALA
 - Dr. Adonias: diretor. É ele quem está falando com vocês.
@@ -197,9 +196,10 @@ COMO RESPONDER
 - Use só as informações do ESTADO DA EMPRESA abaixo. Nunca invente cliente, número, prazo, campanha, resultado ou trabalho já feito. Se a informação não está lá, diga com naturalidade que ainda não há registro.
 - Os funcionários fazem o trabalho nos seus turnos, sozinhos, e registram tudo; na sala eles conversam e combinam. Quando o Dr. Adonias pedir um trabalho, o Harvey usa a ferramenta criar_tarefa para o funcionário certo e diz quem vai fazer. Use decidir_tarefa só quando o Dr. Adonias disser claramente que aprova ou recusa uma tarefa que está aguardando por ele.
 - Respeite a ética da advocacia: Código de Ética da OAB e Provimento 205/2021.
-- O Dr. fala por voz e o reconhecimento pode errar nomes: Kylie/Kaile = KYLE; Luís/Luiz = LOUIS; Harvy/Rárvi = HARVEY; Dona = DONNA; Raquel = RACHEL; Samanta = SAMANTHA. Se a fala não for dirigida à equipe (conversa paralela), só o Harvey responde, em uma frase curta.
-- Processos: o KYLE responde sobre os casos da área cível usando SOMENTE os CASOS DA ÁREA CÍVEL abaixo; nunca invente número, data, valor, decisão ou prazo; quando o dado não estiver lá ou puder estar desatualizado, ele diz que precisa conferir no e-SAJ, no eproc ou no STJ. O LOUIS coordena o Departamento Jurídico e revisa o trabalho do Kyle.
-${estado.casosKyle ? `\nCASOS DA ÁREA CÍVEL (KYLE — resumo do dossiê de transferência)\n${estado.casosKyle}\n` : ''}
+- O Dr. fala por voz e o reconhecimento pode errar nomes: Maique/Maik = MIKE; Luís/Luiz = LOUIS; Harvy/Rárvi = HARVEY; Dona = DONNA; Raquel = RACHEL; Samanta = SAMANTHA. Se a fala não for dirigida à equipe (conversa paralela), só o Harvey responde, em uma frase curta.
+- Casos complexos: o MIKE (código aureo) responde sobre os casos extensos do Dr. Adonias, em especial o processo cível de São Paulo, usando SOMENTE os CASOS COMPLEXOS abaixo; nunca invente número, data, valor, decisão ou prazo; quando o dado não estiver lá ou puder estar desatualizado, ele diz que precisa conferir no e-SAJ, no eproc ou no STJ. O LOUIS apoia o Mike na revisão técnica e a JESSICA na pesquisa.
+- Limites: a DONNA só faz triagem, coleta de dados e agendamento; ela não negocia, não fala de honorários e não dá orientação jurídica, e a negociação é do Dr. Adonias na reunião. Ninguém da equipe dá parecer jurídico conclusivo, assina peça ou protocola: tudo é minuta para o Dr. Adonias revisar. DOCKET e FINANCE ainda não têm diretor e o Harvey responde por elas.
+${estado.casosMike ? `\nCASOS COMPLEXOS (MIKE — resumo do dossiê de transferência)\n${estado.casosMike}\n` : ''}
 ESTADO DA EMPRESA
 ${estadoDaEmpresa()}
 
@@ -333,10 +333,6 @@ const VOZES = {
   lara: { g: 'f', tom: 1.05, ritmo: 1.02 },
   tessa: { g: 'f', tom: 1.14, ritmo: 1.05 },
   iris: { g: 'f', tom: 1.24, ritmo: 1.1 },
-  kyle: { g: 'm', tom: 1.05, ritmo: 1.0 },
-  gretchen: { g: 'f', tom: 0.95, ritmo: 0.98 },
-  benjamin: { g: 'm', tom: 1.1, ritmo: 1.05 },
-  faye: { g: 'f', tom: 0.9, ritmo: 0.95 },
 };
 const MASC = /daniel|ant[oô]nio|donato|f[aá]bio|humberto|j[uú]lio|nicolau|val[eé]rio|ricardo|paulo|male\b|masculin/i;
 const FEM = /maria|francisca|thalita|leila|let[ií]cia|manuela|yara|brenda|elza|giovanna|luciana|raquel|vit[oó]ria|female|feminin|google portugu/i;
@@ -482,7 +478,7 @@ function atualizarStatus() {
   st.querySelector('.txt').textContent = txt;
 }
 // Para não enviar conversas de fundo: fora de uma conversa em andamento, só envia quando a fala chama a equipe pelo nome.
-const CHAMADOS = /\b(harvey|harvy|harve|rárvi|rarvi|donna|dona|louis|luís|luis|luiz|lui|kyle|kylie|kaile|kaili|cail|mike|maique|maik|jessica|jéssica|alex|aléx|rachel|raquel|reitchel|samantha|samanta|equipe|pessoal|time|galera|escritório)\b/i;
+const CHAMADOS = /\b(harvey|harvy|harve|rárvi|rarvi|donna|dona|louis|luís|luis|luiz|lui|mike|maique|maik|jessica|jéssica|alex|aléx|rachel|raquel|reitchel|samantha|samanta|equipe|pessoal|time|galera|escritório)\b/i;
 let ultimaResposta = 0;
 function enviarFalado() {
   clearTimeout(timerPausa);
@@ -491,7 +487,7 @@ function enviarFalado() {
   if (!texto || ocupado) return;
   const emConversa = Date.now() - ultimaResposta < 90000;
   if (!emConversa && !CHAMADOS.test(texto)) {
-    legenda('', 'Ouvi uma conversa, mas ninguém da equipe foi chamado. Para falar com eles, comece pelo nome: “Harvey…”, “Kyle…”, “equipe…”.', 'pensando');
+    legenda('', 'Ouvi uma conversa, mas ninguém da equipe foi chamado. Para falar com eles, comece pelo nome: “Harvey…”, “Mike…”, “equipe…”.', 'pensando');
     setTimeout(() => { if (!ocupado && !falando) legendaPadrao(); }, 6000);
     return;
   }
@@ -567,7 +563,8 @@ function blocosEquipe() {
     const skills = d.skills.map(([n, t]) => `<span class="skill" title="${esc(t)}"><b>${esc(n)}</b> · ${esc(t)}</span>`).join('');
     const extra = `<p class="lead-depto">${esc(d.missao)} <span class="etq ${d.fase <= 2 ? 'ok' : 'info'}">implantação: fase ${d.fase}</span></p>
       <div class="skills"><span class="muted">Auxiliares (skills do diretor):</span> ${skills}</div>`;
-    blocos.push([`${d.n} | ${esc(d.sigla)} — ${esc(d.nome)}`, [d.diretor, ...d.agentes], extra]);
+    const semDiretor = d.diretor ? '' : `<p class="lead-depto"><b>Sem diretor por enquanto:</b> o HARVEY responde por esta unidade até a escolha de um diretor.</p>`;
+    blocos.push([`${d.n} | ${esc(d.sigla)} — ${esc(d.nome)}`, d.diretor ? [d.diretor, ...d.agentes] : [], semDiretor + extra]);
   }
   return blocos;
 }
@@ -575,7 +572,7 @@ function renderEquipe() {
   const abertas = (id) => estado.tarefas.filter((t) => t.para === id && t.status !== 'concluida').length;
   $('#aba-equipe').innerHTML = `
     <h2 class="titulo">Equipe</h2>
-    <p class="lead">Controller e oito departamentos, cada um com seu diretor, agentes auxiliares e skills. Cada um trabalha no seu turno e registra o que fez. Escolha a voz de cada um e toque em “Ouvir” para testar.</p>
+    <p class="lead">Controller e nove unidades, cada uma com seu diretor e suas skills. DOCKET e FINANCE ainda estão sem diretor. Cada um trabalha no seu turno e registra o que fez. Escolha a voz de cada um e toque em “Ouvir” para testar.</p>
     ${blocosEquipe().map(([dep, ids, extra]) => `<section class="bloco-depto"><h3 class="depto">${dep}</h3>${extra}<div class="grade-equipe">${ids.map((id) => {
       const s = estado.status[id];
       const n = abertas(id);
