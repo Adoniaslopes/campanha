@@ -2,3 +2,6 @@
 *backup*.json
 clientes-*.csv
 agenda-*.ics
+
+# Fotos da equipe (personagens): só no artifact privado, nunca no repositório público
+img/equipe/

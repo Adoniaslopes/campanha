@@ -8,32 +8,55 @@
  * (capacidade "sample"); fora dele a aba explica onde usar.
  * ===================================================================== */
 
+// As mesmas 7 áreas do Escritório Digital, com o responsável de cada uma (fotos em img/equipe/<id>.jpg).
+const EQUIPE_CRM = {
+  claude: 'HARVEY', lara: 'DONNA', plinio: 'RACHEL', rui: 'LOUIS', guido: 'ALEX', aureo: 'MIKE', tessa: 'JESSICA', iris: 'SAMANTHA',
+};
 const AGENTES = [
   {
-    id: 'atendimento', pasta: 'atendimento-escritorio', nome: 'Atendimento', icone: '💬',
+    id: 'marketing', pasta: 'marketing-escritorio', nome: 'Marketing e Aquisição', sigla: '01 · GROWTH', icone: '📣', resp: 'claude', interino: true,
+    desc: 'Planeja campanhas de captação dentro das regras da OAB, cria os posts da semana e mostra de onde vêm os clientes.',
+    refs: ['crm.md', 'checklist-oab.md'],
+    sugestoes: ['De onde estão vindo os leads?', 'Faça os posts da semana', 'Quero uma campanha para trabalhadores demitidos'],
+  },
+  {
+    id: 'atendimento', pasta: 'atendimento-escritorio', nome: 'Comercial e Atendimento', sigla: '02 · CLOSER', icone: '💬', resp: 'lara',
     desc: 'Responde novos contatos, faz a triagem do caso, agenda a conversa com você e cuida do follow-up.',
     refs: ['crm.md', 'mensagens.md', 'whatsapp-meta.md'],
     sugestoes: ['Quem preciso retornar hoje?', 'Chegou um lead pelo WhatsApp: ', 'Me dá o texto para colar no agente do WhatsApp'],
   },
   {
-    id: 'contencioso', pasta: 'contencioso-escritorio', nome: 'Contencioso', icone: '⚖️',
-    desc: 'Lança andamentos, calcula e cadastra prazos e audiências, prepara rascunhos de peças a partir do caso.',
-    refs: ['crm.md', 'prazos-jt.md'],
-    sugestoes: ['Quais prazos vencem esta semana?', 'Fui intimado hoje de uma sentença: calcule o prazo do recurso ordinário', 'Lance um andamento no caso '],
+    id: 'onboarding', pasta: 'onboarding-escritorio', nome: 'Contratos e Entrada do Cliente', sigla: '03 · ONBOARDING', icone: '📝', resp: 'plinio',
+    desc: 'Transforma a proposta aprovada em contratação: cadastro do cliente, documentos, contrato, procuração e abertura do caso.',
+    refs: ['crm.md'],
+    sugestoes: ['Fechei com um cliente novo: ', 'Que documentos peço para uma reclamação trabalhista?', 'Abra o caso do cliente '],
   },
   {
-    id: 'financeiro', pasta: 'financeiro-escritorio', nome: 'Financeiro', icone: '💰',
+    id: 'contencioso', pasta: 'contencioso-escritorio', nome: 'Departamento Jurídico', sigla: '04 · JURÍDICO', icone: '⚖️', resp: 'rui', time: ['guido', 'aureo', 'tessa'],
+    desc: 'Louis coordena; Alex cuida do trabalhista, Mike dos casos complexos e Jessica da pesquisa. Andamentos, prazos, audiências e rascunhos de peças.',
+    refs: ['crm.md', 'prazos-jt.md'],
+    sugestoes: ['Quais prazos vencem esta semana?', 'Mike, qual a situação de Atibaia?', 'Alex, calcule o prazo do recurso ordinário: fui intimado hoje'],
+  },
+  {
+    id: 'prazos', pasta: 'contencioso-escritorio', nome: 'Protocolo e Prazos', sigla: '05 · DOCKET', icone: '📅', resp: 'claude', interino: true,
+    desc: 'Controla os prazos e as audiências de todos os processos, com conferência dupla, e avisa o que vence primeiro.',
+    refs: ['crm.md', 'prazos-jt.md'],
+    sugestoes: ['O que vence nos próximos 10 dias?', 'Quais prazos estão sem confirmação no tribunal?', 'Cadastre uma audiência no processo '],
+  },
+  {
+    id: 'financeiro', pasta: 'financeiro-escritorio', nome: 'Financeiro e Cobrança', sigla: '06 · FINANCE', icone: '💰', resp: 'iris',
     desc: 'Cadastra contratos e parcelas, dá baixa em pagamentos, mostra quem está em atraso e prepara as cobranças.',
     refs: ['crm.md', 'mensagens-cobranca.md'],
     sugestoes: ['Quem está em atraso?', 'Faça o fechamento do mês', 'Cadastre um contrato de honorários para '],
   },
   {
-    id: 'marketing', pasta: 'marketing-escritorio', nome: 'Marketing', icone: '📣',
-    desc: 'Planeja campanhas de captação, cria os posts da semana e mostra de onde vêm os clientes.',
-    refs: ['crm.md', 'checklist-oab.md'],
-    sugestoes: ['Quero uma campanha para captar trabalhadores demitidos', 'Faça os posts da semana', 'De onde estão vindo os leads?'],
+    id: 'compliance', pasta: 'compliance-escritorio', nome: 'Qualidade e Compliance', sigla: '07 · SENTINEL', icone: '🛡️', resp: 'claude', interino: true,
+    desc: 'Audita o CRM, aponta registros incompletos e prazos em risco e confere as regras da OAB e da LGPD.',
+    refs: ['crm.md'],
+    sugestoes: ['Faça uma auditoria do CRM', 'Há prazos em risco?', 'Este texto está dentro das regras da OAB? '],
   },
 ];
+const fotoEquipe = (id, cls = '') => `<img class="foto-equipe ${cls}" src="img/equipe/${id}.jpg" alt="${esc(EQUIPE_CRM[id] || '')}" loading="lazy">`;
 const agentePorId = (id) => AGENTES.find((a) => a.id === id);
 
 // ===== Estado das conversas (só neste aparelho) =====
@@ -58,7 +81,9 @@ async function regrasDoAgente(ag) {
 
 function instrucoes(ag, regras, comFerramentas) {
   const agora = new Date();
-  return `Você é o Agente de ${ag.nome} do escritório Lopes Araújo Advocacia e está conversando com o Dr. Adonias dentro do CRM Jurídico (aberto no claude.ai). Hoje é ${fmtData(hoje())} (${DIAS_SEMANA[agora.getDay()]}).
+  const resp = EQUIPE_CRM[ag.resp];
+  const time = (ag.time || []).map((t) => EQUIPE_CRM[t]).join(', ');
+  return `Você é ${resp}, responsável pela área ${ag.sigla} — ${ag.nome} do escritório Lopes Araújo Advocacia${ag.interino ? ' (você responde por ela interinamente, como controller)' : ''}${time ? `, junto com ${time}: quando o Dr. chamar um deles pelo nome, responda como essa pessoa (ALEX = trabalhista, MIKE = casos complexos de Atibaia/TJSP/STJ, JESSICA = pesquisa e teses, LOUIS = coordenação e revisão)` : ''}. Você está conversando com o Dr. Adonias dentro do CRM Jurídico (aberto no claude.ai). Hoje é ${fmtData(hoje())} (${DIAS_SEMANA[agora.getDay()]}).
 
 COMO TRABALHAR NESTE CHAT
 - Siga as regras da sua skill, abaixo.
@@ -69,7 +94,7 @@ COMO TRABALHAR NESTE CHAT
 - Ferramentas externas citadas na skill (Gmail, TribuJus, Meta Ads, Google Agenda, Canva, outras skills) NÃO estão disponíveis aqui. Faça o que dá com o CRM e, para a parte externa, diga que isso é feito pedindo ao Claude numa conversa normal.
 - Responda em português, de forma curta e organizada para ler no celular: frases curtas, listas simples, sem tabelas largas. Mensagens prontas para enviar vão entre aspas, separadas do resto.
 
-=== SKILL DO AGENTE DE ${ag.nome.toUpperCase()} ===
+=== REGRAS DA ÁREA ${ag.nome.toUpperCase()} ===
 ${regras}`;
 }
 
@@ -168,8 +193,11 @@ function telaAgentes() {
       <p class="muted" style="margin-top:0">Toque em um agente para conversar. Eles seguem as regras do escritório e trabalham direto nos dados deste CRM.</p>
       <div class="agentes">${AGENTES.map((a) => `
         <a class="agente-card" href="#/agente/${a.id}">
-          <span class="agente-icone" aria-hidden="true">${a.icone}</span>
-          <span><strong>${esc(a.nome)}</strong><span class="sub">${esc(a.desc)}</span></span>
+          ${fotoEquipe(a.resp)}
+          <span><span class="agente-sigla">${esc(a.sigla)} ${a.icone}</span><strong>${esc(a.nome)}</strong>
+            <span class="agente-resp">${esc(EQUIPE_CRM[a.resp])}${a.interino ? ' (interino, até ter diretor)' : ''}${a.time ? ' · com ' + a.time.map((t) => EQUIPE_CRM[t]).join(', ') : ''}</span>
+            ${a.time ? `<span class="agente-time">${a.time.map((t) => fotoEquipe(t, 'mini')).join('')}</span>` : ''}
+            <span class="sub">${esc(a.desc)}</span></span>
         </a>`).join('')}</div>`,
   };
 }
@@ -179,14 +207,14 @@ function telaAgente(id) {
   if (!ag) return telaNaoEncontrado();
   const msgs = chats[id] || [];
   return {
-    titulo: `Agente de ${ag.nome}`,
+    titulo: `${ag.nome}`,
     acoes: msgs.length ? btn('Nova conversa', 'novaConversa', `data-id="${id}"`, '') : '',
     html: `<a class="voltar" href="#/agentes">← Agentes</a>
       <div class="chat">
         <div id="chat-msgs" class="chat-msgs">
           ${msgs.length ? msgs.map(bolhaHTML).join('') : `<div class="chat-vazio">
-            <div class="agente-icone grande" aria-hidden="true">${ag.icone}</div>
-            <p><strong>Agente de ${esc(ag.nome)}</strong><br><span class="muted">${esc(ag.desc)}</span></p>
+            <div class="agente-fotos">${fotoEquipe(ag.resp, 'grande')}${(ag.time || []).map((t) => fotoEquipe(t, 'grande')).join('')}</div>
+            <p><strong>${esc(ag.nome)}</strong><br><span class="muted">${esc(EQUIPE_CRM[ag.resp])}${ag.time ? ', ' + ag.time.map((t) => EQUIPE_CRM[t]).join(', ') : ''} — ${esc(ag.desc)}</span></p>
             <div class="sugestoes">${ag.sugestoes.map((s) => `<button class="chip" data-acao="sugestaoAgente" data-texto="${esc(s)}">${esc(s.trim())}</button>`).join('')}</div>
           </div>`}
         </div>
