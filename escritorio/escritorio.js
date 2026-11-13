@@ -493,10 +493,26 @@ function enviarFalado() {
   }
   enviarNaSala(texto);
 }
+// Microfone recusado: mostra um botão que abre o painel de permissões do escritório.
+function avisoMicrofoneBloqueado() {
+  const a = $('#aviso-voz');
+  a.innerHTML = 'O microfone está bloqueado para o escritório. <button type="button" class="btn-link" id="btn-liberar-mic">🔓 Liberar microfone</button>';
+  $('#btn-liberar-mic').onclick = async () => {
+    try {
+      const perm = await window.claude.use('permissions');
+      if (!perm) throw new Error('sem painel');
+      await perm.manage();
+      const st = await perm.state('dictation');
+      a.textContent = st === 'denied' ? 'Ainda bloqueado. No painel, ligue o microfone (ditado) do escritório.' : 'Liberado. Toque em “Entrar na reunião”.';
+    } catch {
+      a.textContent = 'Não consegui abrir o painel. No topo, toque na setinha ao lado de “Escritório Digital” → Permissões → ligue o microfone. Confira também no Chrome: ícone à esquerda do endereço → Permissões → Microfone → Permitir.';
+    }
+  };
+}
 function entrarNaReuniao() {
   if (!dictacao) return;
   dictacao.start({ language: 'pt-BR' }).catch((e) => {
-    if (e?.code === 'not_granted') $('#aviso-voz').textContent = 'O microfone está bloqueado para o escritório. Libere em Permissões, no menu da página.';
+    if (e?.code === 'not_granted') avisoMicrofoneBloqueado();
     else if (e?.code === 'unavailable') { $('#aviso-voz').textContent = 'O microfone não está disponível neste aparelho.'; $('#form-sala').hidden = false; }
     else if (e?.code !== 'dismissed' && e?.code !== 'stopped') $('#aviso-voz').textContent = 'Não foi possível abrir o microfone agora.';
   });
@@ -532,7 +548,7 @@ async function iniciarVoz() {
         if (falado.trim()) enviarFalado();
         if (['viewer_stopped', 'hidden', 'time_limit', 'upstream_error', 'rate_limited'].includes(reason)) pedirRetomada = true;
         if (reason === 'unavailable') { dictacao = null; $('#form-sala').hidden = false; $('#aviso-voz').textContent = 'O microfone não está disponível aqui. Escreva para a equipe.'; }
-        if (reason === 'not_granted') $('#aviso-voz').textContent = 'O microfone está bloqueado para o escritório. Libere em Permissões, no menu da página.';
+        if (reason === 'not_granted') avisoMicrofoneBloqueado();
       }
       atualizarStatus();
     });
