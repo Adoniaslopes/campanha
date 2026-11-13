@@ -117,7 +117,7 @@ const ativoHoje = (id) => { const s = estado.status[id]; return s?.atualizadoEm 
 // Lugares em volta da mesa (graus; 90 = embaixo, onde fica o Dr. Adonias; 270 = cabeceira).
 const RECONHECEDOR = window.SpeechRecognition || window.webkitSpeechRecognition || null;
 // Fora do claude.ai: grava o áudio e o servidor transcreve (funciona em qualquer celular).
-const GRAVA = Boolean(window.claude?.externo && navigator.mediaDevices?.getUserMedia && window.MediaRecorder);
+const GRAVA = false; // a transcrição pelo ElevenLabs foi desligada: usa o reconhecimento de voz do próprio navegador
 // Harvey na cabeceira; à esquerda o núcleo jurídico; à direita o fluxo do cliente (Alex, Donna, Rachel); Samantha audita de frente para o Harvey.
 const LUGARES = { claude: 270, rui: 225, tessa: 180, iris: 135, plinio: 90, lara: 45, guido: 0, aureo: 315 };
 function renderPresenca() {
