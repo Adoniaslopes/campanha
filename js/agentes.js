@@ -8,52 +8,58 @@
  * (capacidade "sample"); fora dele a aba explica onde usar.
  * ===================================================================== */
 
-// As mesmas 7 áreas do Escritório Digital, com o responsável de cada uma (fotos em img/equipe/<id>.jpg).
+// As mesmas cinco diretorias do organograma do escritório, com o gerente e a equipe de cada uma (fotos em img/equipe/<id>.jpg).
 const EQUIPE_CRM = {
   claude: 'HARVEY', lara: 'DONNA', plinio: 'RACHEL', rui: 'LOUIS', guido: 'ALEX', aureo: 'MIKE', tessa: 'JESSICA', iris: 'SAMANTHA',
+  katrina: 'KATRINA', tara: 'TARA', trevor: 'TREVOR', brian: 'BRIAN', jenny: 'JENNY', gretchen: 'GRETCHEN', harold: 'HAROLD', faye: 'FAYE', benjamin: 'BENJAMIN',
 };
 const AGENTES = [
   {
-    id: 'marketing', pasta: 'marketing-escritorio', nome: 'Marketing e Aquisição', sigla: '01 · GROWTH', icone: '📣', resp: 'claude', interino: true,
-    desc: 'Planeja campanhas de captação dentro das regras da OAB, cria os posts da semana e mostra de onde vêm os clientes.',
+    id: 'marketing', pasta: 'marketing-escritorio', nome: 'Marketing', sigla: '1 · MARKETING', icone: '📣', resp: 'katrina', time: ['tara', 'trevor', 'brian', 'jenny'],
+    desc: 'Katrina gerencia; Tara faz os criativos, Trevor o roteiro e a copy, Brian o tráfego no Meta e no Google e Jenny as redes sociais. Tudo dentro das regras da OAB.',
+    papeis: 'KATRINA = gerente de marketing, planeja as campanhas e mede de onde vêm os clientes; TARA = criativos (artes, carrosséis, vídeos curtos); TREVOR = roteiros e copy de alta conversão; BRIAN = gestor de tráfego (Meta Ads e Google Ads, orçamento e custo por lead); JENNY = redes sociais e calendário editorial',
     refs: ['crm.md', 'checklist-oab.md'],
-    sugestoes: ['De onde estão vindo os leads?', 'Faça os posts da semana', 'Quero uma campanha para trabalhadores demitidos'],
+    sugestoes: ['Katrina, de onde estão vindo os leads?', 'Trevor, escreva o anúncio de busca e apreensão', 'Jenny, monte o calendário de posts da semana'],
   },
   {
-    id: 'atendimento', pasta: 'atendimento-escritorio', nome: 'Comercial e Atendimento', sigla: '02 · CLOSER', icone: '💬', resp: 'lara',
-    desc: 'Responde novos contatos, faz a triagem do caso, agenda a conversa com você e cuida do follow-up.',
+    id: 'atendimento', pasta: 'atendimento-escritorio', nome: 'Comercial: atendimento e qualificação', sigla: '2 · COMERCIAL', icone: '💬', resp: 'lara', time: ['plinio'],
+    desc: 'Donna atende pelo WhatsApp, qualifica os leads e separa quem quer contratar de quem só quer tirar dúvida.',
+    papeis: 'DONNA = gerente comercial, atendimento e qualificação; RACHEL = fechamento (contrato, procuração e agendamento da call)',
     refs: ['crm.md', 'mensagens.md', 'whatsapp-meta.md'],
     sugestoes: ['Quem preciso retornar hoje?', 'Chegou um lead pelo WhatsApp: ', 'Me dá o texto para colar no agente do WhatsApp'],
   },
   {
-    id: 'onboarding', pasta: 'onboarding-escritorio', nome: 'Contratos e Entrada do Cliente', sigla: '03 · ONBOARDING', icone: '📝', resp: 'plinio',
-    desc: 'Transforma a proposta aprovada em contratação: cadastro do cliente, documentos, contrato, procuração e abertura do caso.',
+    id: 'onboarding', pasta: 'onboarding-escritorio', nome: 'Comercial: fechamento e entrada do cliente', sigla: '2 · COMERCIAL', icone: '📝', resp: 'plinio',
+    desc: 'Rachel fecha a contratação: contrato e procuração assinados, cadastro, documentos e agendamento da call com o advogado.',
     refs: ['crm.md'],
-    sugestoes: ['Fechei com um cliente novo: ', 'Que documentos peço para uma reclamação trabalhista?', 'Abra o caso do cliente '],
+    sugestoes: ['Fechei com um cliente novo: ', 'Que documentos peço para uma reclamação trabalhista?', 'Agende a call com o advogado para '],
   },
   {
-    id: 'contencioso', pasta: 'contencioso-escritorio', nome: 'Departamento Jurídico', sigla: '04 · JURÍDICO', icone: '⚖️', resp: 'tessa', time: ['rui', 'aureo'],
-    desc: 'Jessica dirige, cria teses e aconselha nos casos; Louis conduz os casos complexos e Mike os processos trabalhistas. Andamentos, audiências e rascunhos de peças.',
+    id: 'contencioso', pasta: 'contencioso-escritorio', nome: 'Departamento Jurídico', sigla: '3 · JURÍDICO', icone: '⚖️', resp: 'tessa', time: ['rui', 'aureo', 'gretchen'],
+    desc: 'Jessica dirige, cria teses e aconselha nos casos; Louis conduz os casos complexos, Mike os trabalhistas e Gretchen informa o cliente sobre o processo.',
+    papeis: 'JESSICA = diretora do Jurídico, teses, aconselhamento e jurisprudência; LOUIS = casos complexos de Atibaia/TJSP/STJ; MIKE = processos trabalhistas; GRETCHEN = atendimento ao cliente sobre o andamento do processo',
     refs: ['crm.md', 'prazos-jt.md'],
-    sugestoes: ['Jessica, que tese cabe neste caso? ', 'Louis, qual a situação de Atibaia?', 'Mike, analise este caso trabalhista: '],
+    sugestoes: ['Jessica, que tese cabe neste caso? ', 'Louis, qual a situação de Atibaia?', 'Gretchen, o que digo ao cliente sobre o processo '],
   },
   {
-    id: 'prazos', pasta: 'contencioso-escritorio', nome: 'Protocolo e Prazos', sigla: '05 · DOCKET', icone: '📅', resp: 'guido',
-    desc: 'Controla os prazos e as audiências de todos os processos, com conferência dupla, e avisa o que vence primeiro.',
+    id: 'prazos', pasta: 'contencioso-escritorio', nome: 'Jurídico: protocolo e prazos', sigla: '3 · JURÍDICO', icone: '📅', resp: 'guido',
+    desc: 'Alex controla os prazos, as publicações e as intimações de todos os processos, com conferência dupla, e prepara os protocolos.',
     refs: ['crm.md', 'prazos-jt.md'],
     sugestoes: ['O que vence nos próximos 10 dias?', 'Quais prazos estão sem confirmação no tribunal?', 'Cadastre uma audiência no processo '],
   },
   {
-    id: 'financeiro', pasta: 'financeiro-escritorio', nome: 'Financeiro e Cobrança', sigla: '06 · FINANCE', icone: '💰', resp: 'iris',
-    desc: 'Cadastra contratos e parcelas, dá baixa em pagamentos, mostra quem está em atraso e prepara as cobranças.',
+    id: 'financeiro', pasta: 'financeiro-escritorio', nome: 'Financeiro e administrativo', sigla: '4 · FINANCEIRO', icone: '💰', resp: 'iris', time: ['harold'],
+    desc: 'Samantha cuida de honorários, adimplência e cobrança; Harold das guias, custas, taxas e rotinas administrativas.',
+    papeis: 'SAMANTHA = diretora financeira, honorários, parcelas e cobrança; HAROLD = guias, custas, taxas e rotinas administrativas',
     refs: ['crm.md', 'mensagens-cobranca.md'],
-    sugestoes: ['Quem está em atraso?', 'Faça o fechamento do mês', 'Cadastre um contrato de honorários para '],
+    sugestoes: ['Quem está em atraso?', 'Faça o fechamento do mês', 'Harold, quais guias estão pendentes?'],
   },
   {
-    id: 'compliance', pasta: 'compliance-escritorio', nome: 'Qualidade e Compliance', sigla: '07 · SENTINEL', icone: '🛡️', resp: 'claude', interino: true,
-    desc: 'Audita o CRM, aponta registros incompletos e prazos em risco e confere as regras da OAB e da LGPD.',
+    id: 'compliance', pasta: 'compliance-escritorio', nome: 'Compliance e TI', sigla: '5 · COMPLIANCE E TI', icone: '🛡️', resp: 'faye', time: ['benjamin'],
+    desc: 'Faye audita o CRM e as entregas, cuida da LGPD e das regras da OAB; Benjamin cuida dos sistemas, integrações e segurança.',
+    papeis: 'FAYE = gerente de compliance, qualidade, LGPD e ética OAB; BENJAMIN = Departamento de TI, sistemas, integrações e segurança dos dados',
     refs: ['crm.md'],
-    sugestoes: ['Faça uma auditoria do CRM', 'Há prazos em risco?', 'Este texto está dentro das regras da OAB? '],
+    sugestoes: ['Faye, faça uma auditoria do CRM', 'Há prazos em risco?', 'Benjamin, o que falta para ligar o WhatsApp?'],
   },
 ];
 const fotoEquipe = (id, cls = '') => `<img class="foto-equipe ${cls}" src="img/equipe/${id}.jpg" alt="${esc(EQUIPE_CRM[id] || '')}" loading="lazy">`;
@@ -83,12 +89,12 @@ function instrucoes(ag, regras, comFerramentas) {
   const agora = new Date();
   const resp = EQUIPE_CRM[ag.resp];
   const time = (ag.time || []).map((t) => EQUIPE_CRM[t]).join(', ');
-  return `Você é ${resp}, responsável pela área ${ag.sigla} — ${ag.nome} do escritório Lopes Araújo Advocacia${ag.interino ? ' (você responde por ela interinamente, como controller)' : ''}${time ? `, junto com ${time}: quando o Dr. chamar um deles pelo nome, responda como essa pessoa (JESSICA = diretora do Jurídico, teses, aconselhamento e jurisprudência; LOUIS = casos complexos de Atibaia/TJSP/STJ; MIKE = processos trabalhistas)` : ''}. Você está conversando com o Dr. Adonias dentro do CRM Jurídico (aberto no claude.ai). Hoje é ${fmtData(hoje())} (${DIAS_SEMANA[agora.getDay()]}).
+  return `Você é ${resp}, responsável pela área ${ag.sigla} — ${ag.nome} do escritório Lopes Araújo Advocacia${time ? `, junto com ${time}: quando o Dr. chamar um deles pelo nome, responda como essa pessoa (${ag.papeis})` : ''}. Você está conversando com o Dr. Adonias dentro do CRM Jurídico (aberto no claude.ai). Hoje é ${fmtData(hoje())} (${DIAS_SEMANA[agora.getDay()]}).
 
 COMO TRABALHAR NESTE CHAT
 - Siga as regras da sua skill, abaixo.
 - ${comFerramentas
-    ? 'Para ler e gravar no CRM use SOMENTE as ferramentas desta página: listar_registros e salvar_registro. A ferramenta ArtifactData citada nas referências NÃO existe aqui; as coleções têm os nomes curtos clientes, processos, eventos, leads e honorarios, com os mesmos campos descritos na referência do CRM.'
+    ? 'Para ler e gravar no CRM use SOMENTE as ferramentas desta página: listar_registros e salvar_registro. A ferramenta ArtifactData citada nas referências NÃO existe aqui; as coleções têm os nomes curtos clientes, processos, eventos, leads e honorarios, com os mesmos campos descritos na referência do CRM, e tarefas (tarefas da equipe: titulo, responsavel = código do membro, solicitante, status a_fazer | fazendo | aguardando_dr | bloqueada | concluida, prioridade normal | alta, prazo AAAA-MM-DD, descricao, resultado, concluidoEm). Quando o Dr. pedir um trabalho para alguém da equipe, registre a tarefa com o responsável certo. Códigos: claude = Harvey, lara = Donna, plinio = Rachel, tessa = Jessica, rui = Louis, aureo = Mike, guido = Alex, iris = Samantha, katrina, tara, trevor, brian, jenny, gretchen, harold, faye, benjamin.'
     : 'Neste aparelho você não consegue gravar no CRM. Os dados atuais do CRM estão no fim destas instruções; quando algo precisar ser gravado, entregue os campos prontos e diga que não gravou.'}
 - Grave no CRM quando o Dr. Adonias pedir ou quando a skill mandar registrar o atendimento. Nunca apague registros. Ao gravar, diga em uma linha o que gravou.
 - Ferramentas externas citadas na skill (Gmail, TribuJus, Meta Ads, Google Agenda, Canva, outras skills) NÃO estão disponíveis aqui. Faça o que dá com o CRM e, para a parte externa, diga que isso é feito pedindo ao Claude numa conversa normal.
@@ -107,7 +113,7 @@ function ferramentasDoCRM() {
       inputSchema: {
         type: 'object',
         properties: {
-          colecao: { type: 'string', enum: COLECOES, description: 'clientes, processos, eventos, leads ou honorarios' },
+          colecao: { type: 'string', enum: COLECOES, description: 'clientes, processos, eventos, leads, honorarios ou tarefas' },
           busca: { type: 'string', description: 'Texto opcional para filtrar' },
           ids: { type: 'array', items: { type: 'string' }, description: 'Ids opcionais' },
         },
@@ -195,7 +201,7 @@ function telaAgentes() {
         <a class="agente-card" href="#/agente/${a.id}">
           ${fotoEquipe(a.resp)}
           <span><span class="agente-sigla">${esc(a.sigla)} ${a.icone}</span><strong>${esc(a.nome)}</strong>
-            <span class="agente-resp">${esc(EQUIPE_CRM[a.resp])}${a.interino ? ' (interino, até ter diretor)' : ''}${a.time ? ' · com ' + a.time.map((t) => EQUIPE_CRM[t]).join(', ') : ''}</span>
+            <span class="agente-resp">${esc(EQUIPE_CRM[a.resp])}${a.time ? ' · com ' + a.time.map((t) => EQUIPE_CRM[t]).join(', ') : ''}</span>
             ${a.time ? `<span class="agente-time">${a.time.map((t) => fotoEquipe(t, 'mini')).join('')}</span>` : ''}
             <span class="sub">${esc(a.desc)}</span></span>
         </a>`).join('')}</div>`,

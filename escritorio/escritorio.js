@@ -28,7 +28,10 @@ const STATUS_TAREFA = {
   concluida: ['Concluída', 'ok'],
   bloqueada: ['Bloqueada', 'perigo'],
 };
-const nomeDe = (id) => (id === 'dr' ? 'Dr. Adonias' : TIME[id]?.nome || id);
+// Membros do organograma que ainda não estão em TIME (nomeados): nome e foto vêm de ORGANOGRAMA.
+const pessoaOrg = (id) => (window.ORGANOGRAMA ? window.ORGANOGRAMA.diretorias.flatMap((d) => [d.gerente, ...d.equipe]).find((p) => p.id === id) : null);
+const nomeDe = (id) => (id === 'dr' ? 'Dr. Adonias' : (BASE_TIME.has(id) && TIME[id]?.nome) || pessoaOrg(id)?.nome || TIME[id]?.nome || id);
+const BASE_TIME = new Set(['claude', 'lara', 'plinio', 'rui', 'aureo', 'tessa', 'guido', 'iris']);
 
 // ===== Utilidades =====
 const $ = (s) => document.querySelector(s);
@@ -65,6 +68,8 @@ function avatar(id, tamanho = 96) {
     const nome = TIME[id]?.nome || '';
     return `<img class="avatar foto-real" src="/_blob/${foto}" width="${tamanho}" height="${tamanho}" alt="${esc(nome)}" loading="lazy">`;
   }
+  const p = pessoaOrg(id);
+  if (p && !BASE_TIME.has(id)) return fotoOrg(p, tamanho);
   return avatarSVG(id, tamanho);
 }
 let banco = null;

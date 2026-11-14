@@ -193,8 +193,8 @@ function alertasPrescricao() {
 
 // ===== Armazenamento =====
 const CHAVE = 'crm-juridico-v1';
-const COLECOES = ['clientes', 'processos', 'eventos', 'leads', 'honorarios'];
-const vazio = () => ({ clientes: [], processos: [], eventos: [], leads: [], honorarios: [], meta: {} });
+const COLECOES = ['clientes', 'processos', 'eventos', 'leads', 'honorarios', 'tarefas'];
+const vazio = () => ({ clientes: [], processos: [], eventos: [], leads: [], honorarios: [], tarefas: [], meta: {} });
 
 function carregar() {
   try {
