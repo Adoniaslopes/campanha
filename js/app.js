@@ -166,6 +166,22 @@ const ETAPAS = [
   { id: 'perdido', nome: 'Perdido' },
 ];
 const nomeEtapa = (id) => ETAPAS.find((e) => e.id === id)?.nome || id;
+
+// ===== Quadro de etapas do processo (regra trazida do CRM do Supabase) =====
+// Mudou a etapa: troca o responsável e, nas etapas de trabalho, cria a tarefa para ele.
+const ETAPAS_CASO = [
+  { id: 'documentos', nome: 'Documentos' }, { id: 'assinaturas', nome: 'Assinaturas' },
+  { id: 'peticao_inicial', nome: 'Petição inicial' }, { id: 'protocolo', nome: 'Protocolo' },
+  { id: 'acompanhamento', nome: 'Acompanhamento' }, { id: 'recurso', nome: 'Recurso' }, { id: 'encerrado', nome: 'Encerrado' },
+];
+const nomeEtapaCaso = (id) => ETAPAS_CASO.find((e) => e.id === id)?.nome || id || '—';
+function responsavelDaEtapa(etapa, area) {
+  if (etapa === 'documentos' || etapa === 'assinaturas') return 'plinio'; // Rachel
+  if (etapa === 'protocolo') return 'guido'; // Alex
+  if (['peticao_inicial', 'acompanhamento', 'recurso'].includes(etapa)) return area === 'Trabalhista' ? 'aureo' : 'rui'; // Mike / Louis
+  return '';
+}
+const nomeResp = (id) => (typeof nomeMembro === 'function' ? nomeMembro(id) : id) || '—';
 const processoAtivo = (p) => !ENCERRADOS.has(p.status);
 
 // ===== Prescrição trabalhista (art. 7º, XXIX, CF): 2 anos após a saída para ajuizar =====
@@ -670,7 +686,7 @@ function linhaTempo(itens, col, id, lista) {
 // ===== Estado de filtros =====
 const filtros = {
   clientes: { q: '', tipo: '' },
-  processos: { q: '', status: 'ativos', area: '' },
+  processos: { q: '', status: 'ativos', area: '', resp: '' },
   agenda: { q: '', situacao: 'pendentes', tipo: '' },
   leads: { q: '' },
   financeiro: { q: '', status: 'abertas', mes: '' },
@@ -806,7 +822,7 @@ function ficha(pares) {
 function tabelaProcessos(procs) {
   if (!procs.length) return '<p class="vazio">Nenhum processo.</p>';
   return `<div class="tabela-wrap"><table>
-    <thead><tr><th>Processo</th><th>Área / ação</th><th>Juízo</th><th>Situação</th><th>Próximo prazo</th></tr></thead>
+    <thead><tr><th>Processo</th><th>Área / ação</th><th>Juízo</th><th>Situação</th><th>Etapa · responsável</th><th>Próximo prazo</th></tr></thead>
     <tbody>${procs.map((p) => {
       const prox = db.eventos.filter((e) => e.processoId === p.id && !e.concluido).sort(ordenarEventos)[0];
       return `<tr>
@@ -814,6 +830,7 @@ function tabelaProcessos(procs) {
         <td>${esc(p.area || '')}<span class="sub">${esc(p.tipoAcao || '')}</span></td>
         <td>${esc([p.tribunal, p.vara].filter(Boolean).join(' · '))}<span class="sub">${esc(p.comarca || '')}</span></td>
         <td><span class="etiqueta ${processoAtivo(p) ? 'info' : ''}">${esc(p.status)}</span><span class="sub">${esc(p.fase || '')}</span></td>
+        <td>${esc(nomeEtapaCaso(p.etapa))}<span class="sub">${p.responsavel ? esc(nomeResp(p.responsavel)) : ''}</span></td>
         <td>${prox ? `${fmtData(prox.data)}<br><span class="etiqueta ${urgencia(prox)}">${rotuloDias(diasAte(prox.data))}</span>` : '<span class="muted">—</span>'}</td>
       </tr>`;
     }).join('')}</tbody></table></div>`;
@@ -889,13 +906,14 @@ function telaProcessos() {
         <input type="search" placeholder="Buscar por número, cliente, parte contrária, vara…" ${inputFiltro('processos.q')}>
         ${selectFiltro('processos.status', [['ativos', 'Em andamento'], ['encerrados', 'Encerrados'], ['', 'Todos']])}
         ${selectFiltro('processos.area', [['', 'Todas as áreas'], ...AREAS.map((a) => [a, a])])}
+        ${selectFiltro('processos.resp', [['', 'Todos os responsáveis'], ['rui', 'Louis'], ['aureo', 'Mike'], ['guido', 'Alex'], ['plinio', 'Rachel']])}
       </div>
       <section class="cartao"><div id="lista"></div></section>`,
     lista: () => {
       const f = filtros.processos;
       const itens = db.processos.filter((p) =>
         (f.status !== 'ativos' || processoAtivo(p)) && (f.status !== 'encerrados' || !processoAtivo(p)) &&
-        (!f.area || p.area === f.area) &&
+        (!f.area || p.area === f.area) && (!f.resp || p.responsavel === f.resp) &&
         contem(f.q, p.numero, soDigitos(p.numero), nomeCliente(p.clienteId), p.parteContraria, p.vara, p.tribunal, p.tipoAcao, p.comarca))
         .sort((a, b) => nomeCliente(a.clienteId).localeCompare(nomeCliente(b.clienteId)));
       return tabelaProcessos(itens) + `<p class="muted" style="margin:10px 0 0;font-size:13px">${itens.length} processo(s)</p>`;
@@ -935,6 +953,8 @@ function telaProcesso(id) {
           ['Observações', p.observacoes ? `<span style="white-space:pre-wrap">${esc(p.observacoes)}</span>` : '', true],
         ])}
       </section>
+      ${cartaoQuadro(p)}
+      ${cartaoPublicacao(p)}
       <div class="grade g2">
         <section class="cartao">
           <div class="cartao-cab"><h3>Prazos e audiências</h3>${btn('+ Prazo', 'novoEvento', `data-processo="${id}"`, 'peq')}</div>
@@ -951,6 +971,51 @@ function telaProcesso(id) {
         ${tabelaHonorarios(hons)}
       </section>`,
   };
+}
+
+function cartaoQuadro(p) {
+  const atual = p.etapa || '';
+  return `<section class="cartao quadro-caso">
+    <div class="cartao-cab"><h3>Etapa do processo</h3><span class="muted">Responsável: <strong>${esc(nomeResp(p.responsavel))}</strong>${p.etapaDesde ? ` · desde ${fmtData(p.etapaDesde.slice(0, 10))}` : ''}</span></div>
+    <div class="etapas-caso">${ETAPAS_CASO.map((e) => `<button class="etapa-caso ${e.id === atual ? 'atual' : ''}" data-acao="mudarEtapa" data-id="${p.id}" data-etapa="${e.id}" ${e.id === atual ? 'aria-current="step"' : ''}>${esc(e.nome)}</button>`).join('')}</div>
+    <p class="muted" style="font-size:12.5px;margin:8px 0 0">Ao mudar a etapa, o responsável troca sozinho (Documentos e Assinaturas → Rachel; Protocolo → Alex; Petição, Acompanhamento e Recurso → Louis no cível, Mike no trabalhista) e nasce a tarefa para ele.</p>
+  </section>`;
+}
+
+function cartaoPublicacao(p) {
+  const pub = p.publicacao;
+  if (!pub && !p.leitura) return '';
+  const l = p.leitura || {};
+  const linhas = [
+    ['Publicação em', fmtData(pub?.em)], ['Situação', esc({ prazo_aberto: 'Prazo aberto', ativo: 'Ativo, sem prazo aberto', suspenso: 'Suspenso', encerrado: 'Encerrado' }[pub?.situacao] || pub?.situacao || '')],
+    ['O que fazer', esc(pub?.proximaAcao || pub?.prazoTexto || '')],
+    ['Prazo', pub?.prazoFim ? `${fmtData(pub.prazoFim)}${pub.prazoDias ? ` · ${pub.prazoDias} dias` : ''}${pub.prazoRegra ? ` · ${esc(pub.prazoRegra)}` : ''} <span class="etiqueta alerta">estimado, conferir</span>` : ''],
+    ['Leitura do Harvey', esc([l.teor, l.impacto, l.acao, l.observacao].filter(Boolean).join(' · '))],
+  ].filter(([, v]) => v);
+  return `<section class="cartao" style="margin-bottom:18px">
+    <div class="cartao-cab"><h3>Última publicação (DJEN)</h3><a class="btn-link" href="https://claude.ai/artifact/TXtVoPNXtaH46hWdbFPz2m" target="_blank" rel="noopener">Manual de leitura ↗</a></div>
+    ${ficha(linhas)}
+    ${pub?.resumo ? `<details style="margin-top:10px"><summary>Texto da publicação</summary><p style="white-space:pre-wrap;font-size:13.5px">${esc(pub.resumo)}</p></details>` : ''}
+    <p class="muted" style="font-size:12px;margin:8px 0 0">${esc(pub?.aviso || 'Leitura automática: conferir pelo manual.')}</p>
+  </section>`;
+}
+
+async function mudarEtapa(id, etapa) {
+  const p = buscar('processos', id);
+  if (!p || p.etapa === etapa) return;
+  const resp = responsavelDaEtapa(etapa, p.area);
+  if (!await confirmar(`Mudar a etapa para "${nomeEtapaCaso(etapa)}"?${resp ? `\n\nResponsável passa a ser ${nomeResp(resp)}.` : ''}`, { ok: 'Mudar' })) return;
+  const agora = new Date().toISOString();
+  const andamentos = [...(p.andamentos || []), { id: uid(), data: hoje(), descricao: `[Etapa] ${nomeEtapaCaso(p.etapa)} para ${nomeEtapaCaso(etapa)}` }];
+  gravar('processos', { id, etapa, responsavel: resp, etapaDesde: agora, andamentos });
+  if (resp && !['acompanhamento', 'recurso', 'encerrado'].includes(etapa)) {
+    gravar('tarefas', {
+      id: 'tar' + uid(), titulo: `${(p.numero || 'Caso').slice(0, 7)} — ${nomeEtapaCaso(etapa)}`,
+      descricao: `Etapa iniciada pelo quadro de processos. Cliente: ${nomeCliente(p.clienteId)}.`,
+      responsavel: resp, solicitante: 'dr', status: 'a_fazer', prioridade: 'normal', processoId: id,
+    });
+  }
+  toast(resp ? `Etapa mudada · tarefa para ${nomeResp(resp)}` : 'Etapa mudada');
 }
 
 function telaAgenda() {
@@ -1319,6 +1384,7 @@ const acoes = {
   editarCliente: (d) => formCliente(d.id),
   novoProcesso: (d) => formProcesso(null, { clienteId: d.cliente || '' }),
   editarProcesso: (d) => formProcesso(d.id),
+  mudarEtapa: (d) => mudarEtapa(d.id, d.etapa),
   novoEvento: (d) => {
     const v = {};
     if (d.processo) { v.processoId = d.processo; v.clienteId = buscar('processos', d.processo)?.clienteId; }

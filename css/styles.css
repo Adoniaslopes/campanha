@@ -361,3 +361,9 @@ td.acoes { text-align: right; white-space: nowrap; }
 @media (max-width: 500px) { .tarefa-crm { flex-wrap: wrap; } .tarefa-crm .quando { justify-items: start; text-align: left; } }
 .titulo-equipe { font-size: 17px; margin: 22px 0 2px; }
 .lead-equipe { margin: 0 0 10px; font-size: 14px; }
+
+/* Quadro de etapas do processo */
+.quadro-caso { margin-bottom: 18px; }
+.etapas-caso { display: flex; flex-wrap: wrap; gap: 6px; }
+.etapa-caso { border: 1px solid var(--borda); background: transparent; color: inherit; border-radius: 999px; padding: 6px 12px; font: inherit; font-size: 13px; cursor: pointer; }
+.etapa-caso.atual { background: var(--primario); border-color: var(--primario); color: #fff; font-weight: 600; }
