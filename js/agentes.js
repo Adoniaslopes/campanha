@@ -38,13 +38,13 @@ const AGENTES = [
     id: 'contencioso', pasta: 'contencioso-escritorio', nome: 'Departamento Jurídico', sigla: '3 · JURÍDICO', icone: '⚖️', resp: 'tessa', time: ['rui', 'aureo', 'gretchen'],
     desc: 'Jessica dirige, cria teses e aconselha nos casos; Louis conduz os casos complexos, Mike os trabalhistas e Gretchen informa o cliente sobre o processo.',
     papeis: 'JESSICA = diretora do Jurídico, teses, aconselhamento e jurisprudência; LOUIS = casos complexos de Atibaia/TJSP/STJ; MIKE = processos trabalhistas; GRETCHEN = atendimento ao cliente sobre o andamento do processo',
-    refs: ['crm.md', 'prazos-jt.md'],
+    refs: ['crm.md', 'prazos-jt.md', 'manual-leitura.md'],
     sugestoes: ['Jessica, que tese cabe neste caso? ', 'Louis, qual a situação de Atibaia?', 'Gretchen, o que digo ao cliente sobre o processo '],
   },
   {
     id: 'prazos', pasta: 'contencioso-escritorio', nome: 'Jurídico: protocolo e prazos', sigla: '3 · JURÍDICO', icone: '📅', resp: 'guido',
     desc: 'Alex controla os prazos, as publicações e as intimações de todos os processos, com conferência dupla, e prepara os protocolos.',
-    refs: ['crm.md', 'prazos-jt.md'],
+    refs: ['crm.md', 'prazos-jt.md', 'manual-leitura.md'],
     sugestoes: ['O que vence nos próximos 10 dias?', 'Quais prazos estão sem confirmação no tribunal?', 'Cadastre uma audiência no processo '],
   },
   {
