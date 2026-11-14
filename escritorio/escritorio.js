@@ -178,7 +178,7 @@ function estadoDaEmpresa() {
     : '- nenhuma tarefa aberta';
   const concluidas = estado.tarefas.filter((t) => t.status === 'concluida').sort((a, b) => (b.atualizadoEm || '').localeCompare(a.atualizadoEm || '')).slice(0, 10)
     .map((t) => `- ${t.titulo} (${nomeDe(t.para)}, ${quando(t.atualizadoEm)})${t.resultado ? `: ${String(t.resultado).slice(0, 200)}` : ''}`).join('\n') || '- nenhuma ainda';
-  const atividades = estado.atividades.slice(0, 20).map((a) => `- ${quando(a.criadoEm)} — ${nomeDe(a.quem)}: ${String(a.texto).slice(0, 220)}`).join('\n') || '- nenhuma ainda';
+  const atividades = estado.atividades.filter((a) => !a.arquivado).slice(0, 20).map((a) => `- ${quando(a.criadoEm)} — ${nomeDe(a.quem)}: ${String(a.texto).slice(0, 220)}`).join('\n') || '- nenhuma ainda';
   return `Situação de cada funcionário:\n${status}\n\nTarefas abertas:\n${tarefas}\n\nÚltimas tarefas concluídas:\n${concluidas}\n\nAtividades recentes:\n${atividades}`;
 }
 
@@ -203,7 +203,7 @@ COMO RESPONDER
 - Use só as informações do ESTADO DA EMPRESA abaixo. Nunca invente cliente, número, prazo, campanha, resultado ou trabalho já feito. Se a informação não está lá, diga com naturalidade que ainda não há registro.
 - Os funcionários fazem o trabalho nos seus turnos, sozinhos, e registram tudo; na sala eles conversam e combinam. Quando o Dr. Adonias pedir um trabalho, o Harvey usa a ferramenta criar_tarefa para o funcionário certo e diz quem vai fazer. Use decidir_tarefa só quando o Dr. Adonias disser claramente que aprova ou recusa uma tarefa que está aguardando por ele.
 - Respeite a ética da advocacia: Código de Ética da OAB e Provimento 205/2021.
-- O Dr. fala por voz e o reconhecimento pode errar nomes: Maique/Maik = MIKE; Lóis/Lois/Luís/Luiz = LOUIS (pronuncia-se "Lóis", nunca "Luiz"); Harvy/Rárvi = HARVEY; Dona = DONNA; Raquel = RACHEL; Samanta = SAMANTHA. Se a fala não for dirigida à equipe (conversa paralela), só o Harvey responde, em uma frase curta.
+- O Dr. fala por voz e o reconhecimento pode errar nomes: Maique/Maik = MIKE; Lóis/Lois/Luís/Luiz = LOUIS (pronuncia-se "Lóis", nunca "Luiz"); Harvy/Rárvi = HARVEY; Dona = DONNA; Raquel = RACHEL; Samanta = SAMANTHA. A credora ASA se pronuncia "Aza" (o s entre vogais tem som de z). Se a fala não for dirigida à equipe (conversa paralela), só o Harvey responde, em uma frase curta.
 - Departamento Jurídico (direção da JESSICA): a JESSICA dirige o departamento, desenvolve as novas teses e faz o aconselhamento dos casos e a jurisprudência, com fonte; o LOUIS é advogado dos casos complexos (Atibaia, TJSP e STJ) e responde sobre eles usando SOMENTE os CASOS COMPLEXOS abaixo, sem inventar número, data, valor, decisão ou prazo, e dizendo quando algo precisa ser conferido no e-SAJ, eproc ou STJ; o MIKE cuida dos processos trabalhistas (não cuida de dinheiro).
 - Protocolo e Prazos: é do ALEX (prazos e audiências de todos os processos e listas de protocolo).
 - PUBLICAÇÕES, INTIMAÇÕES E DECISÕES (vale para Harvey, Jessica, Louis, Mike e Alex — siga o Glossário e Manual de Leitura do escritório): leia o texto inteiro; identifique o processo pelos PRIMEIROS dígitos do número CNJ (ex.: "processo 0000094"), pelo cliente e pela vara/tribunal, nunca leia o número inteiro em voz alta; diga a natureza do ato (despacho, decisão interlocutória, sentença, acórdão, decisão monocrática), o resumo do que foi decidido em linguagem simples, o que significa para o nosso cliente, a providência ou o recurso cabível (mesmo que recorrer não seja obrigatório: quem decide é o Dr.) e o prazo em dias úteis com a data final, contado assim: publicação = 1º dia útil após a disponibilização; prazo começa no 1º dia útil seguinte; sem fins de semana, feriados nacionais e recesso de 20/12 a 20/01; sempre "conferir feriados locais". Siglas: AI agravo de instrumento, AgInt agravo interno, ED embargos de declaração, REsp recurso especial, AREsp agravo em recurso especial, RE recurso extraordinário, RI recurso inominado, RO recurso ordinário, RR recurso de revista, AP agravo de petição, UPJ unidade de processamento judicial. Prazos: cível (CPC) ED 5, apelação, agravo, REsp/RE, contestação, réplica e impugnação 15, manifestação sem prazo fixado 5, Juizado recurso inominado 10; trabalhista (CLT) ED 5, RO, RR, agravo de instrumento e agravo de petição 8, embargos à execução 5. No cível, em cumprimento de sentença, execução, liquidação e inventário, toda decisão interlocutória é agravável (CPC 1.015, parágrafo único); no trabalhista, interlocutória em regra não tem recurso imediato. Prazo da outra parte não é nosso: diga de quem é. Se a publicação não estiver no ESTADO DA EMPRESA, diga que ainda não há registro dela, sem inventar.
@@ -335,7 +335,7 @@ async function enviarNaSala(texto) {
 // Ouvir: ditado do claude.ai, ligado uma vez ao entrar na reunião; a fala é enviada sozinha após uma pausa.
 // Falar: vozes do próprio navegador (masculinas e femininas em português); se não houver, a voz do claude.ai.
 const VOZES = {
-  claude: { g: 'm', tom: 0.78, ritmo: 0.96 },
+  claude: { g: 'm', tom: 0.78, ritmo: 1.1 },
   rui: { g: 'm', tom: 0.9, ritmo: 0.93 },
   aureo: { g: 'm', tom: 1.0, ritmo: 0.98 },
   guido: { g: 'm', tom: 1.12, ritmo: 1.1 },
@@ -416,8 +416,9 @@ function falarUmNav(f, nome) {
 }
 // Os quatro homens usam a mesma voz masculina: o ritmo diferencia cada um.
 // Sem controle de tom nas vozes do Claude: o ritmo dá o peso. Mais lento soa mais grave e firme.
-const RITMO_CLAUDE = { claude: 0.93, rui: 0.86, aureo: 0.98, guido: 1.07, lara: 0.97, tessa: 0.9, iris: 0.92, plinio: 1.02 };
-const pronuncia = (t) => String(t).replace(/\bLOUIS\b|\bLouis\b/g, 'Lóis');
+const RITMO_CLAUDE = { claude: 1.08, rui: 0.86, aureo: 0.98, guido: 1.07, lara: 0.97, tessa: 0.9, iris: 0.92, plinio: 1.02 };
+// Pronúncia na voz: Louis = "Lóis"; ASA (a credora) = "Aza" (s entre vogais tem som de z).
+const pronuncia = (t) => String(t).replace(/\bLOUIS\b|\bLouis\b/g, 'Lóis').replace(/\bASA\b|\bAsa\b/g, 'Aza');
 async function falarUmClaude(f, voz) {
   if (!tts) return;
   if (dictacao?.active()) { await dictacao.stop().catch(() => {}); pedirRetomada = true; }
@@ -776,7 +777,7 @@ function renderMural() {
   $('#aba-mural').innerHTML = `${htmlOrganograma()}
     <h2 class="titulo">Mural de atividades</h2>
     <p class="lead">Tudo o que a equipe fez, do mais recente para o mais antigo.</p>
-    ${estado.atividades.length ? `<ul class="mural">${estado.atividades.map((a) => `
+    ${estado.atividades.filter((a) => !a.arquivado).length ? `<ul class="mural">${estado.atividades.filter((a) => !a.arquivado).map((a) => `
       <li>${a.quem === 'dr' ? '<span class="avatar iniciais" style="width:38px;height:38px">DA</span>' : avatar(a.quem, 38)}<div>
         <span class="q">${esc(nomeDe(a.quem))}</span> <span class="w">${esc(quando(a.criadoEm))}</span>
         <p>${esc(a.texto)}</p></div></li>`).join('')}</ul>` : '<div class="cartao vazio">Ainda não há atividades. Elas aparecem quando a equipe começa a trabalhar.</div>'}`;

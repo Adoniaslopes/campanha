@@ -229,3 +229,26 @@ Prazo dado à outra parte não é prazo nosso: dizer de quem é.
 | **Harvey** | inclui no relatório ao Dr. o que precisa de decisão dele e os prazos dos próximos dias |
 
 Nenhuma peça vai ao tribunal sem a revisão do Dr. Adonias. A decisão de recorrer é sempre do Dr.
+
+---
+
+## 8. Validade da publicação: o que é notícia e o que é histórico
+
+Publicação é notícia só enquanto ainda dá para agir. Trabalhamos **de agora para frente**.
+
+| Situação | Como tratar |
+|---|---|
+| Prazo ainda correndo (data final igual ou depois de hoje) | **Vigente:** ler, informar ao Dr. e repassar |
+| Sem prazo para nós (só ciência), publicada há até **10 dias corridos** | **Vigente:** informar uma vez |
+| Prazo já vencido | **Histórico:** não ler, não informar e não repassar como novidade |
+| Sem prazo e publicada há mais de 10 dias | **Histórico** |
+
+- Exemplo: decisão publicada em outubro cujo prazo já venceu é **histórico**. Não aparece mais como "publicação para ler" no CRM, no mural ou na sala.
+- O histórico **não é apagado**: fica nos andamentos do processo (CRM e Supabase) e só é contado se o Dr. perguntar especificamente pelo histórico daquele processo.
+- Exceção: se o prazo venceu **sem providência registrada**, o Alex avisa o Dr. **uma vez** ("prazo de DD/MM venceu sem registro de providência") e depois a publicação vira histórico.
+- Quem faz a limpeza: o **Benjamin**, todos os dias, marca como histórico as publicações vencidas no CRM, arquiva os avisos antigos do mural e encerra as tarefas "Ler publicação" que perderam o objeto.
+
+## 9. Pronúncia
+
+- **ASA** (a credora ASA Distressed FIDC) se fala **"Aza"**: o **s** entre vogais tem som de **z**. Nunca "Aça".
+- **Louis** se fala **"Lóis"**.

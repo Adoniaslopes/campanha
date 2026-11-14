@@ -982,9 +982,21 @@ function cartaoQuadro(p) {
   </section>`;
 }
 
+// Regra do glossário (validade da publicação): é notícia enquanto o prazo corre;
+// sem prazo, por 10 dias corridos após a publicação. Depois é histórico.
+function publicacaoVigente(pub) {
+  if (!pub) return false;
+  if (pub.prazoFim) return pub.prazoFim >= hoje();
+  return Boolean(pub.em) && diasAte(pub.em) >= -10;
+}
+
 function cartaoPublicacao(p) {
   const pub = p.publicacao;
   if (!pub && !p.leitura) return '';
+  if (!publicacaoVigente(pub)) {
+    return `<section class="cartao" style="margin-bottom:18px"><details><summary><strong>Última publicação: histórico</strong> <span class="muted">(${pub?.em ? fmtData(pub.em) : 'data não consta'} · prazo vencido ou notícia antiga: não é para ler nem repassar)</span></summary>
+      ${pub?.proximaAcao ? `<p style="margin:8px 0 0">${esc(pub.proximaAcao)}</p>` : ''}${pub?.resumo ? `<p style="white-space:pre-wrap;font-size:13.5px">${esc(pub.resumo)}</p>` : ''}</details></section>`;
+  }
   const l = p.leitura || {};
   const linhas = [
     ['Publicação em', fmtData(pub?.em)], ['Situação', esc({ prazo_aberto: 'Prazo aberto', ativo: 'Ativo, sem prazo aberto', suspenso: 'Suspenso', encerrado: 'Encerrado' }[pub?.situacao] || pub?.situacao || '')],
