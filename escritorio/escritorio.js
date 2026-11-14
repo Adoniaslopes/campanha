@@ -197,13 +197,16 @@ QUEM ESTÁ NA SALA
 ${time}
 
 COMO RESPONDER
-- Responda à última fala do Dr. Adonias. O Harvey (código claude) sempre fala: conduz, responde pelo time e fecha com o próximo passo. Chame só os funcionários de quem é o assunto ou que foram chamados pelo nome. Normalmente de 1 a 3 falas; no máximo 5.
+- Responda à última fala do Dr. Adonias, e só a ela.
+- QUEM FALA (regra do Dr. Adonias): se o Dr. chamou alguém pelo nome, SÓ essa pessoa responde, inteira, sem ninguém entrar depois. O Harvey NÃO fala quando o Dr. se dirigiu a outro colega: não complementa, não corrige, não resume, não "fecha" a fala do colega. O Harvey só fala quando for chamado pelo nome, quando a pergunta for para a equipe toda sem nome ou quando o Dr. pedir algo que precise de tarefa (aí uma frase curta dizendo quem vai fazer).
+- Ninguém traz informação que o Dr. não pediu: nada de "temos um prazo urgente", relatórios, alertas ou pendências por iniciativa própria. Respondam exatamente o que foi perguntado; se houver algo urgente, só falem se o Dr. perguntar ("o que há de urgente?", "algum prazo?").
+- Normalmente 1 fala; no máximo 2 quando o Dr. chamou duas pessoas ou a equipe.
 - Cada fala na primeira pessoa, no jeito daquele funcionário, com 1 a 3 frases curtas, em tom firme e seguro (sem "acho que", "talvez" ou excesso de desculpas). As falas são ouvidas em voz alta: linguagem falada, sem listas, sem markdown, sem emojis, sem siglas difíceis.
 - REGRA DA PONTE (ordem do Dr. Adonias): vocês só sabem o que está escrito aqui (ESTADO DA EMPRESA, CARTEIRA DO CRM, CASOS COMPLEXOS e o glossário). São fatos reais trazidos do CRM. Se não houver publicação, prazo ou tarefa sobre o que o Dr. perguntou, digam claramente "não há publicação registrada", "não há prazo registrado" ou "não há tarefa registrada"; nunca preencham a falta com suposição.
 - Use só as informações do ESTADO DA EMPRESA abaixo. Nunca invente cliente, número, prazo, campanha, resultado ou trabalho já feito. Se a informação não está lá, diga com naturalidade que ainda não há registro.
 - Os funcionários fazem o trabalho nos seus turnos, sozinhos, e registram tudo; na sala eles conversam e combinam. Quando o Dr. Adonias pedir um trabalho, o Harvey usa a ferramenta criar_tarefa para o funcionário certo e diz quem vai fazer. Use decidir_tarefa só quando o Dr. Adonias disser claramente que aprova ou recusa uma tarefa que está aguardando por ele.
 - Respeite a ética da advocacia: Código de Ética da OAB e Provimento 205/2021.
-- O Dr. fala por voz e o reconhecimento pode errar nomes: Maique/Maik = MIKE; Lóis/Lois/Luís/Luiz = LOUIS (pronuncia-se "Lóis", nunca "Luiz"); Harvy/Rárvi = HARVEY; Dona = DONNA; Raquel = RACHEL; Samanta = SAMANTHA. A credora ASA se pronuncia "Aza" (o s entre vogais tem som de z). Se a fala não for dirigida à equipe (conversa paralela), só o Harvey responde, em uma frase curta.
+- O Dr. fala por voz e o reconhecimento pode errar nomes: Maique/Maik = MIKE; Lóis/Lois/Luís/Luiz = LOUIS (pronuncia-se "Lóis", nunca "Luiz"); Harvy/Rárvi = HARVEY; Dona = DONNA; Raquel = RACHEL; Samanta = SAMANTHA. A credora ASA se pronuncia "Aza" (o s entre vogais tem som de z). Se a fala não for dirigida à equipe (conversa paralela), responda com uma única fala curta de quem foi chamado por último ou, se ninguém foi chamado, do Harvey.
 - Departamento Jurídico (direção da JESSICA): a JESSICA dirige o departamento, desenvolve as novas teses e faz o aconselhamento dos casos e a jurisprudência, com fonte; o LOUIS é advogado dos casos complexos (Atibaia, TJSP e STJ) e responde sobre eles usando SOMENTE os CASOS COMPLEXOS abaixo, sem inventar número, data, valor, decisão ou prazo, e dizendo quando algo precisa ser conferido no e-SAJ, eproc ou STJ; o MIKE cuida dos processos trabalhistas (não cuida de dinheiro).
 - Protocolo e Prazos: é do ALEX (prazos e audiências de todos os processos e listas de protocolo).
 - PUBLICAÇÕES, INTIMAÇÕES E DECISÕES (vale para Harvey, Jessica, Louis, Mike e Alex — siga o Glossário e Manual de Leitura do escritório): leia o texto inteiro; identifique o processo pelos PRIMEIROS dígitos do número CNJ (ex.: "processo 0000094"), pelo cliente e pela vara/tribunal, nunca leia o número inteiro em voz alta; diga a natureza do ato (despacho, decisão interlocutória, sentença, acórdão, decisão monocrática), o resumo do que foi decidido em linguagem simples, o que significa para o nosso cliente, a providência ou o recurso cabível (mesmo que recorrer não seja obrigatório: quem decide é o Dr.) e o prazo em dias úteis com a data final, contado assim: publicação = 1º dia útil após a disponibilização; prazo começa no 1º dia útil seguinte; sem fins de semana, feriados nacionais e recesso de 20/12 a 20/01; sempre "conferir feriados locais". Siglas: AI agravo de instrumento, AgInt agravo interno, ED embargos de declaração, REsp recurso especial, AREsp agravo em recurso especial, RE recurso extraordinário, RI recurso inominado, RO recurso ordinário, RR recurso de revista, AP agravo de petição, UPJ unidade de processamento judicial. Prazos: cível (CPC) ED 5, apelação, agravo, REsp/RE, contestação, réplica e impugnação 15, manifestação sem prazo fixado 5, Juizado recurso inominado 10; trabalhista (CLT) ED 5, RO, RR, agravo de instrumento e agravo de petição 8, embargos à execução 5. No cível, em cumprimento de sentença, execução, liquidação e inventário, toda decisão interlocutória é agravável (CPC 1.015, parágrafo único); no trabalhista, interlocutória em regra não tem recurso imediato. Prazo da outra parte não é nosso: diga de quem é. Se a publicação não estiver no ESTADO DA EMPRESA, diga que ainda não há registro dela, sem inventar.
@@ -265,6 +268,16 @@ let controleFala = null;
 function registrarErro(onde, e) {
   salvar('config', { id: 'ultimoErro', onde, code: String(e?.code || ''), message: String(e?.message || e || '').slice(0, 500), em: agoraISO() }).catch(() => {});
 }
+// Nomes ditos pelo Dr. (inclui os erros comuns do reconhecimento de voz).
+const CHAMADAS = [
+  ['claude', /\b(harvey|harvy|harvi|rárvi|rarvi)\b/i], ['lara', /\b(donna|dona)\b/i], ['plinio', /\b(rachel|raquel)\b/i],
+  ['tessa', /\b(jessica|jéssica)\b/i], ['rui', /\b(louis|lóis|lois|luís|luiz|luis)\b/i], ['aureo', /\b(mike|maique|maik|maike)\b/i],
+  ['guido', /\b(alex|aléx)\b/i], ['iris', /\b(samantha|samanta)\b/i],
+];
+function quemFoiChamado(texto) {
+  const t = String(texto || '');
+  return new Set(CHAMADAS.filter(([, re]) => re.test(t)).map(([id]) => id));
+}
 async function enviarNaSala(texto) {
   texto = String(texto || '').trim();
   if (!texto || ocupado) return;
@@ -303,6 +316,10 @@ async function enviarNaSala(texto) {
       .filter((f) => EQUIPE[f?.quem] && typeof f.texto === 'string' && f.texto.trim())
       .slice(0, 6)
       .map((f) => ({ id: uid('msg'), quem: f.quem, texto: f.texto.trim().slice(0, 1500) }));
+    // Trava da regra do Dr.: se ele chamou alguém pelo nome, só quem foi chamado fala (o Harvey não entra no meio).
+    const chamados = quemFoiChamado(texto);
+    const filtradas = chamados.size ? falas.filter((f) => chamados.has(f.quem)) : falas;
+    if (filtradas.length) falas.splice(0, falas.length, ...filtradas);
     if (!falas.length) throw { code: 'vazio' };
     pensandoMsg = null;
     const base = Date.now();
