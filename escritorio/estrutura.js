@@ -61,8 +61,10 @@ const ORGANOGRAMA = {
       equipe: [
         { id: 'harold', nome: 'Harold Gunderson', cargo: 'Guias, custas e administrativo', ativo: false },
       ] },
-    { nome: 'Compliance', gerente: { id: 'faye', nome: 'Faye Richardson', cargo: 'Qualidade, LGPD e ética OAB', ativo: false },
-      equipe: [] },
+    { nome: 'Compliance e TI', gerente: { id: 'faye', nome: 'Faye Richardson', cargo: 'Qualidade, LGPD e ética OAB', ativo: false },
+      equipe: [
+        { id: 'benjamin', nome: 'Benjamin', cargo: 'Departamento de TI: sistemas, integrações e segurança', ativo: false },
+      ] },
   ],
 };
 if (typeof window !== 'undefined') window.ORGANOGRAMA = ORGANOGRAMA;
