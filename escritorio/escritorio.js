@@ -724,8 +724,37 @@ function novaTarefa() {
 }
 
 // ===== Mural =====
+// Organograma estrutural: Sócio → Controller → diretorias (gerente e equipe).
+const BASE_ORG = new Set(['claude', 'lara', 'plinio', 'rui', 'aureo', 'tessa', 'guido', 'iris']);
+function fotoOrg(p, tam) {
+  if (BASE_ORG.has(p.id)) return avatar(p.id, tam);
+  const ini = esc(p.nome.replace(/^Dr\.\s*/, '').split(/\s+/).map((x) => x[0]).slice(0, 2).join(''));
+  const src = p.foto || `org/${p.id}.jpg`;
+  return `<span class="org-foto" style="width:${tam}px;height:${tam}px"><span class="org-ini">${ini}</span><img src="${esc(src)}" alt="" loading="lazy" onerror="this.remove()"></span>`;
+}
+function noOrg(p, tipo, tam) {
+  return `<div class="org-no ${tipo}${p.ativo === false ? ' a-ativar' : ''}">${fotoOrg(p, tam)}
+    <div class="org-txt"><strong>${esc(p.nome)}</strong><small>${esc(p.cargo)}</small>${p.ativo === false ? '<span class="org-etq">a ativar</span>' : ''}</div></div>`;
+}
+function htmlOrganograma() {
+  const O = window.ORGANOGRAMA;
+  if (!O) return '';
+  const dirs = O.diretorias.map((d) => `
+      <li><div class="org-dir">${esc(d.nome)}</div>${noOrg(d.gerente, 'gerente', 52)}
+        ${d.equipe.length ? `<ul class="org-equipe">${d.equipe.map((m) => `<li>${noOrg(m, 'membro', 36)}</li>`).join('')}</ul>` : ''}</li>`).join('');
+  return `
+    <section class="organograma" aria-label="Organograma do escritório">
+      <h2 class="titulo">Organograma</h2>
+      <div class="org-rolagem"><div class="org-arvore">
+        ${noOrg(O.socio, 'socio', 64)}<span class="org-linha"></span>
+        ${noOrg(O.controller, 'controller', 56)}<span class="org-linha"></span>
+        <ul class="org-dirs">${dirs}</ul>
+      </div></div>
+    </section>`;
+}
+
 function renderMural() {
-  $('#aba-mural').innerHTML = `
+  $('#aba-mural').innerHTML = `${htmlOrganograma()}
     <h2 class="titulo">Mural de atividades</h2>
     <p class="lead">Tudo o que a equipe fez, do mais recente para o mais antigo.</p>
     ${estado.atividades.length ? `<ul class="mural">${estado.atividades.map((a) => `

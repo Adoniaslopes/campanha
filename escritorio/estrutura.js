@@ -31,3 +31,38 @@ const ESTRUTURA = {
   ],
 };
 if (typeof window !== 'undefined') window.ESTRUTURA = ESTRUTURA;
+
+/* Organograma estrutural (aba Mural), definido pelo Dr. Adonias em 14/11/2026.
+ * id: código do banco quando a pessoa já trabalha no escritório; os nomeados ainda não ativados usam um id próprio
+ * e foto em org/<id>.jpg (publicada só no artifact privado). ativo: false = nomeado, a ativar. */
+const ORGANOGRAMA = {
+  socio: { id: 'adonias', nome: 'Dr. Adonias Lopes de Araújo', cargo: 'Sócio diretor e fundador', foto: 'org/adonias.jpg' },
+  controller: { id: 'claude', nome: 'Harvey', cargo: 'Controller' },
+  diretorias: [
+    { nome: 'Marketing', gerente: { id: 'katrina', nome: 'Katrina Bennett', cargo: 'Gerente de Marketing', ativo: false },
+      equipe: [
+        { id: 'tara', nome: 'Tara Messer', cargo: 'Criativos', ativo: false },
+        { id: 'trevor', nome: 'Trevor Evans', cargo: 'Roteiro e copy', ativo: false },
+        { id: 'brian', nome: 'Brian Altman', cargo: 'Gestor de tráfego', ativo: false },
+        { id: 'jenny', nome: 'Jenny Griffith', cargo: 'Redes sociais', ativo: false },
+      ] },
+    { nome: 'Comercial', gerente: { id: 'lara', nome: 'Donna', cargo: 'Gerente comercial' },
+      equipe: [
+        { id: 'plinio', nome: 'Rachel', cargo: 'Fechamento: contrato, procuração e call' },
+      ] },
+    { nome: 'Jurídico', gerente: { id: 'tessa', nome: 'Jessica', cargo: 'Diretora jurídica' },
+      equipe: [
+        { id: 'rui', nome: 'Louis', cargo: 'Casos complexos' },
+        { id: 'aureo', nome: 'Mike', cargo: 'Trabalhista' },
+        { id: 'guido', nome: 'Alex', cargo: 'Protocolo e prazos' },
+        { id: 'gretchen', nome: 'Gretchen Bodinski', cargo: 'Atendimento sobre o processo', ativo: false },
+      ] },
+    { nome: 'Financeiro', gerente: { id: 'iris', nome: 'Samantha', cargo: 'Diretora financeira' },
+      equipe: [
+        { id: 'harold', nome: 'Harold Gunderson', cargo: 'Guias, custas e administrativo', ativo: false },
+      ] },
+    { nome: 'Compliance', gerente: { id: 'faye', nome: 'Faye Richardson', cargo: 'Qualidade, LGPD e ética OAB', ativo: false },
+      equipe: [] },
+  ],
+};
+if (typeof window !== 'undefined') window.ORGANOGRAMA = ORGANOGRAMA;

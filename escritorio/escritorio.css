@@ -223,3 +223,37 @@ p.lead { margin: 0 0 14px; color: var(--texto-2); }
 @keyframes orbe-cores { from { background-position: 0 0, 0% 50%; } to { background-position: 0 0, 100% 50%; } }
 .assento.falando { transform: translate(-50%, -50%); }
 .assento.falando .foto { animation: none; box-shadow: 0 4px 12px rgba(0,0,0,.18); }
+/* Organograma estrutural (aba Mural) */
+.organograma { margin-bottom: 22px; padding-bottom: 18px; border-bottom: 1px solid var(--borda); }
+.org-rolagem { overflow-x: auto; padding: 6px 0 4px; }
+.org-arvore { min-width: 900px; display: flex; flex-direction: column; align-items: center; }
+.org-linha { width: 2px; height: 20px; background: var(--acento); }
+.org-no { display: flex; align-items: center; gap: 10px; background: var(--superficie); border: 1px solid var(--borda); border-radius: 12px; padding: 8px 12px 8px 8px; text-align: left; }
+.org-no.socio { border: 2px solid var(--marca); }
+.org-no.controller { border: 2px solid var(--acento); }
+.org-no.gerente { border-color: var(--marca); box-shadow: 0 2px 8px rgba(31,42,68,.08); }
+.org-no.membro { padding: 6px 10px 6px 6px; }
+.org-no.a-ativar { border-style: dashed; }
+.org-txt { display: grid; line-height: 1.25; min-width: 0; }
+.org-txt strong { font-size: 13.5px; }
+.org-no.socio .org-txt strong { font-size: 15px; }
+.org-txt small { font-size: 11.5px; color: var(--texto-2); }
+.org-etq { justify-self: start; margin-top: 2px; font-size: 10px; font-weight: 700; color: var(--alerta); background: var(--alerta-fundo); border-radius: 999px; padding: 0 7px; }
+.org-foto { position: relative; flex: none; border-radius: 50%; overflow: hidden; background: var(--marca); display: inline-grid; place-items: center; }
+.org-foto img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.org-ini { color: #fff; font-size: 12px; font-weight: 700; }
+.org-no .avatar { flex: none; }
+.org-dir { font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--acento); margin-bottom: 6px; }
+/* Diretorias: linha horizontal ligando as cinco, cada uma descendo do Controller */
+.org-dirs { list-style: none; margin: 0; padding: 0; display: flex; justify-content: center; }
+.org-dirs > li { position: relative; padding: 20px 8px 0; display: flex; flex-direction: column; align-items: center; flex: 1 1 0; min-width: 170px; }
+.org-dirs > li::before { content: ""; position: absolute; top: 0; left: 0; right: 0; border-top: 2px solid var(--acento); }
+.org-dirs > li:first-child::before { left: 50%; }
+.org-dirs > li:last-child::before { right: 50%; }
+.org-dirs > li::after { content: ""; position: absolute; top: 0; left: 50%; width: 2px; height: 20px; background: var(--acento); margin-left: -1px; }
+/* Equipe de cada diretoria: desce do gerente em lista vertical */
+.org-equipe { list-style: none; margin: 0; padding: 12px 0 0 18px; position: relative; align-self: stretch; display: grid; gap: 8px; }
+.org-equipe::before { content: ""; position: absolute; top: 0; bottom: 20px; left: 8px; width: 2px; background: var(--borda); }
+.org-equipe > li { position: relative; }
+.org-equipe > li::before { content: ""; position: absolute; top: 50%; left: -10px; width: 10px; height: 2px; background: var(--borda); }
+.org-equipe .org-no { width: 100%; }
