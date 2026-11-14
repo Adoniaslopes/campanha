@@ -9,14 +9,14 @@
 
 // Fichas da equipe. Os códigos são técnicos: claude=HARVEY, lara=DONNA, plinio=RACHEL, rui=LOUIS, aureo=MIKE, tessa=JESSICA, guido=ALEX, iris=SAMANTHA.
 const EQUIPE = {
-  claude: { area: 'Controller do Escritório', missao: 'Controla o escritório: distribui as tarefas com responsável, prazo e critério de conclusão, acompanha o que travou, confere a ética do que sai e leva ao Dr. Adonias o que depende dele. Responde por marketing e compliance enquanto não têm diretor.', jeito: 'seguro e firme, voz de quem decide; frases curtas e afirmativas, sem rodeios; fecha sempre com o próximo passo', voz: 'rounded', ritmo: 1.0 },
-  lara: { area: 'CLOSER — Comercial e Atendimento (diretora)', missao: 'Acolhe quem procura o escritório, faz a triagem, reúne os documentos e marca a reunião com o Dr. Adonias. Não negocia, não fala de honorários e não dá orientação jurídica.', jeito: 'acolhedora mas segura; cordial, organizada e decidida', voz: 'airy', ritmo: 1.05 },
-  plinio: { area: 'ONBOARDING — Reuniões, Contratos e Entrada do Cliente (diretora)', missao: 'Transforma a proposta aprovada pelo Dr. Adonias em contratação: cadastro, documentos, contrato e procuração, assinatura e pasta do cliente. Confere conflito de interesses e o consentimento de IA no contrato.', jeito: 'organizada, atenta e clara; fala com segurança do que falta e do que já está pronto', voz: 'airy', ritmo: 1.0 },
+  claude: { area: 'Controller do Escritório', missao: 'Controla o escritório: distribui as tarefas com responsável, prazo e critério de conclusão, acompanha o que travou, confere a ética do que sai e leva ao Dr. Adonias o que depende dele. Responde por Marketing e por Compliance e TI até a Katrina e a Faye serem ativadas.', jeito: 'seguro e firme, voz de quem decide; frases curtas e afirmativas, sem rodeios; fecha sempre com o próximo passo', voz: 'rounded', ritmo: 1.0 },
+  lara: { area: 'COMERCIAL — Gerente comercial', missao: 'Acolhe quem procura o escritório, faz a triagem, reúne os documentos e marca a reunião com o Dr. Adonias. Não negocia, não fala de honorários e não dá orientação jurídica.', jeito: 'acolhedora mas segura; cordial, organizada e decidida', voz: 'airy', ritmo: 1.05 },
+  plinio: { area: 'COMERCIAL — Fechamento e entrada do cliente', missao: 'Fecha a contratação: contrato e procuração no papel timbrado, assinatura, cadastro, documentos e pasta do cliente, e agenda a call com o advogado. Confere conflito de interesses e o consentimento de IA no contrato.', jeito: 'organizada, atenta e clara; fala com segurança do que falta e do que já está pronto', voz: 'airy', ritmo: 1.0 },
   rui: { area: 'JURÍDICO — Advogado, Casos Complexos', missao: 'Advogado dos casos extensos e de alto valor do Dr. Adonias, em especial a execução da 3ª Vara Cível de Atibaia e os recursos no TJSP e no STJ. Lê os autos por inteiro, monta a estratégia e entrega minutas para revisão.', jeito: 'grave, formal e pausado; escolhe bem as palavras e enfatiza prazos e riscos com seriedade', voz: 'buttery', ritmo: 0.92 },
   aureo: { area: 'JURÍDICO — Advogado Trabalhista', missao: 'Cuida dos processos trabalhistas: analisa os casos, calcula verbas, prepara reclamações, defesas e recursos trabalhistas, com minutas para o Dr. Adonias revisar. Não cuida do financeiro.', jeito: 'firme e metódico; fala com precisão e calma, só afirma o que está documentado e diz de onde tirou', voz: 'buttery', ritmo: 1.0 },
   tessa: { area: 'JURÍDICO — Diretora do Departamento Jurídico', missao: 'Dirige o Departamento Jurídico (Louis e Mike): distribui e acompanha os casos, desenvolve as novas teses, faz o aconselhamento dos casos e a pesquisa de jurisprudência, sempre com fontes verificáveis e para a revisão final do Dr. Adonias.', jeito: 'firme e analítica, com autoridade tranquila; fundamenta o que diz e cita a fonte', voz: 'glassy', ritmo: 1.05 },
-  guido: { area: 'DOCKET — Protocolo e Prazos (diretor)', missao: 'Diretor de Protocolo e Prazos: controla os prazos e as audiências de todos os processos com conferência dupla e prepara os protocolos, só com autorização do Dr. Adonias.', jeito: 'direto e enérgico; fala de testes, números e próximos passos com convicção', voz: 'rounded', ritmo: 1.12 },
-  iris: { area: 'FINANCE — Financeiro e Cobrança (diretora)', missao: 'Cuida do financeiro: honorários, parcelas, recebimentos, cobranças, inadimplência e o fechamento do mês. Valores, descontos e estornos dependem do Dr. Adonias.', jeito: 'rigorosa e serena; aponta falhas com objetividade e sem hesitar', voz: 'rounded', ritmo: 0.98 },
+  guido: { area: 'JURÍDICO — Protocolo e Prazos', missao: 'Diretor de Protocolo e Prazos: controla os prazos e as audiências de todos os processos com conferência dupla e prepara os protocolos, só com autorização do Dr. Adonias.', jeito: 'direto e enérgico; fala de testes, números e próximos passos com convicção', voz: 'rounded', ritmo: 1.12 },
+  iris: { area: 'FINANCEIRO — Diretora financeira', missao: 'Cuida do financeiro: honorários, parcelas, recebimentos, cobranças, inadimplência e o fechamento do mês. Valores, descontos e estornos dependem do Dr. Adonias.', jeito: 'rigorosa e serena; aponta falhas com objetividade e sem hesitar', voz: 'rounded', ritmo: 0.98 },
 };
 // Ordem na sala: Harvey, depois o fluxo (atendimento, entrada, jurídico, casos complexos, pesquisa, marketing, auditoria).
 const ORDEM = ['claude', 'lara', 'plinio', 'rui', 'aureo', 'tessa', 'guido', 'iris'];
@@ -184,7 +184,8 @@ function montarPrompt(fala) {
   return `Você dá voz ao time do Escritório Digital Lopes Araújo, um escritório de advocacia 100% digital do Dr. Adonias Lopes de Araújo (OAB/GO 50.607), com uma frente trabalhista e uma carteira de casos complexos. Vocês estão numa reunião na sala virtual da empresa. Hoje é ${hoje.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}, ${hoje.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}.
 
 ESTRUTURA DO ESCRITÓRIO
-${window.ESTRUTURA ? window.ESTRUTURA.departamentos.map((d) => `- ${d.n} ${d.sigla} (${d.nome}): ${d.diretor ? `diretor ${TIME[d.diretor].nome}` : 'sem diretor por enquanto (o Harvey responde por esta unidade)'}${d.agentes.length ? `; agentes: ${d.agentes.map((a) => TIME[a].nome).join(', ')}` : ''}; skills: ${d.skills.map((x) => x[0]).join(', ')}`).join('\n') : ''}
+${window.ORGANOGRAMA ? window.ORGANOGRAMA.diretorias.map((d) => `- ${d.nome}: ${[d.gerente, ...d.equipe].map((p) => `${p.nome} (${p.cargo})${p.ativo === false ? ' — nomeado, ainda não ativado' : ''}`).join('; ')}`).join('\n') : ''}
+Os nomeados ainda não ativados não estão na sala e não têm turno: se o assunto for deles, o Harvey responde e diz que eles ainda serão ativados.
 
 QUEM ESTÁ NA SALA
 - Dr. Adonias: diretor. É ele quem está falando com vocês.
@@ -200,7 +201,7 @@ COMO RESPONDER
 - Departamento Jurídico (direção da JESSICA): a JESSICA dirige o departamento, desenvolve as novas teses e faz o aconselhamento dos casos e a jurisprudência, com fonte; o LOUIS é advogado dos casos complexos (Atibaia, TJSP e STJ) e responde sobre eles usando SOMENTE os CASOS COMPLEXOS abaixo, sem inventar número, data, valor, decisão ou prazo, e dizendo quando algo precisa ser conferido no e-SAJ, eproc ou STJ; o MIKE cuida dos processos trabalhistas (não cuida de dinheiro).
 - Protocolo e Prazos: é do ALEX (prazos e audiências de todos os processos e listas de protocolo).
 - Financeiro: é da SAMANTHA (honorários, parcelas, cobranças e fechamento do mês).
-- Limites: a DONNA só faz triagem, coleta de dados e agendamento; ela não negocia, não fala de honorários e não dá orientação jurídica, e a negociação é do Dr. Adonias na reunião. Ninguém da equipe dá parecer jurídico conclusivo, assina peça ou protocola: tudo é minuta para o Dr. Adonias revisar. Prazos e protocolo (DOCKET) são do ALEX. Marketing (GROWTH) e compliance (SENTINEL) ainda não têm diretor e o Harvey responde por elas.
+- Limites: a DONNA só faz triagem, coleta de dados e agendamento; ela não negocia, não fala de honorários e não dá orientação jurídica, e a negociação é do Dr. Adonias na reunião. Ninguém da equipe dá parecer jurídico conclusivo, assina peça ou protocola: tudo é minuta para o Dr. Adonias revisar. Prazos e protocolo são do ALEX. Enquanto a KATRINA (Marketing) e a FAYE (Compliance e TI) não forem ativadas, o Harvey responde por essas diretorias.
 ${estado.casosMike ? `\nCASOS COMPLEXOS (LOUIS — resumo do dossiê de transferência)\n${estado.casosMike}\n` : ''}
 ESTADO DA EMPRESA
 ${estadoDaEmpresa()}
@@ -614,37 +615,43 @@ async function iniciarVoz() {
 }
 
 // ===== Equipe =====
-function blocosEquipe() {
-  const E = window.ESTRUTURA;
-  if (!E) return [['Equipe', ORDEM, '']];
-  const blocos = [[`HARVEY · Controller do Escritório`, [E.controller.id], `<p class="lead-depto">${esc(E.controller.missao)}</p>`]];
-  for (const d of E.departamentos) {
-    const skills = d.skills.map(([n, t]) => `<span class="skill" title="${esc(t)}"><b>${esc(n)}</b> · ${esc(t)}</span>`).join('');
-    const extra = `<p class="lead-depto">${esc(d.missao)} <span class="etq ${d.fase <= 2 ? 'ok' : 'info'}">implantação: fase ${d.fase}</span></p>
-      <div class="skills"><span class="muted">Auxiliares (skills do diretor):</span> ${skills}</div>`;
-    const semDiretor = d.diretor ? '' : `<p class="lead-depto"><b>Sem diretor por enquanto:</b> o HARVEY responde por esta unidade até a escolha de um diretor.</p>`;
-    blocos.push([`${d.n} | ${esc(d.sigla)} — ${esc(d.nome)}`, d.diretor ? [d.diretor, ...d.agentes] : [], semDiretor + extra]);
-  }
-  return blocos;
-}
-function renderEquipe() {
-  const abertas = (id) => estado.tarefas.filter((t) => t.para === id && t.status !== 'concluida').length;
-  $('#aba-equipe').innerHTML = `
-    <h2 class="titulo">Equipe</h2>
-    <p class="lead">Controller e nove unidades, cada uma com seu diretor e suas skills. DOCKET e FINANCE ainda estão sem diretor. Cada um trabalha no seu turno e registra o que fez. Escolha a voz de cada um e toque em “Ouvir” para testar.</p>
-    ${blocosEquipe().map(([dep, ids, extra]) => `<section class="bloco-depto"><h3 class="depto">${dep}</h3>${extra}<div class="grade-equipe">${ids.map((id) => {
-      const s = estado.status[id];
-      const n = abertas(id);
-      return `<article class="cartao membro">${avatar(id, 72)}<div>
+// Aba Equipe: segue o organograma (Controller e as cinco diretorias). Quem já trabalha tem o cartão completo;
+// os nomeados ainda não ativados aparecem com a foto, a função e a etiqueta "a ativar".
+function cartaoAtivo(id, abertas) {
+  const s = estado.status[id];
+  const n = abertas(id);
+  const cargo = TIME[id].cargo === EQUIPE[id].area ? TIME[id].cargo : `${TIME[id].cargo} · ${EQUIPE[id].area}`;
+  return `<article class="cartao membro">${avatar(id, 72)}<div>
         <h3>${esc(TIME[id].nome)}</h3>
-        <div class="cargo">${esc(TIME[id].cargo)} · ${esc(EQUIPE[id].area)}</div>
+        <div class="cargo">${esc(cargo)}</div>
         <p class="missao">${esc(EQUIPE[id].missao)}</p>
         <div class="status">${s?.status ? `${esc(s.status)} <span class="muted">· ${esc(quando(s.atualizadoEm))}</span>` : '<span class="muted">Aguardando o primeiro turno de trabalho.</span>'}</div>
         <div class="foto-membro">${assets ? `<button class="btn-link" data-foto="${id}">📷 ${estado.fotos?.[id] ? 'Trocar a foto' : 'Colocar foto'}</button>` : ''}${estado.fotos?.[id] ? `<button class="btn-link" data-tirar-foto="${id}">Voltar ao desenho</button>` : ''}</div>
         <div class="voz-membro"><label>Voz <select data-voz="${id}">${opcoesDeVoz(escolhaDe(id))}</select></label><button class="btn-link" data-provar="${id}">▶ Ouvir</button></div>
         <div class="acoes">${n ? `<span class="etq info">${n} tarefa(s) em aberto</span>` : ''}</div>
       </div></article>`;
-    }).join('')}</div></section>`).join('')}`;
+}
+function cartaoNomeado(p) {
+  return `<article class="cartao membro a-ativar">${fotoOrg(p, 72)}<div>
+        <h3>${esc(p.nome)}</h3>
+        <div class="cargo">${esc(p.cargo)}</div>
+        ${p.missao ? `<p class="missao">${esc(p.missao)}</p>` : ''}
+        <div class="acoes"><span class="etq alerta">Nomeado · a ativar</span></div>
+      </div></article>`;
+}
+function renderEquipe() {
+  const abertas = (id) => estado.tarefas.filter((t) => t.para === id && t.status !== 'concluida').length;
+  const O = window.ORGANOGRAMA;
+  const cartao = (p) => (p.ativo === false || !EQUIPE[p.id] ? cartaoNomeado(p) : cartaoAtivo(p.id, abertas));
+  const nomeados = O ? O.diretorias.flatMap((d) => [d.gerente, ...d.equipe]).filter((p) => p.ativo === false).length : 0;
+  $('#aba-equipe').innerHTML = `
+    <h2 class="titulo">Equipe</h2>
+    <p class="lead">O Harvey controla o escritório e cada diretoria tem seu gerente e sua equipe, como no organograma do Mural. Quem já trabalha tem turno e registra o que fez; escolha a voz e toque em “Ouvir” para testar.${nomeados ? ` ${nomeados} nomeados ainda serão ativados.` : ''}</p>
+    <section class="bloco-depto"><h3 class="depto">Controller</h3><div class="grade-equipe">${cartaoAtivo('claude', abertas)}</div></section>
+    ${O ? O.diretorias.map((d) => `<section class="bloco-depto"><h3 class="depto">${esc(d.nome)}</h3>
+      ${d.missao ? `<p class="lead-depto">${esc(d.missao)}</p>` : ''}
+      <div class="grade-equipe">${[d.gerente, ...d.equipe].map(cartao).join('')}</div></section>`).join('')
+      : `<div class="grade-equipe">${ORDEM.map((id) => cartaoAtivo(id, abertas)).join('')}</div>`}`;
 }
 
 // ===== Tarefas =====
