@@ -911,7 +911,7 @@ function telaProcessos() {
       <section class="cartao"><div id="lista"></div></section>`,
     lista: () => {
       const f = filtros.processos;
-      const itens = db.processos.filter((p) =>
+      const itens = db.processos.filter((p) => !p.oculto &&
         (f.status !== 'ativos' || processoAtivo(p)) && (f.status !== 'encerrados' || !processoAtivo(p)) &&
         (!f.area || p.area === f.area) && (!f.resp || p.responsavel === f.resp) &&
         contem(f.q, p.numero, soDigitos(p.numero), nomeCliente(p.clienteId), p.parteContraria, p.vara, p.tribunal, p.tipoAcao, p.comarca))
