@@ -12,7 +12,7 @@ const PELE = { clara: '#F5D0B0', media: '#E0AC85', morena: '#C08660', escura: '#
 const TIME = {
   adonias: { nome: 'Dr. Adonias', cargo: 'Diretor', fundo: '#DCE5F2', roupa: '#1F2A44', pele: PELE.media, cabelo: 'lateral', corCabelo: '#2B2018', extra: ['gravata'], selo: null },
   claude: { nome: 'HARVEY', cargo: 'Controller do Escritório', fundo: '#DDE7F7', roupa: '#24324F', pele: PELE.clara, cabelo: 'topete', corCabelo: '#3B2A1E', extra: ['blazer', 'barbaRala'], selo: null },
-  lara: { nome: 'DONNA', cargo: 'Gerente Comercial', fundo: '#E3EAF3', roupa: '#9DB0C4', pele: PELE.clara, cabelo: 'ondulado', corCabelo: '#B4501F', extra: ['brincos'], selo: null },
+  lara: { nome: 'DONNA', cargo: 'Gerente Comercial e de Marketing', fundo: '#E3EAF3', roupa: '#9DB0C4', pele: PELE.clara, cabelo: 'ondulado', corCabelo: '#B4501F', extra: ['brincos'], selo: null },
   rui: { nome: 'LOUIS', cargo: 'Advogado — Casos Complexos', fundo: '#E4E8EF', roupa: '#1F2A44', pele: PELE.clara, cabelo: 'fade', corCabelo: '#2A2320', extra: ['gravata', 'barbaRala'], selo: 'balanca', corSelo: '#1F2A44' },
   aureo: { nome: 'MIKE', cargo: 'Advogado Trabalhista', fundo: '#F3EEDD', roupa: '#34465F', pele: PELE.clara, cabelo: 'lateral', corCabelo: '#2A1F18', extra: ['gravata', 'barbaRala'], selo: null },
   tessa: { nome: 'JESSICA', cargo: 'Diretora Jurídica', fundo: '#EFE7DC', roupa: '#C9AE8E', pele: PELE.morena, cabelo: 'ondulado', corCabelo: '#3B2418', extra: ['brincos'], selo: 'lupa', corSelo: '#8A6A45' },

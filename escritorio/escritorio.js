@@ -9,8 +9,8 @@
 
 // Fichas da equipe. Os códigos são técnicos: claude=HARVEY, lara=DONNA, plinio=RACHEL, rui=LOUIS, aureo=MIKE, tessa=JESSICA, guido=ALEX, iris=SAMANTHA.
 const EQUIPE = {
-  claude: { area: 'Controller do Escritório', missao: 'Controla o escritório: distribui as tarefas com responsável, prazo e critério de conclusão, acompanha o que travou, confere a ética do que sai e leva ao Dr. Adonias o que depende dele. Responde por Marketing e por Compliance e TI até a Katrina e a Faye serem ativadas.', jeito: 'seguro e firme, voz de quem decide; frases curtas e afirmativas, sem rodeios; fecha sempre com o próximo passo', voz: 'rounded', ritmo: 1.0 },
-  lara: { area: 'COMERCIAL — Gerente comercial', missao: 'Acolhe quem procura o escritório, faz a triagem, reúne os documentos e marca a reunião com o Dr. Adonias. Não negocia, não fala de honorários e não dá orientação jurídica.', jeito: 'acolhedora mas segura; cordial, organizada e decidida', voz: 'airy', ritmo: 1.05 },
+  claude: { area: 'Controller do Escritório', missao: 'Controla o escritório: distribui as tarefas com responsável, prazo e critério de conclusão, acompanha o que travou, confere a ética do que sai e leva ao Dr. Adonias o que depende dele. Acompanha e cobra a equipe de Compliance e TI no CRM (Faye e Benjamin), sem fazer o trabalho deles.', jeito: 'seguro e firme, voz de quem decide; frases curtas e afirmativas, sem rodeios; fecha sempre com o próximo passo', voz: 'rounded', ritmo: 1.0 },
+  lara: { area: 'COMERCIAL E MARKETING — Gerente', missao: 'Atende e qualifica quem procura o escritório pelo WhatsApp e passa à Rachel quem quer contratar. Distribui, acompanha e cobra a equipe de Marketing no CRM (Katrina, Tara, Trevor, Brian e Jenny). Só fala de valores com a tabela aprovada pelo Dr. Adonias.', jeito: 'acolhedora mas segura; cordial, organizada e decidida', voz: 'airy', ritmo: 1.05 },
   plinio: { area: 'COMERCIAL — Fechamento e entrada do cliente', missao: 'Fecha a contratação: contrato e procuração no papel timbrado, assinatura, cadastro, documentos e pasta do cliente, e agenda a call com o advogado. Confere conflito de interesses e o consentimento de IA no contrato.', jeito: 'organizada, atenta e clara; fala com segurança do que falta e do que já está pronto', voz: 'airy', ritmo: 1.0 },
   rui: { area: 'JURÍDICO — Advogado, Casos Complexos', missao: 'Advogado dos casos extensos e de alto valor do Dr. Adonias, em especial a execução da 3ª Vara Cível de Atibaia e os recursos no TJSP e no STJ. Lê os autos por inteiro, monta a estratégia e entrega minutas para revisão.', jeito: 'grave, formal e pausado; escolhe bem as palavras e enfatiza prazos e riscos com seriedade', voz: 'buttery', ritmo: 0.92 },
   aureo: { area: 'JURÍDICO — Advogado Trabalhista', missao: 'Cuida dos processos trabalhistas: analisa os casos, calcula verbas, prepara reclamações, defesas e recursos trabalhistas, com minutas para o Dr. Adonias revisar. Não cuida do financeiro.', jeito: 'firme e metódico; fala com precisão e calma, só afirma o que está documentado e diz de onde tirou', voz: 'buttery', ritmo: 1.0 },
@@ -29,7 +29,7 @@ const STATUS_TAREFA = {
   bloqueada: ['Bloqueada', 'perigo'],
 };
 // Membros do organograma que ainda não estão em TIME (nomeados): nome e foto vêm de ORGANOGRAMA.
-const pessoaOrg = (id) => (window.ORGANOGRAMA ? window.ORGANOGRAMA.diretorias.flatMap((d) => [d.gerente, ...d.equipe]).find((p) => p.id === id) : null);
+const pessoaOrg = (id) => window.EQUIPE_CRM_ESC?.[id] || (window.ORGANOGRAMA ? window.ORGANOGRAMA.diretorias.flatMap((d) => [d.gerente, ...d.equipe]).find((p) => p.id === id) : null);
 const nomeDe = (id) => (id === 'dr' ? 'Dr. Adonias' : (BASE_TIME.has(id) && TIME[id]?.nome) || pessoaOrg(id)?.nome || TIME[id]?.nome || id);
 const BASE_TIME = new Set(['claude', 'lara', 'plinio', 'rui', 'aureo', 'tessa', 'guido', 'iris']);
 
@@ -190,7 +190,7 @@ function montarPrompt(fala) {
 
 ESTRUTURA DO ESCRITÓRIO
 ${window.ORGANOGRAMA ? window.ORGANOGRAMA.diretorias.map((d) => `- ${d.nome}: ${[d.gerente, ...d.equipe].map((p) => `${p.nome} (${p.cargo})${p.ativo === false ? ' — nomeado, ainda não ativado' : ''}`).join('; ')}`).join('\n') : ''}
-Os nomeados ainda não ativados não estão na sala e não têm turno: se o assunto for deles, o Harvey responde e diz que eles ainda serão ativados.
+${window.ORGANOGRAMA ? `Equipe de execução (trabalha no CRM, não está na sala): ${[['Harvey', window.ORGANOGRAMA.controller.equipeCRM], ...window.ORGANOGRAMA.diretorias.map((d) => [d.gerente.nome, d.equipeCRM])].filter(([, ids]) => ids?.length).map(([g, ids]) => `reporta a ${g}: ${ids.map((id) => `${window.EQUIPE_CRM_ESC[id].nome} (${window.EQUIPE_CRM_ESC[id].cargo})`).join(', ')}`).join('; ')}. Na sala estão só os 8 gerentes: quando o Dr. pedir algo da equipe do CRM, o gerente responsável responde e diz que vai distribuir e cobrar.` : ''}
 
 QUEM ESTÁ NA SALA
 - Dr. Adonias: diretor. É ele quem está falando com vocês.
@@ -206,7 +206,7 @@ COMO RESPONDER
 - Departamento Jurídico (direção da JESSICA): a JESSICA dirige o departamento, desenvolve as novas teses e faz o aconselhamento dos casos e a jurisprudência, com fonte; o LOUIS é advogado dos casos complexos (Atibaia, TJSP e STJ) e responde sobre eles usando SOMENTE os CASOS COMPLEXOS abaixo, sem inventar número, data, valor, decisão ou prazo, e dizendo quando algo precisa ser conferido no e-SAJ, eproc ou STJ; o MIKE cuida dos processos trabalhistas (não cuida de dinheiro).
 - Protocolo e Prazos: é do ALEX (prazos e audiências de todos os processos e listas de protocolo).
 - Financeiro: é da SAMANTHA (honorários, parcelas, cobranças e fechamento do mês).
-- Limites: a DONNA só faz triagem, coleta de dados e agendamento; ela não negocia, não fala de honorários e não dá orientação jurídica, e a negociação é do Dr. Adonias na reunião. Ninguém da equipe dá parecer jurídico conclusivo, assina peça ou protocola: tudo é minuta para o Dr. Adonias revisar. Prazos e protocolo são do ALEX. Enquanto a KATRINA (Marketing) e a FAYE (Compliance e TI) não forem ativadas, o Harvey responde por essas diretorias.
+- Limites: a DONNA só faz triagem, coleta de dados e agendamento; ela não negocia, não fala de honorários e não dá orientação jurídica, e a negociação é do Dr. Adonias na reunião. Ninguém da equipe dá parecer jurídico conclusivo, assina peça ou protocola: tudo é minuta para o Dr. Adonias revisar. Prazos e protocolo são do ALEX. O Marketing (Katrina e equipe, no CRM) reporta à DONNA; Compliance e TI (Faye e Benjamin, no CRM) reportam ao HARVEY, que só acompanha e cobra.
 ${estado.casosMike ? `\nCASOS COMPLEXOS (LOUIS — resumo do dossiê de transferência)\n${estado.casosMike}\n` : ''}
 ESTADO DA EMPRESA
 ${estadoDaEmpresa()}
@@ -648,13 +648,12 @@ function renderEquipe() {
   const abertas = (id) => estado.tarefas.filter((t) => t.para === id && t.status !== 'concluida').length;
   const O = window.ORGANOGRAMA;
   const cartao = (p) => (p.ativo === false || !EQUIPE[p.id] ? cartaoNomeado(p) : cartaoAtivo(p.id, abertas));
-  const nomeados = O ? O.diretorias.flatMap((d) => [d.gerente, ...d.equipe]).filter((p) => p.ativo === false).length : 0;
   $('#aba-equipe').innerHTML = `
     <h2 class="titulo">Equipe</h2>
-    <p class="lead">O Harvey controla o escritório e cada diretoria tem seu gerente e sua equipe, como no organograma do Mural. Quem já trabalha tem turno e registra o que fez; escolha a voz e toque em “Ouvir” para testar.${nomeados ? ` ${nomeados} nomeados ainda serão ativados.` : ''}</p>
-    <section class="bloco-depto"><h3 class="depto">Controller</h3><div class="grade-equipe">${cartaoAtivo('claude', abertas)}</div></section>
+    <p class="lead">Os 8 gerentes do escritório, que trabalham direto com o Dr. Adonias. Cada um distribui, acompanha e cobra a sua equipe no CRM. Escolha a voz de cada um e toque em “Ouvir” para testar.</p>
+    <section class="bloco-depto"><h3 class="depto">Controller</h3>${O ? linhaCRM(O.controller.equipeCRM) : ''}<div class="grade-equipe">${cartaoAtivo('claude', abertas)}</div></section>
     ${O ? O.diretorias.map((d) => `<section class="bloco-depto"><h3 class="depto">${esc(d.nome)}</h3>
-      ${d.missao ? `<p class="lead-depto">${esc(d.missao)}</p>` : ''}
+      ${d.missao ? `<p class="lead-depto">${esc(d.missao)}</p>` : ''}${linhaCRM(d.equipeCRM)}
       <div class="grade-equipe">${[d.gerente, ...d.equipe].map(cartao).join('')}</div></section>`).join('')
       : `<div class="grade-equipe">${ORDEM.map((id) => cartaoAtivo(id, abertas)).join('')}</div>`}`;
 }
@@ -748,18 +747,24 @@ function noOrg(p, tipo, tam) {
   return `<div class="org-no ${tipo}${p.ativo === false ? ' a-ativar' : ''}">${fotoOrg(p, tam)}
     <div class="org-txt"><strong>${esc(p.nome)}</strong><small>${esc(p.cargo)}</small>${p.ativo === false ? '<span class="org-etq">a ativar</span>' : ''}</div></div>`;
 }
+function linhaCRM(ids) {
+  if (!ids?.length) return '';
+  return `<div class="org-crm"><span>Equipe no CRM</span>${ids.map((id) => esc(window.EQUIPE_CRM_ESC?.[id]?.nome.split(' ')[0] || id)).join(', ')}</div>`;
+}
 function htmlOrganograma() {
   const O = window.ORGANOGRAMA;
   if (!O) return '';
   const dirs = O.diretorias.map((d) => `
       <li><div class="org-dir">${esc(d.nome)}</div>${noOrg(d.gerente, 'gerente', 52)}
-        ${d.equipe.length ? `<ul class="org-equipe">${d.equipe.map((m) => `<li>${noOrg(m, 'membro', 36)}</li>`).join('')}</ul>` : ''}</li>`).join('');
+        ${d.equipe.length ? `<ul class="org-equipe">${d.equipe.map((m) => `<li>${noOrg(m, 'membro', 36)}</li>`).join('')}</ul>` : ''}
+        ${linhaCRM(d.equipeCRM)}</li>`).join('');
   return `
     <section class="organograma" aria-label="Organograma do escritório">
       <h2 class="titulo">Organograma</h2>
+      <p class="lead">No escritório ficam os 8 gerentes, que trabalham direto com o Dr. Adonias. A equipe de execução trabalha no CRM e se reporta a eles.</p>
       <div class="org-rolagem"><div class="org-arvore">
         ${noOrg(O.socio, 'socio', 64)}<span class="org-linha"></span>
-        ${noOrg(O.controller, 'controller', 56)}<span class="org-linha"></span>
+        ${noOrg(O.controller, 'controller', 56)}${linhaCRM(O.controller.equipeCRM)}<span class="org-linha"></span>
         <ul class="org-dirs">${dirs}</ul>
       </div></div>
     </section>`;

@@ -16,15 +16,15 @@ const EQUIPE_CRM = {
 const AGENTES = [
   {
     id: 'marketing', pasta: 'marketing-escritorio', nome: 'Marketing', sigla: '1 · MARKETING', icone: '📣', resp: 'katrina', time: ['tara', 'trevor', 'brian', 'jenny'],
-    desc: 'Katrina gerencia; Tara faz os criativos, Trevor o roteiro e a copy, Brian o tráfego no Meta e no Google e Jenny as redes sociais. Tudo dentro das regras da OAB.',
-    papeis: 'KATRINA = gerente de marketing, planeja as campanhas e mede de onde vêm os clientes; TARA = criativos (artes, carrosséis, vídeos curtos); TREVOR = roteiros e copy de alta conversão; BRIAN = gestor de tráfego (Meta Ads e Google Ads, orçamento e custo por lead); JENNY = redes sociais e calendário editorial',
+    desc: 'Equipe do CRM que reporta à Donna. Katrina coordena; Tara faz os criativos, Trevor o roteiro e a copy, Brian o tráfego no Meta e no Google e Jenny as redes sociais. Tudo dentro das regras da OAB.',
+    papeis: 'KATRINA = coordenadora de marketing (reporta à DONNA), planeja as campanhas e mede de onde vêm os clientes; TARA = criativos (artes, carrosséis, vídeos curtos); TREVOR = roteiros e copy de alta conversão; BRIAN = gestor de tráfego (Meta Ads e Google Ads, orçamento e custo por lead); JENNY = redes sociais e calendário editorial',
     refs: ['crm.md', 'checklist-oab.md'],
     sugestoes: ['Katrina, de onde estão vindo os leads?', 'Trevor, escreva o anúncio de busca e apreensão', 'Jenny, monte o calendário de posts da semana'],
   },
   {
     id: 'atendimento', pasta: 'atendimento-escritorio', nome: 'Comercial: atendimento e qualificação', sigla: '2 · COMERCIAL', icone: '💬', resp: 'lara', time: ['plinio'],
-    desc: 'Donna atende pelo WhatsApp, qualifica os leads e separa quem quer contratar de quem só quer tirar dúvida.',
-    papeis: 'DONNA = gerente comercial, atendimento e qualificação; RACHEL = fechamento (contrato, procuração e agendamento da call)',
+    desc: 'Donna atende pelo WhatsApp, qualifica os leads e separa quem quer contratar de quem só quer tirar dúvida. Ela também cobra a equipe de Marketing.',
+    papeis: 'DONNA = gerente comercial e de marketing, atendimento e qualificação, distribui e cobra as tarefas da equipe de marketing; RACHEL = fechamento (contrato, procuração e agendamento da call)',
     refs: ['crm.md', 'mensagens.md', 'whatsapp-meta.md'],
     sugestoes: ['Quem preciso retornar hoje?', 'Chegou um lead pelo WhatsApp: ', 'Me dá o texto para colar no agente do WhatsApp'],
   },
@@ -56,8 +56,8 @@ const AGENTES = [
   },
   {
     id: 'compliance', pasta: 'compliance-escritorio', nome: 'Compliance e TI', sigla: '5 · COMPLIANCE E TI', icone: '🛡️', resp: 'faye', time: ['benjamin'],
-    desc: 'Faye audita o CRM e as entregas, cuida da LGPD e das regras da OAB; Benjamin cuida dos sistemas, integrações e segurança.',
-    papeis: 'FAYE = gerente de compliance, qualidade, LGPD e ética OAB; BENJAMIN = Departamento de TI, sistemas, integrações e segurança dos dados',
+    desc: 'Equipe do CRM que reporta ao Harvey. Faye audita o CRM e as entregas, cuida da LGPD e das regras da OAB; Benjamin cuida dos sistemas, integrações e segurança.',
+    papeis: 'FAYE = compliance (reporta ao HARVEY), qualidade, LGPD e ética OAB; BENJAMIN = Departamento de TI, sistemas, integrações e segurança dos dados',
     refs: ['crm.md'],
     sugestoes: ['Faye, faça uma auditoria do CRM', 'Há prazos em risco?', 'Benjamin, o que falta para ligar o WhatsApp?'],
   },

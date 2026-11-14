@@ -359,3 +359,5 @@ td.acoes { text-align: right; white-space: nowrap; }
 .tarefa-crm .quando { text-align: right; display: grid; gap: 4px; justify-items: end; }
 .tarefa-crm.concluida .titulo { text-decoration: line-through; color: var(--texto-2); }
 @media (max-width: 500px) { .tarefa-crm { flex-wrap: wrap; } .tarefa-crm .quando { justify-items: start; text-align: left; } }
+.titulo-equipe { font-size: 17px; margin: 22px 0 2px; }
+.lead-equipe { margin: 0 0 10px; font-size: 14px; }

@@ -32,44 +32,40 @@ const ESTRUTURA = {
 };
 if (typeof window !== 'undefined') window.ESTRUTURA = ESTRUTURA;
 
-/* Organograma estrutural (aba Mural), definido pelo Dr. Adonias em 14/11/2026.
- * id: código do banco quando a pessoa já trabalha no escritório; os nomeados ainda não ativados usam um id próprio
- * e foto em org/<id>.jpg (publicada só no artifact privado). ativo: false = nomeado, a ativar. */
+/* Organograma do escritório (aba Mural), definido pelo Dr. Adonias em 14/11/2026: duas equipes.
+ * No escritório ficam só os 8 gerentes, que trabalham direto com o Dr. Adonias.
+ * A equipe de execução trabalha no CRM e se reporta a um gerente (equipeCRM); o CRM mostra essa equipe completa. */
+const EQUIPE_CRM_ESC = {
+  katrina: { id: 'katrina', nome: 'Katrina Bennett', cargo: 'Coordenadora de Marketing' },
+  tara: { id: 'tara', nome: 'Tara Messer', cargo: 'Criativos' },
+  trevor: { id: 'trevor', nome: 'Trevor Evans', cargo: 'Roteiro e copy' },
+  brian: { id: 'brian', nome: 'Brian Altman', cargo: 'Gestor de tráfego' },
+  jenny: { id: 'jenny', nome: 'Jenny Griffith', cargo: 'Redes sociais' },
+  gretchen: { id: 'gretchen', nome: 'Gretchen Bodinski', cargo: 'Atendimento sobre o processo' },
+  harold: { id: 'harold', nome: 'Harold Gunderson', cargo: 'Guias, custas e administrativo' },
+  faye: { id: 'faye', nome: 'Faye Richardson', cargo: 'Compliance: qualidade, LGPD e ética OAB' },
+  benjamin: { id: 'benjamin', nome: 'Benjamin', cargo: 'TI: sistemas, integrações e segurança' },
+};
 const ORGANOGRAMA = {
   socio: { id: 'adonias', nome: 'Dr. Adonias Lopes de Araújo', cargo: 'Sócio diretor e fundador', foto: 'org/adonias.jpg' },
-  controller: { id: 'claude', nome: 'Harvey', cargo: 'Controller' },
+  controller: { id: 'claude', nome: 'Harvey', cargo: 'Controller', equipeCRM: ['faye', 'benjamin'] },
   diretorias: [
-    { nome: 'Marketing', missao: 'Traz o cliente até o escritório: campanhas, criativos, roteiros e redes sociais, dentro do Provimento 205/2021 da OAB.',
-      gerente: { id: 'katrina', nome: 'Katrina Bennett', cargo: 'Gerente de Marketing', ativo: false, missao: 'Planeja as campanhas, coordena criativos, copy, tráfego e redes, e mede de onde vêm os clientes.' },
-      equipe: [
-        { id: 'tara', nome: 'Tara Messer', cargo: 'Criativos', ativo: false, missao: 'Artes, carrosséis e vídeos curtos das campanhas, no Canva.' },
-        { id: 'trevor', nome: 'Trevor Evans', cargo: 'Roteiro e copy', ativo: false, missao: 'Roteiros e textos de alta conversão para anúncios, vídeos e páginas.' },
-        { id: 'brian', nome: 'Brian Altman', cargo: 'Gestor de tráfego', ativo: false, missao: 'Sobe e acompanha as campanhas no Meta Ads e no Google Ads: orçamento, custo por lead e resultados.' },
-        { id: 'jenny', nome: 'Jenny Griffith', cargo: 'Redes sociais', ativo: false, missao: 'Calendário editorial e publicações das redes do escritório.' },
-      ] },
-    { nome: 'Comercial', missao: 'Atende pelo WhatsApp, qualifica os leads e só passa ao advogado quem assinou contrato e procuração; depois agenda a call com o advogado.',
-      gerente: { id: 'lara', nome: 'Donna', cargo: 'Gerente comercial' },
-      equipe: [
-        { id: 'plinio', nome: 'Rachel', cargo: 'Fechamento: contrato, procuração e call' },
-      ] },
+    { nome: 'Comercial e Marketing', missao: 'Traz o cliente e fecha a contratação: a equipe de Marketing (no CRM) gera os leads; a Donna atende e qualifica pelo WhatsApp e a Rachel fecha contrato e procuração e agenda a call com o advogado.',
+      gerente: { id: 'lara', nome: 'Donna', cargo: 'Gerente comercial e de marketing' },
+      equipe: [{ id: 'plinio', nome: 'Rachel', cargo: 'Fechamento: contrato, procuração e call' }],
+      equipeCRM: ['katrina', 'tara', 'trevor', 'brian', 'jenny'] },
     { nome: 'Jurídico', missao: 'Petições, teses, prazos, publicações e intimações, e a informação ao cliente sobre o andamento do processo.',
       gerente: { id: 'tessa', nome: 'Jessica', cargo: 'Diretora jurídica' },
       equipe: [
         { id: 'rui', nome: 'Louis', cargo: 'Casos complexos' },
         { id: 'aureo', nome: 'Mike', cargo: 'Trabalhista' },
         { id: 'guido', nome: 'Alex', cargo: 'Protocolo e prazos' },
-        { id: 'gretchen', nome: 'Gretchen Bodinski', cargo: 'Atendimento sobre o processo', ativo: false, missao: 'Quando o cliente pergunta, informa o andamento do processo a partir do CRM.' },
-      ] },
+      ],
+      equipeCRM: ['gretchen'] },
     { nome: 'Financeiro', missao: 'Honorários, adimplência e cobrança, guias, custas e taxas, e as rotinas administrativas do escritório.',
       gerente: { id: 'iris', nome: 'Samantha', cargo: 'Diretora financeira' },
-      equipe: [
-        { id: 'harold', nome: 'Harold Gunderson', cargo: 'Guias, custas e administrativo', ativo: false, missao: 'Emite e paga guias, custas e taxas, guarda os comprovantes e cuida das contas e fornecedores do escritório.' },
-      ] },
-    { nome: 'Compliance e TI', missao: 'Qualidade, LGPD, ética da OAB, indicadores e a tecnologia do escritório. Acompanha todas as diretorias.',
-      gerente: { id: 'faye', nome: 'Faye Richardson', cargo: 'Qualidade, LGPD e ética OAB', ativo: false, missao: 'Audita as entregas de todas as diretorias, cuida da LGPD e das regras da OAB e acompanha os indicadores.' },
-      equipe: [
-        { id: 'benjamin', nome: 'Benjamin', cargo: 'Departamento de TI: sistemas, integrações e segurança', ativo: false, missao: 'Sistemas e integrações (WhatsApp, Google Ads, tribunais), acessos e segurança dos dados.' },
-      ] },
+      equipe: [],
+      equipeCRM: ['harold'] },
   ],
 };
-if (typeof window !== 'undefined') window.ORGANOGRAMA = ORGANOGRAMA;
+if (typeof window !== 'undefined') Object.assign(window, { ORGANOGRAMA, EQUIPE_CRM_ESC });

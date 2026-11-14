@@ -9,38 +9,44 @@
  * Fotos em img/equipe/<id>.jpg (só no artifact privado).
  * ===================================================================== */
 
+// Duas equipes (definido pelo Dr. Adonias em 14/11/2026): os 8 gerentes do escritório e a equipe de execução do CRM,
+// em que cada um se reporta a um gerente (reportaA), que distribui, acompanha e cobra.
 const ORG_CRM = {
   controller: { id: 'claude', nome: 'Harvey', cargo: 'Controller do escritório' },
+  gerentes: [
+    { id: 'lara', nome: 'Donna', cargo: 'Gerente comercial e de marketing' },
+    { id: 'plinio', nome: 'Rachel', cargo: 'Fechamento: contrato, procuração e call' },
+    { id: 'tessa', nome: 'Jessica', cargo: 'Diretora jurídica' },
+    { id: 'rui', nome: 'Louis', cargo: 'Casos complexos' },
+    { id: 'aureo', nome: 'Mike', cargo: 'Trabalhista' },
+    { id: 'guido', nome: 'Alex', cargo: 'Protocolo e prazos' },
+    { id: 'iris', nome: 'Samantha', cargo: 'Diretora financeira' },
+  ],
   diretorias: [
-    { id: 'marketing', nome: 'Marketing', equipe: [
-      { id: 'katrina', nome: 'Katrina Bennett', cargo: 'Gerente de Marketing', gerente: true },
+    { id: 'marketing', nome: 'Marketing', reportaA: 'lara', equipe: [
+      { id: 'katrina', nome: 'Katrina Bennett', cargo: 'Coordenadora de Marketing' },
       { id: 'tara', nome: 'Tara Messer', cargo: 'Criativos' },
       { id: 'trevor', nome: 'Trevor Evans', cargo: 'Roteiro e copy' },
       { id: 'brian', nome: 'Brian Altman', cargo: 'Gestor de tráfego' },
       { id: 'jenny', nome: 'Jenny Griffith', cargo: 'Redes sociais' },
     ] },
-    { id: 'comercial', nome: 'Comercial', equipe: [
-      { id: 'lara', nome: 'Donna', cargo: 'Gerente comercial', gerente: true },
-      { id: 'plinio', nome: 'Rachel', cargo: 'Fechamento: contrato, procuração e call' },
-    ] },
-    { id: 'juridico', nome: 'Jurídico', equipe: [
-      { id: 'tessa', nome: 'Jessica', cargo: 'Diretora jurídica', gerente: true },
-      { id: 'rui', nome: 'Louis', cargo: 'Casos complexos' },
-      { id: 'aureo', nome: 'Mike', cargo: 'Trabalhista' },
-      { id: 'guido', nome: 'Alex', cargo: 'Protocolo e prazos' },
+    { id: 'juridico', nome: 'Jurídico', reportaA: 'tessa', equipe: [
       { id: 'gretchen', nome: 'Gretchen Bodinski', cargo: 'Atendimento sobre o processo' },
     ] },
-    { id: 'financeiro', nome: 'Financeiro', equipe: [
-      { id: 'iris', nome: 'Samantha', cargo: 'Diretora financeira', gerente: true },
+    { id: 'financeiro', nome: 'Financeiro', reportaA: 'iris', equipe: [
       { id: 'harold', nome: 'Harold Gunderson', cargo: 'Guias, custas e administrativo' },
     ] },
-    { id: 'compliance', nome: 'Compliance e TI', equipe: [
-      { id: 'faye', nome: 'Faye Richardson', cargo: 'Gerente de Compliance: qualidade, LGPD e ética OAB', gerente: true },
-      { id: 'benjamin', nome: 'Benjamin', cargo: 'Departamento de TI' },
+    { id: 'compliance', nome: 'Compliance e TI', reportaA: 'claude', equipe: [
+      { id: 'faye', nome: 'Faye Richardson', cargo: 'Compliance: qualidade, LGPD e ética OAB' },
+      { id: 'benjamin', nome: 'Benjamin', cargo: 'TI: sistemas, integrações e segurança' },
     ] },
   ],
 };
-const MEMBROS = [ORG_CRM.controller, ...ORG_CRM.diretorias.flatMap((d) => d.equipe.map((m) => ({ ...m, diretoria: d.nome })))];
+const MEMBROS = [
+  { ...ORG_CRM.controller, gerente: true, diretoria: 'Gerentes do escritório' },
+  ...ORG_CRM.gerentes.map((m) => ({ ...m, gerente: true, diretoria: 'Gerentes do escritório' })),
+  ...ORG_CRM.diretorias.flatMap((d) => d.equipe.map((m) => ({ ...m, diretoria: `Equipe do CRM · ${d.nome}`, reportaA: d.reportaA }))),
+];
 const membro = (id) => MEMBROS.find((m) => m.id === id);
 const nomeMembro = (id) => (id === 'dr' ? 'Dr. Adonias' : membro(id)?.nome || id || '—');
 const fotoMembro = (id, cls = '') => {
@@ -82,7 +88,7 @@ function cartaoMembro(m) {
   const d = desempenho(m.id);
   return `<a class="membro-crm ${m.gerente ? 'gerente' : ''}" href="#/membro/${m.id}">
     ${fotoMembro(m.id)}
-    <span class="membro-txt"><strong>${esc(m.nome)}</strong><span class="sub">${esc(m.cargo)}</span>
+    <span class="membro-txt"><strong>${esc(m.nome)}</strong><span class="sub">${esc(m.cargo)}${m.reportaA ? ` · reporta a ${esc(nomeMembro(m.reportaA))}` : ''}</span>
       <span class="membro-nums">
         <span class="etiqueta ${d.abertas ? 'info' : ''}">${d.abertas} em aberto</span>
         ${d.atrasadas ? `<span class="etiqueta perigo">${d.atrasadas} atrasada(s)</span>` : ''}
@@ -112,10 +118,13 @@ function telaEquipe() {
     titulo: 'Equipe e tarefas',
     acoes: btn('+ Nova tarefa', 'novaTarefa'),
     html: `<div class="kpis">${kpi('Tarefas em aberto', g.abertas)}${kpi('Atrasadas', g.atrasadas, g.atrasadas ? 'perigo' : '')}${kpi('Aguardando o Dr.', g.aguardando, g.aguardando ? 'alerta' : '')}${kpi('Concluídas em 30 dias', g.concluidas30, 'sucesso', g.pctPrazo === null ? '' : `${g.pctPrazo}% no prazo`)}</div>
-      <h3 class="secao-equipe">Controller</h3>
-      <div class="grade-membros">${cartaoMembro(ORG_CRM.controller)}</div>
-      ${ORG_CRM.diretorias.map((d) => `<h3 class="secao-equipe">${esc(d.nome)}</h3>
-        <div class="grade-membros">${d.equipe.map(cartaoMembro).join('')}</div>`).join('')}
+      <h2 class="titulo-equipe">Gerentes do escritório</h2>
+      <p class="muted lead-equipe">Trabalham direto com o Dr. Adonias e distribuem, acompanham e cobram a equipe do CRM.</p>
+      <div class="grade-membros">${[ORG_CRM.controller, ...ORG_CRM.gerentes].map((g) => cartaoMembro({ ...g, gerente: true })).join('')}</div>
+      <h2 class="titulo-equipe">Equipe do CRM</h2>
+      <p class="muted lead-equipe">Executa as tarefas e se reporta ao gerente indicado.</p>
+      ${ORG_CRM.diretorias.map((d) => `<h3 class="secao-equipe">${esc(d.nome)} · reporta a ${esc(nomeMembro(d.reportaA))}</h3>
+        <div class="grade-membros">${d.equipe.map((m) => cartaoMembro({ ...m, reportaA: d.reportaA })).join('')}</div>`).join('')}
       <h3 class="secao-equipe">Todas as tarefas em aberto</h3>
       ${abertas.length ? `<ul class="tarefas-crm">${abertas.map((t) => linhaTarefa(t)).join('')}</ul>` : '<p class="vazio">Nenhuma tarefa em aberto.</p>'}`,
   };
@@ -130,7 +139,7 @@ function telaMembro(id) {
     titulo: m.nome,
     acoes: btn('+ Nova tarefa', 'novaTarefa', `data-resp="${esc(id)}"`),
     html: `<a class="voltar" href="#/equipe">← Equipe e tarefas</a>
-      <div class="membro-topo">${fotoMembro(id, 'grande')}<div><h2>${esc(m.nome)}</h2><p class="muted">${esc(m.cargo)}${m.diretoria ? ` · ${esc(m.diretoria)}` : ''}</p></div></div>
+      <div class="membro-topo">${fotoMembro(id, 'grande')}<div><h2>${esc(m.nome)}</h2><p class="muted">${esc(m.cargo)}${m.diretoria ? ` · ${esc(m.diretoria)}` : ''}${m.reportaA ? ` · reporta a ${esc(nomeMembro(m.reportaA))}` : ''}</p></div></div>
       <div class="kpis">${kpi('Em aberto', d.abertas)}${kpi('Atrasadas', d.atrasadas, d.atrasadas ? 'perigo' : '')}${kpi('Concluídas em 30 dias', d.concluidas30, 'sucesso')}${kpi('Concluídas no prazo', d.pctPrazo === null ? '—' : d.pctPrazo + '%')}</div>
       ${ts.length ? `<ul class="tarefas-crm">${ts.map((t) => linhaTarefa(t, { mostrarResp: false })).join('')}</ul>` : '<p class="vazio">Nenhuma tarefa ainda.</p>'}`,
   };
