@@ -171,7 +171,7 @@ function renderSala() {
 function rolarConversa() { const c = $('#conversa'); c.scrollTop = c.scrollHeight; }
 
 function estadoDaEmpresa() {
-  const status = ORDEM.map((id) => `- ${TIME[id].nome}: ${estado.status[id]?.status ? `${estado.status[id].status} (${quando(estado.status[id].atualizadoEm)})` : 'ainda não registrou nenhum turno de trabalho'}`).join('\n');
+  const status = ORDEM.map((id) => `- ${TIME[id].nome}: ${estado.status[id]?.status ? `${estado.status[id].status} (${quando(estado.status[id].atualizadoEm)})` : 'ainda sem registro de trabalho'}`).join('\n');
   const abertas = estado.tarefas.filter((t) => t.status !== 'concluida').sort((a, b) => (a.criadoEm || '').localeCompare(b.criadoEm || ''));
   const tarefas = abertas.length
     ? abertas.slice(-40).map((t) => `- [${t.id}] ${t.titulo} — de ${nomeDe(t.de)} para ${nomeDe(t.para)} — ${STATUS_TAREFA[t.status]?.[0] || t.status}${t.resultado ? ` — resultado: ${String(t.resultado).slice(0, 200)}` : ''}`).join('\n')
@@ -204,7 +204,7 @@ COMO RESPONDER
 - Cada fala na primeira pessoa, no jeito daquele funcionário, com 1 a 3 frases curtas, em tom firme e seguro (sem "acho que", "talvez" ou excesso de desculpas). As falas são ouvidas em voz alta: linguagem falada, sem listas, sem markdown, sem emojis, sem siglas difíceis.
 - REGRA DA PONTE (ordem do Dr. Adonias): vocês só sabem o que está escrito aqui (ESTADO DA EMPRESA, CARTEIRA DO CRM, CASOS COMPLEXOS e o glossário). São fatos reais trazidos do CRM. Se não houver publicação, prazo ou tarefa sobre o que o Dr. perguntou, digam claramente "não há publicação registrada", "não há prazo registrado" ou "não há tarefa registrada"; nunca preencham a falta com suposição.
 - Use só as informações do ESTADO DA EMPRESA abaixo. Nunca invente cliente, número, prazo, campanha, resultado ou trabalho já feito. Se a informação não está lá, diga com naturalidade que ainda não há registro.
-- Os funcionários fazem o trabalho nos seus turnos, sozinhos, e registram tudo; na sala eles conversam e combinam. Quando o Dr. Adonias pedir um trabalho, o Harvey usa a ferramenta criar_tarefa para o funcionário certo e diz quem vai fazer. Use decidir_tarefa só quando o Dr. Adonias disser claramente que aprova ou recusa uma tarefa que está aguardando por ele.
+- NÃO EXISTE TURNO (ordem do Dr. Adonias): o escritório funciona 24 horas e toda tarefa pedida é executada. Quando o Dr. pedir um trabalho, o Harvey usa a ferramenta criar_tarefa para quem vai fazer — qualquer gerente ou qualquer membro da equipe do CRM (katrina, tara, trevor, brian, jenny, gretchen, harold, faye, benjamin) — e diz em uma frase quem vai fazer. A ponte do escritório aciona o agente responsável automaticamente, sem precisar de autorização do Dr. Nunca diga que algo espera o turno de alguém, nem peça autorização ao Dr. para falar com um colega: o Harvey, como controller, aciona e cobra qualquer um. Se uma tarefa já foi feita (consta na CARTEIRA ou no ESTADO DA EMPRESA), diga que foi feita; se não há registro, diga que não há registro e crie a tarefa. Use decidir_tarefa só quando o Dr. Adonias disser claramente que aprova ou recusa uma tarefa que está aguardando por ele.
 - Respeite a ética da advocacia: Código de Ética da OAB e Provimento 205/2021.
 - O Dr. fala por voz e o reconhecimento pode errar nomes: Maique/Maik = MIKE; Lóis/Lois/Luís/Luiz = LOUIS (pronuncia-se "Lóis", nunca "Luiz"); Harvy/Rárvi = HARVEY; Dona = DONNA; Raquel = RACHEL; Samanta = SAMANTHA. A credora ASA se pronuncia "Aza" (o s entre vogais tem som de z). Se a fala não for dirigida à equipe (conversa paralela), responda com uma única fala curta de quem foi chamado por último ou, se ninguém foi chamado, do Harvey.
 - Departamento Jurídico (direção da JESSICA): a JESSICA dirige o departamento, desenvolve as novas teses e faz o aconselhamento dos casos e a jurisprudência, com fonte; o LOUIS é advogado dos casos complexos (Atibaia, TJSP e STJ) e responde sobre eles usando SOMENTE os CASOS COMPLEXOS abaixo, sem inventar número, data, valor, decisão ou prazo, e dizendo quando algo precisa ser conferido no e-SAJ, eproc ou STJ; o MIKE cuida dos processos trabalhistas (não cuida de dinheiro).
@@ -233,7 +233,7 @@ function ferramentasDaSala() {
       inputSchema: {
         type: 'object',
         properties: {
-          para: { type: 'string', enum: ORDEM.filter((id) => id !== 'claude'), description: 'Código do funcionário que vai fazer' },
+          para: { type: 'string', enum: [...ORDEM.filter((id) => id !== 'claude'), ...Object.keys(window.EQUIPE_CRM_ESC || {})], description: 'Código de quem vai fazer: gerentes do escritório ou equipe do CRM (katrina, tara, trevor, brian, jenny, gretchen, harold, faye, benjamin)' },
           titulo: { type: 'string', description: 'Título curto da tarefa' },
           descricao: { type: 'string', description: 'O que fazer, com o contexto dado pelo Dr. Adonias' },
           prioridade: { type: 'string', enum: ['normal', 'alta'] },
@@ -242,7 +242,7 @@ function ferramentasDaSala() {
       },
       execute: async (e) => {
         const para = String(e.para);
-        if (!EQUIPE[para] || para === 'claude') throw new Error('funcionário inválido');
+        if ((!EQUIPE[para] && !(window.EQUIPE_CRM_ESC || {})[para]) || para === 'claude') throw new Error('funcionário inválido');
         const t = { id: uid('tar'), titulo: String(e.titulo).slice(0, 140), descricao: String(e.descricao || '').slice(0, 4000), de: 'claude', para, status: 'a_fazer', prioridade: e.prioridade === 'alta' ? 'alta' : 'normal', origem: 'sala', criadoEm: agoraISO(), atualizadoEm: agoraISO() };
         await salvar('tarefas', t);
         await registrarAtividade('claude', `Passei para ${nomeDe(para)}: ${t.titulo}`, 'tarefa');
@@ -650,7 +650,7 @@ function cartaoAtivo(id, abertas) {
         <h3>${esc(TIME[id].nome)}</h3>
         <div class="cargo">${esc(cargo)}</div>
         <p class="missao">${esc(EQUIPE[id].missao)}</p>
-        <div class="status">${s?.status ? `${esc(s.status)} <span class="muted">· ${esc(quando(s.atualizadoEm))}</span>` : '<span class="muted">Aguardando o primeiro turno de trabalho.</span>'}</div>
+        <div class="status">${s?.status ? `${esc(s.status)} <span class="muted">· ${esc(quando(s.atualizadoEm))}</span>` : '<span class="muted">Ainda sem registro de trabalho.</span>'}</div>
         <div class="foto-membro">${assets ? `<button class="btn-link" data-foto="${id}">📷 ${estado.fotos?.[id] ? 'Trocar a foto' : 'Colocar foto'}</button>` : ''}${estado.fotos?.[id] ? `<button class="btn-link" data-tirar-foto="${id}">Voltar ao desenho</button>` : ''}</div>
         <div class="voz-membro"><label>Voz <select data-voz="${id}">${opcoesDeVoz(escolhaDe(id))}</select></label><button class="btn-link" data-provar="${id}">▶ Ouvir</button></div>
         <div class="acoes">${n ? `<span class="etq info">${n} tarefa(s) em aberto</span>` : ''}</div>
