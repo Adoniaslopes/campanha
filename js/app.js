@@ -813,7 +813,7 @@ function telaClientes() {
       return `<div class="tabela-wrap"><table>
         <thead><tr><th>Nome</th><th>Contato</th><th>Processos</th><th class="num">Saldo a receber</th></tr></thead>
         <tbody>${itens.map((c) => {
-          const procs = db.processos.filter((p) => p.clienteId === c.id);
+          const procs = db.processos.filter((p) => p.clienteId === c.id || (p.clientesIds || []).includes(c.id));
           const saldo = soma(db.honorarios.filter((h) => h.clienteId === c.id), (h) => resumoHonorario(h).saldo);
           return `<tr>
             <td><a href="#/cliente/${c.id}"><strong>${esc(c.nome)}</strong></a><span class="sub">${esc(c.tipo || 'PF')} ${esc(c.documento || '')}</span></td>
@@ -865,7 +865,7 @@ function tabelaHonorarios(hons) {
 function telaCliente(id) {
   const c = buscar('clientes', id);
   if (!c) return telaNaoEncontrado();
-  const procs = db.processos.filter((p) => p.clienteId === id);
+  const procs = db.processos.filter((p) => p.clienteId === id || (p.clientesIds || []).includes(id));
   const procIds = new Set(procs.map((p) => p.id));
   const evs = db.eventos.filter((e) => !e.concluido && (e.clienteId === id || procIds.has(e.processoId))).sort(ordenarEventos);
   const hons = db.honorarios.filter((h) => h.clienteId === id);
@@ -957,7 +957,7 @@ function telaProcesso(id) {
       </div>
       <section class="cartao">
         ${ficha([
-          ['Cliente', `<a href="#/cliente/${p.clienteId}">${esc(nomeCliente(p.clienteId))}</a>${p.polo ? ` (${esc(p.polo)})` : ''}`],
+          [(p.clientesIds || []).length > 1 ? 'Clientes' : 'Cliente', `${(p.clientesIds && p.clientesIds.length ? p.clientesIds : [p.clienteId]).map((cid) => `<a href="#/cliente/${cid}">${esc(nomeCliente(cid))}</a>`).join(', ')}${p.polo ? ` (${esc(p.polo)})` : ''}`],
           ['Parte contrária', esc(p.parteContraria)], ['Tribunal', esc(p.tribunal)], ['Vara / juízo', esc(p.vara)],
           ['Comarca', esc(p.comarca)], ['Fase', esc(p.fase)], ['Valor da causa', p.valorCausa ? fmtMoeda(p.valorCausa) : ''],
           ['Distribuição', fmtData(p.distribuicao)],
