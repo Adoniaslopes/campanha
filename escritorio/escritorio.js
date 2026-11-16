@@ -773,7 +773,13 @@ function novaTarefa() {
 // ===== Mural =====
 // Organograma estrutural: Sócio → Controller → diretorias (gerente e equipe).
 const BASE_ORG = new Set(['claude', 'lara', 'plinio', 'rui', 'aureo', 'tessa', 'guido', 'iris']);
+function fotoDr(tam) {
+  const f = estado.fotos?.dr;
+  if (typeof f === 'string' && /^[0-9a-f]{32}$/.test(f)) return `<img class="avatar foto-real" src="/_blob/${f}" width="${tam}" height="${tam}" alt="Dr. Adonias" loading="lazy">`;
+  return `<span class="avatar iniciais" style="width:${tam}px;height:${tam}px">DA</span>`;
+}
 function fotoOrg(p, tam) {
+  if (p.id === 'adonias' && estado.fotos?.dr) return fotoDr(tam);
   if (BASE_ORG.has(p.id)) return avatar(p.id, tam);
   const ini = esc(p.nome.replace(/^Dr\.\s*/, '').split(/\s+/).map((x) => x[0]).slice(0, 2).join(''));
   const src = p.foto || `org/${p.id}.jpg`;
@@ -809,9 +815,10 @@ function htmlOrganograma() {
 function renderMural() {
   $('#aba-mural').innerHTML = `${htmlOrganograma()}
     <h2 class="titulo">Mural de atividades</h2>
+    ${assets ? `<p><button class="btn-link" data-foto="dr">📷 ${estado.fotos?.dr ? 'Trocar a sua foto' : 'Colocar a sua foto, Dr. Adonias'}</button></p>` : ''}
     <p class="lead">Tudo o que a equipe fez, do mais recente para o mais antigo.</p>
     ${estado.atividades.filter((a) => !a.arquivado).length ? `<ul class="mural">${estado.atividades.filter((a) => !a.arquivado).map((a) => `
-      <li>${a.quem === 'dr' ? '<span class="avatar iniciais" style="width:38px;height:38px">DA</span>' : avatar(a.quem, 38)}<div>
+      <li>${a.quem === 'dr' ? fotoDr(38) : avatar(a.quem, 38)}<div>
         <span class="q">${esc(nomeDe(a.quem))}</span> <span class="w">${esc(quando(a.criadoEm))}</span>
         <p>${esc(a.texto)}</p></div></li>`).join('')}</ul>` : '<div class="cartao vazio">Ainda não há atividades. Elas aparecem quando a equipe começa a trabalhar.</div>'}`;
 }
@@ -980,7 +987,7 @@ document.addEventListener('click', (e) => {
 
 // ===== Fotos da equipe =====
 let assets = null;
-async function iniciarFotos() { if (EM_CLAUDE) { assets = await window.claude.use('assets'); renderEquipe(); } }
+async function iniciarFotos() { if (EM_CLAUDE) { assets = await window.claude.use('assets'); renderEquipe(); renderMural(); } }
 function recortarQuadrado(arquivo, lado = 480) {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -1049,7 +1056,7 @@ function escolherFoto(id) {
       const fotos = { ...estado.fotos, [id]: r.id }; delete fotos.id;
       estado.fotos = fotos;
       await salvar('config', { ...fotos, id: 'fotos' });
-      renderTudo(); toast(`Foto de ${TIME[id].nome} atualizada.`);
+      renderTudo(); toast(`Foto de ${id === 'dr' ? 'Dr. Adonias' : TIME[id].nome} atualizada.`);
     } catch (e) { toast('Não foi possível enviar a foto: ' + (e?.message || e?.code || e)); }
   };
   inp.click();
