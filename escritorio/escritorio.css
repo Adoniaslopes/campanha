@@ -271,3 +271,7 @@ p.lead { margin: 0 0 14px; color: var(--texto-2); }
 .logo-la-img img { width: clamp(240px, 34vw, 420px); height: auto; border-radius: 10px; box-shadow: 0 6px 18px rgba(19,35,61,.25); }
 .titulo-escritorio:has(.logo-la-img)::after { display: none; }
 .titulo-escritorio:has(.logo-la-img) p { margin-top: 8px; }
+
+/* Anexos das tarefas */
+.anexos { margin: 4px 0 10px; padding-left: 18px; }
+.anexos li { overflow-wrap: anywhere; margin: 2px 0; }

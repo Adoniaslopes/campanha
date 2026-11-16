@@ -737,6 +737,8 @@ function abrirTarefa(id) {
     ${t.descricao ? `<pre>${esc(t.descricao)}</pre>` : ''}
     ${t.resultado ? `<strong>Resultado</strong><pre>${linkar(esc(t.resultado))}</pre>` : ''}
     ${t.decisao ? `<strong>Decisão do Dr. Adonias</strong><pre>${esc(t.decisao)}${t.decisaoNota ? ` — ${esc(t.decisaoNota)}` : ''}</pre>` : ''}
+    ${(t.anexos || []).length ? `<strong>Anexos</strong><ul class="anexos">${t.anexos.map((a) => `<li><a href="/_blob/${esc(a.id)}" target="_blank" rel="noopener">📎 ${esc(a.nome)}</a> <span class="muted">${esc(quando(a.em))}</span></li>`).join('')}</ul>` : ''}
+    ${assets ? `<button class="btn" data-anexar="${esc(t.id)}">📎 Anexar comprovante ou documento</button><p class="muted" style="margin:4px 0 10px">PDF ou foto. O anexo fica na tarefa e a Samantha recebe a tarefa de dar baixa no financeiro.</p>` : ''}
     ${t.status === 'aguardando_dr' ? `<label><strong>Sua orientação</strong> (opcional)<textarea id="nota-decisao" rows="3"></textarea></label>` : ''}
     <div class="botoes">
       <button class="btn" data-fechar>Fechar</button>
@@ -934,8 +936,9 @@ $('#btn-escrever').addEventListener('click', () => {
 });
 $('#btn-parar-voz').addEventListener('click', pararVoz);
 document.addEventListener('click', (e) => {
-  const el = e.target.closest('[data-chamar],[data-provar],[data-foto],[data-tirar-foto],[data-sugestao],[data-ouvir],[data-tarefa],[data-fechar],[data-decidir],#btn-nova-tarefa');
+  const el = e.target.closest('[data-anexar],[data-chamar],[data-provar],[data-foto],[data-tirar-foto],[data-sugestao],[data-ouvir],[data-tarefa],[data-fechar],[data-decidir],#btn-nova-tarefa');
   if (!el) return;
+  if (el.dataset.anexar) { anexarDocumento(el.dataset.anexar); return; }
   if (el.dataset.foto) { escolherFoto(el.dataset.foto); return; }
   if (el.dataset.tirarFoto) {
     const fotos = { ...estado.fotos }; delete fotos[el.dataset.tirarFoto]; delete fotos.id;
@@ -990,6 +993,28 @@ function recortarQuadrado(arquivo, lado = 480) {
     img.onerror = () => reject(new Error('Não consegui abrir essa imagem.'));
     img.src = URL.createObjectURL(arquivo);
   });
+}
+function anexarDocumento(tarefaId) {
+  if (!assets) return;
+  const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'application/pdf,image/*';
+  inp.onchange = async () => {
+    const arq = inp.files?.[0]; if (!arq) return;
+    const t = estado.tarefas.find((x) => x.id === tarefaId); if (!t) return;
+    try {
+      toast('Enviando o anexo…');
+      const r = await assets.upload(arq);
+      const anexo = { id: r.id, nome: arq.name || 'documento', tipo: r.contentType || arq.type || '', em: agoraISO() };
+      const atual = { ...t, anexos: [...(t.anexos || []), anexo], atualizadoEm: agoraISO() };
+      await salvar('tarefas', atual);
+      // Samantha (financeiro) recebe a tarefa de dar baixa, com o link do anexo.
+      const baixa = { id: uid('tar'), titulo: `Dar baixa: ${t.titulo}`.slice(0, 140), descricao: `O Dr. Adonias anexou "${anexo.nome}" na tarefa ${t.id} (${t.titulo}). Anexo: /_blob/${anexo.id}\nConferir o comprovante, dar baixa no financeiro (CRM, honorários/pagamentos) e registrar o andamento no processo, se houver. Avisar o responsável da tarefa original para concluí-la.`, de: 'dr', para: 'iris', status: 'a_fazer', prioridade: t.prioridade === 'alta' ? 'alta' : 'normal', origem: 'anexo', tarefaOrigem: t.id, anexos: [anexo], criadoEm: agoraISO(), atualizadoEm: agoraISO() };
+      await salvar('tarefas', baixa);
+      await registrarAtividade('dr', `Anexou ${anexo.nome} em "${t.titulo}" e passou para a Samantha dar baixa.`, 'tarefa');
+      fecharModal(); abrirTarefa(tarefaId);
+      toast('Anexo salvo. A Samantha recebeu a tarefa de dar baixa.');
+    } catch (e) { toast('Não foi possível enviar o anexo: ' + (e?.message || e?.code || e)); }
+  };
+  inp.click();
 }
 function escolherFoto(id) {
   if (!assets) return;
