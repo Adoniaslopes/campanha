@@ -10,11 +10,11 @@ Escritório Lopes Araújo · Dr. Adonias Lopes de Araújo (OAB/GO 50.607)
 
 ## 1. Como identificar o processo ao falar com o Dr. Adonias
 
-Não ler o número inteiro. Identificar pelos **primeiros dígitos** do número CNJ, pelo **cliente** e pelo **juízo**:
+**Começar pela PARTE (ordem do Dr. Adonias, 16/11/2026).** Primeiro o nosso cliente, a parte contrária e o juízo. O número do processo **não se diz**; se o Dr. pedir, dizem-se só os **primeiros dígitos**. Nunca ler o número inteiro (é cansativo):
 
-> "No processo **0000094**, cumprimento de sentença do(a) cliente **[nome]**, da **UPJ das Varas Cíveis de Atibaia (TJSP)**…"
+> "No processo da **[cliente]** contra **[parte contrária]**, na **[vara/juízo] ([tribunal])**, saiu um despacho…"
 
-O número completo fica registrado para consulta e é dito só se o Dr. pedir.
+O número completo fica registrado para consulta (por escrito, no fim da leitura).
 
 ### Como ler o número CNJ: `NNNNNNN-DD.AAAA.J.TR.OOOO`
 
@@ -198,11 +198,11 @@ Prazo dado à outra parte não é prazo nosso: dizer de quem é.
 
 **Em conversa (falado ou chat):**
 
-> "Doutor, no processo **[primeiros dígitos]**, [tipo de ação] do(a) [cliente] ([papel]), na [vara/juízo] ([tribunal]), foi disponibilizada em [data] uma [natureza do ato]. [Resumo do que foi decidido.] Para nós: [providência]. [Recurso cabível], [N] dias úteis: o prazo vai até [data] (conferir feriados locais)."
+> "Doutor, no processo do(a) **[cliente]** contra [parte contrária], [tipo de ação], na [vara/juízo] ([tribunal]), foi disponibilizada em [data por extenso] uma [natureza do ato]. [Resumo do que foi decidido.] Para nós: [providência]. [Recurso cabível], [N] dias úteis: o prazo vai até [data] (conferir feriados locais)."
 
 **Por escrito (relatório, mural, tarefa):**
 
-- **Processo [primeiros dígitos]** — [cliente] ([papel])
+- **[Cliente] ([papel]) x [parte contrária]** — processo [primeiros dígitos]
 - **Juízo:** [vara/órgão] ([tribunal])
 - **Ação:** [classe] movida por/contra [parte contrária]
 - **Ato:** [natureza] de [data do ato], disponibilizada em [data], publicada em [data]
@@ -252,3 +252,4 @@ Publicação é notícia só enquanto ainda dá para agir. Trabalhamos **de agor
 
 - **ASA** (a credora ASA Distressed FIDC) se fala **"Aza"**: o **s** entre vogais tem som de **z**. Nunca "Aça".
 - **Louis** se fala **"Lóis"**.
+- **Datas** em fala: por extenso, **"16 de novembro de 2026"** ou **"16 de novembro"**. Nunca "16/11": a voz lê "16 sobre 11", como fração.
