@@ -734,11 +734,11 @@ function abrirTarefa(id) {
     <div class="linha">${avatar(t.para, 44)}<div><h3>${esc(t.titulo)}</h3>
       <div class="muted">${esc(nomeDe(t.de))} → ${esc(nomeDe(t.para))} · criada ${esc(quando(t.criadoEm))}</div></div></div>
     <span class="etq ${cls}">${esc(rotulo)}</span>${t.prioridade === 'alta' ? ' <span class="etq alerta">Prioridade alta</span>' : ''}
-    ${(() => { const docs = [...String(t.resultado || '').matchAll(/Documento:\s*(\/_blob\/[0-9a-f]{32})/g)].map((m) => m[1]); if (!docs.length) return ''; const atual = docs[docs.length - 1]; return `<div class="entrega"><strong>📄 Peça entregue</strong><a class="btn primario" href="${atual}" target="_blank" rel="noopener">Abrir / baixar a peça (PDF)</a>${docs.length > 1 ? `<span class="muted">${docs.length - 1} versão(ões) anterior(es) no resultado abaixo</span>` : ''}</div>`; })()}
+    ${(() => { const docs = [...String((t.resultado || '') + ' ' + (t.descricao || '')).matchAll(/Documento:\s*(\/_blob\/[0-9a-f]{32})/g)].map((m) => m[1]); if (!docs.length) return ''; const atual = docs[docs.length - 1]; return `<div class="entrega"><strong>📄 Peça entregue</strong><button class="btn primario" data-baixar="${atual.slice(7)}" data-nome="${esc(nomeArquivo(t.titulo))}.pdf">⬇ Baixar a peça (PDF)</button></div>`; })()}
     ${t.descricao ? `<pre>${linkar(esc(t.descricao))}</pre>` : ''}
     ${t.resultado ? `<strong>Resultado</strong><pre>${linkar(esc(t.resultado))}</pre>` : ''}
     ${t.decisao ? `<strong>Decisão do Dr. Adonias</strong><pre>${esc(t.decisao)}${t.decisaoNota ? ` — ${esc(t.decisaoNota)}` : ''}</pre>` : ''}
-    ${(t.anexos || []).length ? `<strong>Anexos</strong><ul class="anexos">${t.anexos.map((a) => `<li><a href="/_blob/${esc(a.id)}" target="_blank" rel="noopener">📎 ${esc(a.nome)}</a>${a.valor ? ` · R$ ${esc(a.valor)}` : ''} <span class="muted">${esc(quando(a.em))}</span></li>`).join('')}</ul>` : ''}
+    ${(t.anexos || []).length ? `<strong>Anexos</strong><ul class="anexos">${t.anexos.map((a) => `<li><button class="btn-link" data-baixar="${esc(a.id)}" data-nome="${esc(a.nome)}">📎 ${esc(a.nome)}</button>${a.valor ? ` · R$ ${esc(a.valor)}` : ''} <span class="muted">${esc(quando(a.em))}</span></li>`).join('')}</ul>` : ''}
     ${assets ? `<button class="btn" data-anexar="${esc(t.id)}">📎 Anexar comprovante ou documento</button><p class="muted" style="margin:4px 0 10px">PDF ou foto. O anexo fica na tarefa e a Samantha recebe a tarefa de dar baixa no financeiro.</p>` : ''}
     ${t.status === 'aguardando_dr' ? `<label><strong>Sua orientação</strong> (opcional)<textarea id="nota-decisao" rows="3"></textarea></label>` : ''}
     <div class="botoes">
@@ -819,7 +819,7 @@ function renderMural() {
 // Links de documentos guardados no escritório (/_blob/<id>) e links externos ficam clicáveis.
 function linkar(html) {
   return html
-    .replace(/(^|[\s(])(\/_blob\/[0-9a-f]{32})/g, '$1<a href="$2" target="_blank" rel="noopener">📄 abrir documento</a>')
+    .replace(/(^|[\s(])\/_blob\/[0-9a-f]{32}/g, '$1(documento)')
     .replace(/(^|[\s(])(https:\/\/[^\s<)]+)/g, '$1<a href="$2" target="_blank" rel="noopener">$2</a>');
 }
 
@@ -937,8 +937,9 @@ $('#btn-escrever').addEventListener('click', () => {
 });
 $('#btn-parar-voz').addEventListener('click', pararVoz);
 document.addEventListener('click', (e) => {
-  const el = e.target.closest('[data-anexar],[data-chamar],[data-provar],[data-foto],[data-tirar-foto],[data-sugestao],[data-ouvir],[data-tarefa],[data-fechar],[data-decidir],#btn-nova-tarefa');
+  const el = e.target.closest('[data-baixar],[data-anexar],[data-chamar],[data-provar],[data-foto],[data-tirar-foto],[data-sugestao],[data-ouvir],[data-tarefa],[data-fechar],[data-decidir],#btn-nova-tarefa');
   if (!el) return;
+  if (el.dataset.baixar) { baixarDocumento(el.dataset.baixar, el.dataset.nome); return; }
   if (el.dataset.anexar) { anexarDocumento(el.dataset.anexar); return; }
   if (el.dataset.foto) { escolherFoto(el.dataset.foto); return; }
   if (el.dataset.tirarFoto) {
@@ -994,6 +995,24 @@ function recortarQuadrado(arquivo, lado = 480) {
     img.onerror = () => reject(new Error('Não consegui abrir essa imagem.'));
     img.src = URL.createObjectURL(arquivo);
   });
+}
+function nomeArquivo(t) { return String(t || 'documento').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^\w.-]+/g, '-').replace(/-+/g, '-').slice(0, 80) || 'documento'; }
+let downloads = null;
+async function baixarDocumento(id, nome) {
+  try {
+    toast('Preparando o documento…');
+    const resp = await fetch('/_blob/' + id);
+    if (!resp.ok) throw new Error('documento não encontrado (' + resp.status + ')');
+    const blob = await resp.blob();
+    let arquivo = nome || 'documento.pdf';
+    if (!/\.[a-z0-9]{2,4}$/i.test(arquivo)) arquivo += blob.type.includes('pdf') ? '.pdf' : blob.type.includes('png') ? '.png' : '.jpg';
+    if (!downloads && EM_CLAUDE) downloads = await window.claude.use('downloads');
+    if (downloads) { await downloads.save({ filename: arquivo, data: blob }); return; }
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = arquivo; document.body.appendChild(a); a.click(); a.remove();
+  } catch (e) {
+    if (e?.code === 'declined') return;
+    toast('Não consegui baixar: ' + (e?.message || e?.code || e));
+  }
 }
 function anexarDocumento(tarefaId) {
   if (!assets) return;
