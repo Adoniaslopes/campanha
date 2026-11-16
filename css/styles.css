@@ -367,3 +367,7 @@ td.acoes { text-align: right; white-space: nowrap; }
 .etapas-caso { display: flex; flex-wrap: wrap; gap: 6px; }
 .etapa-caso { border: 1px solid var(--borda); background: transparent; color: inherit; border-radius: 999px; padding: 6px 12px; font: inherit; font-size: 13px; cursor: pointer; }
 .etapa-caso.atual { background: var(--primario); border-color: var(--primario); color: #fff; font-weight: 600; }
+
+/* Pasta do Drive no processo */
+.lista-docs { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.lista-docs li { overflow-wrap: anywhere; }

@@ -345,6 +345,19 @@ function listaEventos(evs, opts) {
 }
 
 // ===== Modal e formulários genéricos =====
+// Pasta do cliente no Google Drive (ligada pela ponte; só metadados e links)
+function cartaoDrive(p) {
+  if (!p.pastaDrive && !(p.documentos || []).length) return '';
+  const docs = (p.documentos || []).slice().sort((x, y) => String(y.modificadoEm || '').localeCompare(String(x.modificadoEm || '')));
+  const nomePasta = docs.find((d) => d.pasta)?.pasta || '';
+  return `<section class="cartao">
+    <div class="cartao-cab"><h3>Pasta no Google Drive${nomePasta ? ` · <span class="muted">${esc(nomePasta)}</span>` : ''}</h3>
+      ${p.pastaDrive ? `<a class="btn peq" href="${esc(p.pastaDrive)}" target="_blank" rel="noopener">Abrir pasta</a>` : ''}</div>
+    ${docs.length ? `<ul class="lista-docs">${docs.map((d) => `<li><a href="${esc(d.link)}" target="_blank" rel="noopener">${esc(d.nome)}</a> <span class="muted">${esc(d.tipo || '')}${d.modificadoEm ? ` · ${fmtData(d.modificadoEm)}` : ''}${d.pasta && d.pasta !== nomePasta ? ` · ${esc(d.pasta)}` : ''}</span></li>`).join('')}</ul>` : '<p class="muted">Pasta ligada; ainda sem documentos indexados.</p>'}
+    <p class="muted" style="margin-top:8px">${docs.length} documento(s) · ligado automaticamente pela ponte${p.documentosAtualizadoEm ? `, atualizado em ${fmtData(String(p.documentosAtualizadoEm).slice(0, 10))}` : ''}.</p>
+  </section>`;
+}
+
 function abrirModal(titulo, html) {
   $('#modal-titulo').textContent = titulo;
   $('#modal-corpo').innerHTML = html;
@@ -794,7 +807,7 @@ function telaClientes() {
     lista: () => {
       const f = filtros.clientes;
       const itens = db.clientes
-        .filter((c) => (!f.tipo || c.tipo === f.tipo) && contem(f.q, c.nome, c.documento, soDigitos(c.documento), c.telefone, soDigitos(c.telefone), c.email))
+        .filter((c) => (!f.tipo || c.tipo === f.tipo) && contem(f.q, c.nome, c.documento, soDigitos(c.documento), c.telefone, soDigitos(c.telefone), c.email, c.observacoes))
         .sort((a, b) => a.nome.localeCompare(b.nome));
       if (!itens.length) return `<p class="vazio">${db.clientes.length ? 'Nenhum cliente encontrado.' : 'Nenhum cliente cadastrado ainda.'}</p>`;
       return `<div class="tabela-wrap"><table>
@@ -874,6 +887,7 @@ function telaCliente(id) {
           ['CPF / CNPJ', esc(c.documento)], ['Telefone', esc(c.telefone)], ['E-mail', esc(c.email)],
           ['Nascimento', c.nascimento ? `${fmtData(c.nascimento)} (${idade} anos)` : ''], ['Profissão', esc(c.profissao)],
           ['Origem', esc(c.origem)], ['Endereço', esc(c.endereco), true],
+          ['Pasta no Drive', c.pastaDrive ? `<a href="${esc(c.pastaDrive)}" target="_blank" rel="noopener">Abrir pasta do cliente</a>` : ''],
           ['Observações', c.observacoes ? `<span style="white-space:pre-wrap">${esc(c.observacoes)}</span>` : '', true],
         ])}
       </section>
@@ -914,7 +928,7 @@ function telaProcessos() {
       const itens = db.processos.filter((p) => !p.oculto &&
         (f.status !== 'ativos' || processoAtivo(p)) && (f.status !== 'encerrados' || !processoAtivo(p)) &&
         (!f.area || p.area === f.area) && (!f.resp || p.responsavel === f.resp) &&
-        contem(f.q, p.numero, soDigitos(p.numero), nomeCliente(p.clienteId), p.parteContraria, p.vara, p.tribunal, p.tipoAcao, p.comarca))
+        contem(f.q, p.numero, soDigitos(p.numero), nomeCliente(p.clienteId), p.parteContraria, p.vara, p.tribunal, p.tipoAcao, p.comarca, p.observacoes, ...(p.partesDJE || []).map((x) => x.nome), ...(p.documentos || []).map((x) => x.pasta)))
         .sort((a, b) => nomeCliente(a.clienteId).localeCompare(nomeCliente(b.clienteId)));
       return tabelaProcessos(itens) + `<p class="muted" style="margin:10px 0 0;font-size:13px">${itens.length} processo(s)</p>`;
     },
@@ -954,6 +968,7 @@ function telaProcesso(id) {
         ])}
       </section>
       ${cartaoQuadro(p)}
+      ${cartaoDrive(p)}
       ${cartaoPublicacao(p)}
       <div class="grade g2">
         <section class="cartao">
