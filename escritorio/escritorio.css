@@ -266,11 +266,8 @@ p.lead { margin: 0 0 14px; color: var(--texto-2); }
 .bloco-depto > .org-crm { text-align: left; max-width: none; margin: 0 0 8px; }
 .bloco-depto > .org-crm span { display: inline; margin-right: 6px; }
 
-/* Logo Lopes Araújo Advogado */
-.titulo-escritorio h1.logo-la { display: inline-flex; align-items: center; gap: clamp(10px, 1.6vw, 18px); font-family: "Jost", "Futura", "Century Gothic", system-ui, sans-serif; font-weight: 500; letter-spacing: 0; }
-.logo-la-marca { width: clamp(46px, 6vw, 74px); height: auto; flex: none; }
-.titulo-escritorio h1 .logo-la-texto { display: flex; flex-direction: column; align-items: stretch; line-height: 1; }
-.titulo-escritorio h1 .logo-la-nome { font-size: clamp(26px, 4vw, 48px); text-transform: uppercase; letter-spacing: .02em; color: var(--logo-azul); white-space: nowrap; }
-.titulo-escritorio h1 .logo-la-sub { display: flex; align-items: center; gap: 10px; margin-top: 6px; font-size: clamp(11px, 1.3vw, 16px); font-weight: 400; text-transform: uppercase; letter-spacing: .32em; color: var(--logo-azul); }
-.logo-la-sub::before, .logo-la-sub::after { content: ""; flex: 1; height: 1px; background: currentColor; opacity: .8; }
-.titulo-escritorio:has(.logo-la)::after { display: none; }
+/* Logo Lopes Araújo Advogado (imagem enviada pelo Dr.) */
+.titulo-escritorio h1.logo-la-img { margin: 0; line-height: 0; }
+.logo-la-img img { width: clamp(240px, 34vw, 420px); height: auto; border-radius: 10px; box-shadow: 0 6px 18px rgba(19,35,61,.25); }
+.titulo-escritorio:has(.logo-la-img)::after { display: none; }
+.titulo-escritorio:has(.logo-la-img) p { margin-top: 8px; }
