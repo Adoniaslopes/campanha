@@ -275,3 +275,5 @@ p.lead { margin: 0 0 14px; color: var(--texto-2); }
 /* Anexos das tarefas */
 .anexos { margin: 4px 0 10px; padding-left: 18px; }
 .anexos li { overflow-wrap: anywhere; margin: 2px 0; }
+.entrega { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; background: var(--info-fundo); border: 1px solid var(--borda); border-radius: 10px; padding: 10px 12px; margin: 8px 0; }
+.entrega .btn { text-decoration: none; }

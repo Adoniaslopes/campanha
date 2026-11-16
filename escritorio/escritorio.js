@@ -734,10 +734,11 @@ function abrirTarefa(id) {
     <div class="linha">${avatar(t.para, 44)}<div><h3>${esc(t.titulo)}</h3>
       <div class="muted">${esc(nomeDe(t.de))} → ${esc(nomeDe(t.para))} · criada ${esc(quando(t.criadoEm))}</div></div></div>
     <span class="etq ${cls}">${esc(rotulo)}</span>${t.prioridade === 'alta' ? ' <span class="etq alerta">Prioridade alta</span>' : ''}
-    ${t.descricao ? `<pre>${esc(t.descricao)}</pre>` : ''}
+    ${(() => { const docs = [...String(t.resultado || '').matchAll(/Documento:\s*(\/_blob\/[0-9a-f]{32})/g)].map((m) => m[1]); if (!docs.length) return ''; const atual = docs[docs.length - 1]; return `<div class="entrega"><strong>📄 Peça entregue</strong><a class="btn primario" href="${atual}" target="_blank" rel="noopener">Abrir / baixar a peça (PDF)</a>${docs.length > 1 ? `<span class="muted">${docs.length - 1} versão(ões) anterior(es) no resultado abaixo</span>` : ''}</div>`; })()}
+    ${t.descricao ? `<pre>${linkar(esc(t.descricao))}</pre>` : ''}
     ${t.resultado ? `<strong>Resultado</strong><pre>${linkar(esc(t.resultado))}</pre>` : ''}
     ${t.decisao ? `<strong>Decisão do Dr. Adonias</strong><pre>${esc(t.decisao)}${t.decisaoNota ? ` — ${esc(t.decisaoNota)}` : ''}</pre>` : ''}
-    ${(t.anexos || []).length ? `<strong>Anexos</strong><ul class="anexos">${t.anexos.map((a) => `<li><a href="/_blob/${esc(a.id)}" target="_blank" rel="noopener">📎 ${esc(a.nome)}</a> <span class="muted">${esc(quando(a.em))}</span></li>`).join('')}</ul>` : ''}
+    ${(t.anexos || []).length ? `<strong>Anexos</strong><ul class="anexos">${t.anexos.map((a) => `<li><a href="/_blob/${esc(a.id)}" target="_blank" rel="noopener">📎 ${esc(a.nome)}</a>${a.valor ? ` · R$ ${esc(a.valor)}` : ''} <span class="muted">${esc(quando(a.em))}</span></li>`).join('')}</ul>` : ''}
     ${assets ? `<button class="btn" data-anexar="${esc(t.id)}">📎 Anexar comprovante ou documento</button><p class="muted" style="margin:4px 0 10px">PDF ou foto. O anexo fica na tarefa e a Samantha recebe a tarefa de dar baixa no financeiro.</p>` : ''}
     ${t.status === 'aguardando_dr' ? `<label><strong>Sua orientação</strong> (opcional)<textarea id="nota-decisao" rows="3"></textarea></label>` : ''}
     <div class="botoes">
@@ -1002,12 +1003,13 @@ function anexarDocumento(tarefaId) {
     const t = estado.tarefas.find((x) => x.id === tarefaId); if (!t) return;
     try {
       toast('Enviando o anexo…');
+      const valor = (window.prompt('Valor do comprovante, se houver (ex.: 362,22). Pode deixar em branco.') || '').trim();
       const r = await assets.upload(arq);
-      const anexo = { id: r.id, nome: arq.name || 'documento', tipo: r.contentType || arq.type || '', em: agoraISO() };
+      const anexo = { id: r.id, nome: arq.name || 'documento', tipo: r.contentType || arq.type || '', em: agoraISO(), ...(valor ? { valor } : {}) };
       const atual = { ...t, anexos: [...(t.anexos || []), anexo], atualizadoEm: agoraISO() };
       await salvar('tarefas', atual);
       // Samantha (financeiro) recebe a tarefa de dar baixa, com o link do anexo.
-      const baixa = { id: uid('tar'), titulo: `Dar baixa: ${t.titulo}`.slice(0, 140), descricao: `O Dr. Adonias anexou "${anexo.nome}" na tarefa ${t.id} (${t.titulo}). Anexo: /_blob/${anexo.id}\nConferir o comprovante, dar baixa no financeiro (CRM, honorários/pagamentos) e registrar o andamento no processo, se houver. Avisar o responsável da tarefa original para concluí-la.`, de: 'dr', para: 'iris', status: 'a_fazer', prioridade: t.prioridade === 'alta' ? 'alta' : 'normal', origem: 'anexo', tarefaOrigem: t.id, anexos: [anexo], criadoEm: agoraISO(), atualizadoEm: agoraISO() };
+      const baixa = { id: uid('tar'), titulo: `Dar baixa: ${t.titulo}`.slice(0, 140), descricao: `O Dr. Adonias anexou "${anexo.nome}"${anexo.valor ? ` (valor informado: R$ ${anexo.valor})` : ''} na tarefa ${t.id} (${t.titulo}). Anexo: /_blob/${anexo.id} (para ler: ferramenta Artifact, action "read", url do escritório, path = ${anexo.id})\nConferir o comprovante, dar baixa no financeiro (CRM, honorários/pagamentos) e registrar o andamento no processo, se houver. Avisar o responsável da tarefa original para concluí-la.`, de: 'dr', para: 'iris', status: 'a_fazer', prioridade: t.prioridade === 'alta' ? 'alta' : 'normal', origem: 'anexo', tarefaOrigem: t.id, anexos: [anexo], criadoEm: agoraISO(), atualizadoEm: agoraISO() };
       await salvar('tarefas', baixa);
       await registrarAtividade('dr', `Anexou ${anexo.nome} em "${t.titulo}" e passou para a Samantha dar baixa.`, 'tarefa');
       fecharModal(); abrirTarefa(tarefaId);
